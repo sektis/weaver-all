@@ -1,0 +1,22 @@
+{
+    "plugins/location/ajax.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/ajax.php",
+    "plugins/location/init_current.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/init_current.php",
+    "plugins/location/js/func.js": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/js/func.js",
+    "plugins/location/Location.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/Location.php",
+    "plugins/location/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/plugin.php",
+    "plugins/location/README.md": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/README.md",
+    "plugins/location/RegionApi.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/RegionApi.php",
+    "plugins/location/theme/basic/pc/favorite_title/skin.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/favorite_title/skin.php",
+    "plugins/location/theme/basic/pc/favorite_title/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/favorite_title/_common.php",
+    "plugins/location/theme/basic/pc/page/excel.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/page/excel.php",
+    "plugins/location/theme/basic/pc/page/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/page/_common.php",
+    "plugins/location/theme/basic/pc/region/depth/check.png": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/check.png",
+    "plugins/location/theme/basic/pc/region/depth/close.png": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/close.png",
+    "plugins/location/theme/basic/pc/region/depth/delete.png": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/delete.png",
+    "plugins/location/theme/basic/pc/region/depth/refresh.png": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/refresh.png",
+    "plugins/location/theme/basic/pc/region/depth/search.png": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/search.png",
+    "plugins/location/theme/basic/pc/region/depth/skin.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/skin.php",
+    "plugins/location/theme/basic/pc/region/depth/target.png": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/target.png",
+    "plugins/location/theme/basic/pc/region/depth/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/theme/basic/pc/region/depth/_common.php",
+    "plugins/location/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/location/_common.php"
+}

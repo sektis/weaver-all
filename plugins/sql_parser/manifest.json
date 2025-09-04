@@ -1,0 +1,16 @@
+{
+    "plugins/sql_parser/classes/constants.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/constants.php",
+    "plugins/sql_parser/classes/exceptions.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/exceptions.php",
+    "plugins/sql_parser/classes/expression-token.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/expression-token.php",
+    "plugins/sql_parser/classes/expression-types.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/expression-types.php",
+    "plugins/sql_parser/classes/lexer-splitter.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/lexer-splitter.php",
+    "plugins/sql_parser/classes/lexer.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/lexer.php",
+    "plugins/sql_parser/classes/oracle-sql-translator.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/oracle-sql-translator.php",
+    "plugins/sql_parser/classes/parser-utils.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/parser-utils.php",
+    "plugins/sql_parser/classes/position-calculator.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/classes/position-calculator.php",
+    "plugins/sql_parser/php-sql-creator.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/php-sql-creator.php",
+    "plugins/sql_parser/php-sql-parser.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/php-sql-parser.php",
+    "plugins/sql_parser/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/plugin.php",
+    "plugins/sql_parser/SqlParser.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/SqlParser.php",
+    "plugins/sql_parser/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/sql_parser/_common.php"
+}
