@@ -3,6 +3,14 @@
  * Git pre-commit 훅 전용 manifest.json 생성기
  * 위버코어 + 모든 플러그인 manifest.json을 한 번에 갱신
  */
+if(!function_exists('dd')){
+    function dd($obj){
+        echo "<pre>";
+        print_r($obj);
+        echo "</pre>";
+        die();
+    }
+}
 
 $repo   = "sektis/weaver-all"; // GitHub 저장소
 $branch = "master";            // 브랜치 이름
@@ -40,14 +48,18 @@ file_put_contents(
     $base.'/manifest.json',
     json_encode($core_files, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)
 );
-echo "[core] manifest.json 생성 (" . count($core_files) . " files)\n";
+//echo "[core] manifest.json 생성 (" . count($core_files) . " files)\n";
 
 // 🔹 각 플러그인 manifest.json
 $plugins_dir = $base.'/plugins';
+
 if (is_dir($plugins_dir)) {
     foreach (glob($plugins_dir.'/*', GLOB_ONLYDIR) as $plugin_path) {
         $plugin_name  = basename($plugin_path);
         $plugin_files = build_manifest($plugin_path, "plugins/{$plugin_name}", $repo, $branch);
+
+//        $plugin_manifeset_path = ltrim(str_replace($_SERVER['DOCUMENT_ROOT'].'/plugin/weaver', '', $plugin_path), DIRECTORY_SEPARATOR).'/manifest.json';
+//        $core_files[] = make_raw_link($repo, $branch, $plugin_manifeset_path);
 
         file_put_contents(
             $plugin_path.'/manifest.json',
