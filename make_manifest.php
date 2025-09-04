@@ -9,7 +9,7 @@ $branch = "master";            // 브랜치 이름
 $base   = __DIR__;             // /plugin/weaver 기준
 
 function make_raw_link($repo, $branch, $path){
-    return "https://raw.githubusercontent.com/{$repo}/{$branch}/plugin/weaver/{$path}";
+    return "https://raw.githubusercontent.com/{$repo}/refs/heads/{$branch}/{$path}";
 }
 
 function build_manifest($target_base, $rel_prefix, $repo, $branch){

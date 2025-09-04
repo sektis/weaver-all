@@ -1,5 +1,5 @@
 {
-    "plugins/theme/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/theme/plugin.php",
-    "plugins/theme/Theme.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/theme/Theme.php",
-    "plugins/theme/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/theme/_common.php"
+    "plugins/theme/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/theme/plugin.php",
+    "plugins/theme/Theme.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/theme/Theme.php",
+    "plugins/theme/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/theme/_common.php"
 }

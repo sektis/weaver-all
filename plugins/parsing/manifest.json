@@ -1,6 +1,6 @@
 {
-    "plugins/parsing/lib.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/parsing/lib.php",
-    "plugins/parsing/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/parsing/plugin.php",
-    "plugins/parsing/simple_html_dom.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/parsing/simple_html_dom.php",
-    "plugins/parsing/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/master/plugin/weaver/plugins/parsing/_common.php"
+    "plugins/parsing/lib.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/parsing/lib.php",
+    "plugins/parsing/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/parsing/plugin.php",
+    "plugins/parsing/simple_html_dom.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/parsing/simple_html_dom.php",
+    "plugins/parsing/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/parsing/_common.php"
 }
