@@ -1,0 +1,169 @@
+<?php
+if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
+$skin_id = wv_make_skin_id();
+$skin_selector = wv_make_skin_selector($skin_id);
+?>
+<div id="<?php echo $skin_id?>" class="position-relative d-flex-center flex-nowrap"  style="" >
+    <style>
+        <?php echo $skin_selector?> {}
+        <?php echo $skin_selector?> .login-btn.active{background-color:#000!important;}
+
+
+        @media (min-width: 992px) {
+
+        }
+
+        @media (max-width: 991.98px) {
+
+        }
+    </style>
+
+    <div class="position-relative col col-lg-auto w-full md:w-full vstack justify-content-center" style="min-height: 100dvh">
+        <div class="container">
+            <form name="flogin" action="<?php echo $login_action_url ?>" onsubmit="return flogin_submit(this);" method="post" class="fs-[16//-0.64/600/#CFCFCF]" >
+                <div style="padding: 0 var(--wv-8)">
+                    <p class="fs-[24/32/-0.96/600/#0D171B]  ">
+                        안녕하세요 사장님! <br>
+                        덤이요에 오신 걸 환영해요
+                    </p>
+                    <p class="mt-[8px] fs-[12//-0.48/500/#97989C]">회원 서비스 이용을 위해 로그인 해주세요</p>
+                    <div class="mt-[40px]">
+                        <input type="hidden" name="url" value="<?php echo $login_url ?>">
+                        <div>
+                            <label for="login_id" class="fs-[12//-0.48/600/#0D171B]">아이디<strong class="sound_only"> 필수</strong></label>
+                            <input type="text" name="mb_id" id="login_id" required class="form-control border-0 border-bottom rounded-0 px-0 py-[8px] mt-[4px]" size="20" maxLength="20" placeholder="아이디 입력" autocomplete="new-password">
+                        </div>
+
+                        <div class="mt-[24px]">
+                            <label for="login_pw" class="fs-[12//-0.48/600/#0D171B]">비밀번호<strong class="sound_only"> 필수</strong></label>
+                            <input type="password" name="mb_password" id="login_pw" required class="form-control border-0 border-bottom rounded-0 px-0" size="20" maxLength="20" placeholder="비밀번호 입력" autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-[40px]">
+                    <button type="submit" class="w-full py-[14px] fs-[16//-0.64/700/#FFF] login-btn transition" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">로그인</button>
+                </div>
+
+                <div class="hstack justify-content-center mt-[16px]">
+                    <img src="<?php echo WV_URL; ?>/img/icon_exclamation.png" class="w-[17px]" alt="">
+                    <p class="fs-[12//-0.48/500/#97989C]">아이디 / 비밀번호를 잃어버리신 경우, 고객센터로 문의바랍니다.</p>
+                </div>
+
+                <div class="text-center mt-[128px]">
+                    <img src="<?php echo WV_URL; ?>/img/logo1.png" class="w-[54.3px]" alt="">
+                </div>
+
+
+            </form>
+
+
+            <?php // 쇼핑몰 사용시 여기부터 ?>
+            <?php if (isset($default['de_level_sell']) && $default['de_level_sell'] == 1) { // 상품구입 권한 ?>
+
+                <!-- 주문하기, 신청하기 -->
+                <?php if (preg_match("/orderform.php/", $url)) { ?>
+                    <section id="mb_login_notmb">
+                        <h2>비회원 구매</h2>
+                        <p>비회원으로 주문하시는 경우 포인트는 지급하지 않습니다.</p>
+
+                        <div id="guest_privacy">
+                            <?php echo conv_content($default['de_guest_privacy'], $config['cf_editor']); ?>
+                        </div>
+
+                        <div class="chk_box">
+                            <input type="checkbox" id="agree" value="1" class="selec_chk">
+                            <label for="agree"><span></span> 개인정보수집에 대한 내용을 읽었으며 이에 동의합니다.</label>
+                        </div>
+
+                        <div class="btn_confirm">
+                            <a href="javascript:guest_submit(document.flogin);" class="btn_submit">비회원으로 구매하기</a>
+                        </div>
+
+                        <script>
+                            function guest_submit(f)
+                            {
+                                if (document.getElementById('agree')) {
+                                    if (!document.getElementById('agree').checked) {
+                                        alert("개인정보수집에 대한 내용을 읽고 이에 동의하셔야 합니다.");
+                                        return;
+                                    }
+                                }
+
+                                f.url.value = "<?php echo $url; ?>";
+                                f.action = "<?php echo $url; ?>";
+                                f.submit();
+                            }
+                        </script>
+                    </section>
+
+                <?php } else if (preg_match("/orderinquiry.php$/", $url)) { ?>
+                    <div id="mb_login_od_wr">
+                        <h2>비회원 주문조회 </h2>
+
+                        <fieldset id="mb_login_od">
+                            <legend>비회원 주문조회</legend>
+
+                            <form name="forderinquiry" method="post" action="<?php echo urldecode($url); ?>" autocomplete="off">
+
+                                <label for="od_id" class="od_id sound_only">주문서번호<strong class="sound_only"> 필수</strong></label>
+                                <input type="text" name="od_id" value="<?php echo get_text($od_id); ?>" id="od_id" required class="frm_input required" size="20" placeholder="주문서번호">
+                                <label for="od_pwd" class="od_pwd sound_only">비밀번호 <strong>필수</strong></label>
+                                <input type="password" name="od_pwd" size="20" id="od_pwd" required class="frm_input required" placeholder="비밀번호">
+                                <button type="submit" class="btn_submit">확인</button>
+
+                            </form>
+                        </fieldset>
+
+                        <section id="mb_login_odinfo">
+                            <p>메일로 발송해드린 주문서의 <strong>주문번호</strong> 및 주문 시 입력하신 <strong>비밀번호</strong>를 정확히 입력해주십시오.</p>
+                        </section>
+
+                    </div>
+                <?php } ?>
+
+            <?php } ?>
+            <?php // 쇼핑몰 사용시 여기까지 반드시 복사해 넣으세요 ?>
+        </div>
+
+    </div>
+
+    <script>
+
+        $(document).ready(function (){
+
+            var $skin = $("<?php echo $skin_selector?>");
+
+            var $id = $("#login_id", $skin);
+            var $pw = $("#login_pw", $skin);
+            var $btn = $(".login-btn", $skin);
+
+            function toggleLoginActive() {
+                if ($id.val().length > 0 && $pw.val().length > 0) {
+                    $btn.addClass("active");
+                } else {
+                    $btn.removeClass("active");
+                }
+            }
+
+            // 입력 시마다 확인
+            $id.on("keyup input", toggleLoginActive);
+            $pw.on("keyup input", toggleLoginActive);
+
+            $("#login_auto_login",$skin).click(function(){
+                if (this.checked) {
+                    this.checked = confirm("자동로그인을 사용하시면 다음부터 회원아이디와 비밀번호를 입력하실 필요가 없습니다.\n\n공공장소에서는 개인정보가 유출될 수 있으니 사용을 자제하여 주십시오.\n\n자동로그인을 사용하시겠습니까?");
+                }
+            });
+        })
+
+
+        function flogin_submit(f)
+        {
+            if( $( document.body ).triggerHandler( 'login_sumit', [f, 'flogin'] ) !== false ){
+                return true;
+            }
+            return false;
+        }
+    </script>
+</div>

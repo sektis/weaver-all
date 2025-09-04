@@ -1,0 +1,253 @@
+@charset "utf-8";
+/*https://codepen.io/RRoberts/pen/ZBYaJr*/
+[class*='wv-hamburger']{
+    --wv-hamburger-ratio : calc(var(--wv-hamburger-width,50)/50);
+}
+[class*='wv-hamburger'] .line {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 50);
+    height: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 5);
+    background-color: var(--wv-hamburger-bg,#000);
+    display: block;
+    margin: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 8) auto;
+    -webkit-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+
+}
+
+[class*='wv-hamburger']:hover {
+    cursor: pointer;
+}
+
+/* ONE */
+.wv-hamburger-1.is-active .line:nth-child(2) {
+    opacity: 0;
+}
+
+.wv-hamburger-1.is-active .line:nth-child(1) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 13)) rotate(45deg);
+}
+
+.wv-hamburger-1.is-active .line:nth-child(3) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -13 )) rotate(-45deg);
+}
+
+/* TWO */
+
+.wv-hamburger-2.is-active .line:nth-child(1) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 13 ));
+}
+
+.wv-hamburger-2.is-active .line:nth-child(3) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -13 ));
+}
+
+/* THREE */
+
+.wv-hamburger-3.is-active .line:nth-child(1),
+.wv-hamburger-3.is-active .line:nth-child(3) {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 40);
+}
+
+.wv-hamburger-3.is-active .line:nth-child(1) {
+    transform: translateX(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -10)) rotate(-45deg);
+}
+
+.wv-hamburger-3.is-active .line:nth-child(3) {
+    transform: translateX(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -10)) rotate(45deg);
+}
+
+/* FOUR */
+
+.wv-hamburger-4.is-active .line:nth-child(1),
+.wv-hamburger-4.is-active .line:nth-child(3) {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 40);
+}
+
+.wv-hamburger-4.is-active .line:nth-child(1) {
+    transform: translateX(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 10)) rotate(45deg);
+}
+
+.wv-hamburger-4.is-active .line:nth-child(3) {
+    transform: translateX(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 10)) rotate(-45deg);
+}
+
+/* FIVE */
+
+.wv-hamburger-5.is-active {
+    transform: rotate(90deg);
+}
+
+.wv-hamburger-5.is-active .line:nth-child(2) {
+    transition: none;
+}
+
+.wv-hamburger-5 .line:nth-child(2) {
+    transition-delay: 0.3s;
+}
+
+.wv-hamburger-5.is-active .line:nth-child(2) {
+    opacity: 0;
+}
+
+.wv-hamburger-5.is-active .line:nth-child(1),
+.wv-hamburger-5.is-active .line:nth-child(3) {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 35);
+    transform-origin: right;
+}
+
+.wv-hamburger-5.is-active .line:nth-child(1) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 15)) rotate(45deg);
+}
+
+.wv-hamburger-5.is-active .line:nth-child(3) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -15)) rotate(-45deg);
+}
+
+/* SIX */
+
+.wv-hamburger-6.is-active {
+    transition: all 0.3s ease-in-out;
+    transition-delay: 0.6s;
+    transform: rotate(45deg);
+}
+
+.wv-hamburger-6.is-active .line:nth-child(2) {
+    width: 0px;
+}
+
+.wv-hamburger-6.is-active .line:nth-child(1),
+.wv-hamburger-6.is-active .line:nth-child(3) {
+    transition-delay: 0.3s;
+}
+
+.wv-hamburger-6.is-active .line:nth-child(1) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 13));
+}
+
+.wv-hamburger-6.is-active .line:nth-child(3) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -13)) rotate(90deg);
+}
+
+/* SEVEN */
+
+.wv-hamburger-7.is-active .line:nth-child(1) {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 30);
+}
+
+.wv-hamburger-7.is-active .line:nth-child(2) {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 40);
+}
+
+.wv-hamburger-7.is-active .line {
+    transform: rotate(30deg);
+}
+
+/* EIGHT */
+
+.wv-hamburger-8.is-active .line:nth-child(2) {
+    opacity: 0;
+}
+
+.wv-hamburger-8.is-active .line:nth-child(1) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 13));
+}
+
+.wv-hamburger-8.is-active .line:nth-child(3) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -13)) rotate(90deg);
+}
+
+/* NINE */
+
+.wv-hamburger-9 {
+    transition: all 0.3s ease-in-out;
+}
+
+.wv-hamburger-9.is-active {
+    transform: rotate(720deg);
+}
+
+
+
+
+
+.wv-hamburger-9.is-active .line:nth-child(2) {
+    opacity: 0;
+}
+
+.wv-hamburger-9.is-active .line:nth-child(1) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 13)) rotate(45deg);
+}
+
+.wv-hamburger-9.is-active .line:nth-child(3) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -13 )) rotate(-45deg);
+}
+
+/* TEN */
+
+.wv-hamburger-10 {
+    transition: all 0.3s ease-in-out;
+}
+
+.wv-hamburger-10.is-active {
+    transform: rotate(90deg);
+}
+
+.wv-hamburger-10.is-active .line:nth-child(1) {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 30);
+}
+
+.wv-hamburger-10.is-active .line:nth-child(2) {
+    width: calc(var(--wv-1) * var(--wv-hamburger-ratio) * 40);
+}
+
+/* ELEVEN */
+
+.wv-hamburger-11 {
+    transition: all 0.3s ease-in-out;
+}
+
+.wv-hamburger-11.is-active {
+    animation: smallbig 0.6s forwards;
+}
+
+@keyframes smallbig {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0);
+    }
+}
+
+.wv-hamburger-11.is-active .line:nth-child(1),
+.wv-hamburger-11.is-active .line:nth-child(2),
+.wv-hamburger-11.is-active .line:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.wv-hamburger-11.is-active .line:nth-child(2) {
+    opacity: 0;
+}
+
+.wv-hamburger-11.is-active .line:nth-child(1) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * 13)) rotate(45deg);
+}
+
+.wv-hamburger-11.is-active .line:nth-child(3) {
+    transform: translateY(calc(var(--wv-1) * var(--wv-hamburger-ratio) * -13)) rotate(-45deg);
+}
+
+/* TWELVE */
+
+.wv-hamburger-12.is-active .line:nth-child(1) {
+    opacity: 0;
+    transform: translateX(-100%);
+}
+
+.wv-hamburger-12.is-active .line:nth-child(3) {
+    opacity: 0;
+    transform: translateX(100%);
+}

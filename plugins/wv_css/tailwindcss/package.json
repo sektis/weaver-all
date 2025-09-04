@@ -1,0 +1,5 @@
+{
+    "scripts": {
+        "watch": "node watch_dev.js  "
+    }
+}

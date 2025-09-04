@@ -1,0 +1,29 @@
+@charset "utf-8";
+
+.ff-LT-Afficher-Neue{font-family: 'LT Afficher Neue', "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif}
+
+@font-face {
+    font-family: 'LT Afficher Neue';
+    src: url('./LTAfficherNeue-Text.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'LT Afficher Neue';
+    src: url('./LTAfficherNeue-MediumText.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'LT Afficher Neue';
+    src: url('./LTAfficherNeue-SemiBoldText.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'LT Afficher Neue';
+    src: url('./LTAfficherNeue-BoldText.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+
+}

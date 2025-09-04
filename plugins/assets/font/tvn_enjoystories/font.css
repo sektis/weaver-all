@@ -1,0 +1,23 @@
+@charset "utf-8";
+
+.ff-tvNEnjoystories{font-family: 'tvNEnjoystories', "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif}
+
+@font-face {
+    font-family: 'tvNEnjoystories';
+    src: url('./ff-tvNEnjoystoriesL.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'tvNEnjoystories';
+    src: url('./ff-tvNEnjoystoriesR.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'tvNEnjoystories';
+    src: url('./ff-tvNEnjoystoriesB.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    font-weight: 700;
+    font-style: normal;
+}

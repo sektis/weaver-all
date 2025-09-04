@@ -1,0 +1,61 @@
+{
+  "work_root": ["../../.."],
+  "blocklist_css_list": ["../../assets/library/bootstrap/css/bootstrap.css","../../assets/library/weaver/css/weaver.css"],
+  "blocklist_css_add": ["sticky"],
+  "blocklist_css_ignore": ["visible","invisible","border"],
+  "screens": {
+    "xxl": {"max": "1919.98px"},
+    "xl": {"max": "1399.98px"},
+    "lg": {"max": "1199.98px"},
+    "md": {"max": "991.98px"},
+    "sm": {"max": "767.98px"},
+    "xs": {"max": "575.98px"}
+  },
+  "make": {
+    "selector": ".wv-wrap",
+    "mobile_screen": "md",
+    "screens": {
+      "basic": {
+        "width": "1920",
+        "min": "",
+        "max": "1",
+        "add": "",
+        "zoom":{
+          "md": {
+            "add": ""
+          }
+        }
+      },
+      "xl": {
+        "width": "",
+        "min": "",
+        "max": "",
+        "add": ""
+      },
+      "lg": {
+        "width": "",
+        "min": "",
+        "max": "",
+        "add": ""
+      },
+      "md": {
+        "width": "780",
+        "min": "0",
+        "max": "10",
+        "add": ""
+      },
+      "sm": {
+        "width": "",
+        "min": "",
+        "max": "",
+        "add": ""
+      },
+      "xs": {
+        "width": "",
+        "min": "",
+        "max": "",
+        "add": ""
+      }
+    }
+  }
+}

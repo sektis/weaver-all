@@ -1,0 +1,163 @@
+@charset "utf-8";
+
+.wv-wrap {
+    --wv-placeholer-color :inherit;
+    --wv-container-gutter-x: var(--wv-32); /*좌우합*/
+    --wv-container-gutter-y: 1em;
+    --wv-max-container-size: var(--wv-1920);
+    --wv-vstack-row-gap: var(--wv-12_4);
+    font-size: var(--wv-14);
+    --wv-ini-width:360;
+    --wv-ini-max:1.5;
+    --wv-site-wrapper-width:var(--wv-360)
+}
+
+
+html {
+    overflow-y:initial;
+    -webkit-tap-highlight-color: transparent;
+    /*scroll-behavior: auto !important;*/
+
+}
+
+body{
+    overflow: initial;
+    font-family: 'Pretendard','serif';
+    color:#000;
+    line-height: normal;
+    overflow-x: clip!important;
+}
+
+
+/*::-webkit-scrollbar { width: 2px;}*/
+/*::-webkit-scrollbar-thumb {background: #ad6c5a;border-radius: 10px;}*/
+/*::-webkit-scrollbar-track {background: #ededee}*/
+.ff-MalgunGothic{font-family:  "Malgun Gothic", "맑은 고딕", sans-serif}
+a:focus-visible{outline:none!important;}
+input[readonly],input[disabled]{background-color: #f9f9f9;user-select: none;pointer-events: none;}
+video,iframe{clip-path: inset(0);display: inline-block;max-width: 100%}
+video[poster]{width:100%}
+iframe[src*='youtube']{width: unset;height: unset}
+:has(>iframe[src*='youtube']){--bs-aspect-ratio: 56.25%;position: relative;width: 100%;}
+:has(>iframe[src*='youtube']):before{display: block;padding-top: var(--bs-aspect-ratio);content: "";}
+:has(>iframe[src*='youtube'])>*{position: absolute;top: 0;left: 0;width: 100%;height: 100%;}
+a:focus,a:focus-visible,button:focus,button:focus-visible{outline: none!important;box-shadow: none!important;}
+input{max-width: 100%}
+input::placeholder,textarea::placeholder{color:var(--wv-placeholer-color,revert-layer);}
+
+
+#header-wrapper, #content-wrapper, #footer-wrapper {
+    position: relative
+}
+#site-wrapper {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    width: var(--wv-site-wrapper-width);
+    max-width: 100%;
+    margin: 0 auto;
+    position:static!important;
+}
+
+/*!*좌우 fixed가 1920보다 클때 해당 넓이 만큼 설정 *!*/
+/*.wv-wrap {*/
+/*    --wv-ini-width: 2300;*/
+/*}*/
+/*!*site-wrapper 넓이가 1920보다 작을때 해당 넓이전까지는 줄어들지 않게*!*/
+/*@media (min-width: 360px) {*/
+/*    .wv-wrap{*/
+/*        --wv-ini-min:1;*/
+/*    }*/
+/*}*/
+
+#header-wrapper{
+    position: relative;
+    width: 100%;
+    max-width: inherit;
+    z-index: 1040;
+    padding-bottom: var(--wv-8);
+}
+#header-wrapper,#footer-wrapper{
+    flex: 0 0 auto;
+    height: auto;
+}
+#content-wrapper{
+    flex: 1 1 auto !important;
+    position:relative;
+}
+#header-menu{
+    background-color: #fff;
+    padding: var(--wv-7) 0;
+}
+#footer-wrapper{
+}
+input::placeholder {color: #cfcfcf;font-size: inherit;font-style: normal;font-weight: inherit;line-height: inherit;letter-spacing:  calc(var(--wv-0_56) * -1);}
+
+@media (max-width: 1919.98px) {
+
+}
+@media (max-width: 1399.98px) {
+
+}
+@media (max-width: 1199.98px) {
+
+}
+@media (max-width: 991.98px) {
+    #site-wrapper{
+        max-width: 100%;
+        overflow: hidden;
+    }
+    .wv-wrap {
+        /*--wv-ini-add: 2.3;*/
+    }
+
+    /*p만 확대 시(zoom사용시 아이폰은 불가)*/
+    /*.wv-skin-widget  p{zoom: 1.1;} */
+    .wv-skin-widget :not(.hstack)>p{white-space: pre-line !important}
+    .wv-skin-widget :not(.hstack)>p br{display: none;}
+    .wv-skin-widget .hstack >p{word-break: keep-all; }
+    .wv-skin-widget .text-center :not(.text-start) p{transform-origin: center}
+}
+@media (max-width: 767.98px) {
+
+}
+@media (max-width: 575.98px) {
+
+}
+
+
+@media (min-width: 576px) {
+
+}
+@media (min-width: 768px) {
+
+}
+@media (min-width: 992px) {
+
+}
+@media (min-width: 1200px) {
+
+}
+@media (min-width: 1400px) {
+
+}
+
+/* chrome */
+@supports (text-box-trim:trim-both) {
+
+    /* cap 없애기 */
+    /*[class*=wv-skin]  p{text-box-trim:trim-both}*/
+}
+/* iOS devices */
+@supports (-webkit-touch-callout: none) {
+
+    /* cap 없애기 */
+    /*p:first-line{line-height: 1;}*/
+    /*[class*=wv-skin] p:after{content: 'x';display: block;line-height: 0;margin-top: calc((var(--wv-parent-line-height) - 1em) / 2* -1 + .05em);visibility: hidden;}*/
+
+    /* 아이폰 인풋 확대 금지*/
+    /*input[type=text], textarea,.wv-ios-16 {*/
+    /*   zoom:1.2;*/
+    /*}*/
+
+}

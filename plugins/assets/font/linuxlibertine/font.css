@@ -1,0 +1,25 @@
+@charset "utf-8";
+
+.ff-Linux-Libertine{font-family: 'Linux Libertine', "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif}
+
+@font-face {
+    font-family: 'Linux Libertine'; /* regular */
+    src: url('./LinLibertine_R.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Linux Libertine'; /* semi bold */
+    src: url('./LinLibertine_RZ.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    font-weight: 600;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'Linux Libertine';  /* bold */
+    src: url('./LinLibertine_RB.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    font-weight: 700;
+    font-style: normal;
+}
+
+

@@ -1,0 +1,2367 @@
+<?php
+namespace weaver;
+require_once dirname(__FILE__) . '/StoreSchemaInterface.php';
+require_once dirname(__FILE__) . '/StoreSchemaBase.php';
+require_once dirname(__FILE__) . '/Store.php';
+require_once dirname(__FILE__) . '/StorePartProxy.php';
+
+use weaver\store_manager\StoreSchemaInterface;
+use weaver\store_manager\StoreSchemaBase;
+use weaver\store_manager\Store;
+use weaver\store_manager\StorePartProxy;
+
+class StoreManager extends Makeable{
+
+    protected $bo_table = '';
+    protected $board = null;
+
+    /** 업서트 허용 컬럼 (wr_id + 파트에서 합류) */
+    protected $allowed_columns = array('wr_id');
+
+    /** 바인딩된 스키마 파트 키 목록 */
+    protected $bound_schema_parts = array();
+
+    /** 파트 인스턴스 레지스트리: ['location' => object, ...] */
+    protected $parts = array();
+
+    protected $column_naming = 'auto_prefix'; // 'strict' 또는 'auto_prefix'
+    protected $meta_column = array('id'  ,'ord','delete' );
+    protected $file_meta_column = array('source' ,'path' ,'type','created_at' );
+    protected $file_arr_key = array('name' ,'type' ,'tmp_name','error','size' );
+    protected $colmap = array(); // ['location' => ['lat'=>'location_lat', ...], ...]
+
+    protected $list_db_runtime = null; // ['enabled'=>bool,'part'=>string,'wr_id'=>int,'schema'=>object]
+
+    /**
+     * ($id, $bo_table, array $schema_parts) 시그니처
+     * - Basic 파트는 항상 먼저 바인딩
+     */
+    public function __construct($id, $bo_table, $schema_parts = array()){
+        $this->bind_board($bo_table);
+        $this->ensure_base_table();
+
+        // Basic 자동 바인딩
+        $this->bind_schema('basic');
+
+        // 추가 파트 바인딩(중복 방지)
+        if (is_array($schema_parts) && count($schema_parts)) {
+            foreach ($schema_parts as $key) {
+                if (!in_array($key, $this->bound_schema_parts)) $this->bind_schema($key);
+            }
+        }
+    }
+
+    /** Makeable 훅(필요 시 1회 초기화) */
+    public function init_once(){}
+
+    /** g5_board 존재 확인 후 바인딩 */
+    public function bind_board($bo_table){
+        $row = $this->fetch_board_row($bo_table);
+        if (!$row) {
+            $this->error('존재하지 않는 게시판입니다. (bo_table=' . $bo_table . ')', 2);
+        }
+        $this->bo_table = $bo_table;
+        $this->board    = $row;
+    }
+
+    public function get_bo_table(){
+        return $this->bo_table;
+    }
+
+    public function get_board(){
+        return $this->board;
+    }
+
+    /** 확장 테이블명: {prefix}store_{bo_table} */
+    public function get_ext_table_name(){
+        $prefix = isset($this->table_prefix) ? $this->table_prefix : 'wv_';
+        return $prefix . 'store_' . $this->bo_table;
+    }
+
+    /** wr_id만 PK인 베이스 테이블 생성 */
+    public function ensure_base_table(){
+        $table = $this->get_ext_table_name();
+        $sql = "
+            CREATE TABLE IF NOT EXISTS `{$table}` (
+              `wr_id` INT(11) NOT NULL,
+              PRIMARY KEY (`wr_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ";
+        sql_query($sql, true);
+    }
+
+    /** 매직 접근자: wv()->store_manager->location */
+    protected function _custom_get($name){
+        if (isset($this->parts[$name])) return $this->parts[$name];
+        return null;
+    }
+
+    /**
+     * 스키마 파트 바인딩
+     * - 로딩 규칙: \weaver\store_manager\parts\{Ucfirst($key)}
+     * - StoreSchemaInterface 구현 필수
+     * - StoreSchemaBase 존재 시 컨텍스트 주입
+     * - 배열 저장 파트(array_part=true)는 {ext_table}_{part} 별도 테이블에 적용
+     */
+    public function bind_schema($key){
+        if (!strlen($key)) return $this;
+
+        $class = '\\weaver\\store_manager\\parts\\' . ucfirst($key);
+
+        // 베이스/인터페이스 로드 보장
+        $base = dirname(__FILE__) . '/StoreSchemaBase.php';
+        if (!class_exists('\\weaver\\store_manager\\StoreSchemaBase') && file_exists($base)) require_once $base;
+
+        // 파트 클래스 로컬 로드 (오토로드 실패 대비)
+        if (!class_exists($class)) {
+            $file = dirname(__FILE__) . '/parts/' . ucfirst($key) . '.php';
+            if (file_exists($file)) require_once $file;
+        }
+
+        if (!class_exists($class)) {
+            $this->error('스키마 파트 클래스를 찾을 수 없습니다. (key=' . $key . ', class=' . $class . ')', 2);
+        }
+
+        $schema = new $class();
+        if (!($schema instanceof \weaver\store_manager\StoreSchemaInterface)) {
+            $this->error('스키마 파트가 StoreSchemaInterface를 구현하지 않았습니다. (class=' . $class . ')', 2);
+        }
+
+        if (method_exists($schema, 'set_context')) {
+            $schema->set_context($this, $this->bo_table, $key, $this->plugin_theme_path);
+        }
+
+        // 논리 정의
+        $logical_cols = $schema->get_columns(); // ['lat'=>'DECIMAL...', 'name'=>'VARCHAR...']
+        $idxs         = $schema->get_indexes(); // [{name,type,cols:[논리명...]}]
+        $allowed_log  = $schema->get_allowed_columns();        // ['lat','name',...]
+
+        // 배열 저장 파트면: 별도 테이블 적용, base(ext)에는 반영하지 않음
+        if ($this->is_list_part_schema($schema)){
+            $this->apply_list_part_schema($key, $schema);
+            $this->parts[$key] = $schema;
+            if (!in_array($key, $this->bound_schema_parts)) $this->bound_schema_parts[] = $key;
+            return $this;
+        }
+
+        // 물리 변환 + 충돌 검사
+        $physical_cols = array();
+        $this->colmap[$key] = isset($this->colmap[$key]) ? $this->colmap[$key] : array();
+
+        foreach ($logical_cols as $lname => $ddl){
+            $pname = $this->physical_col($key, $lname);
+            if ($this->column_naming === 'strict') {
+                foreach ($this->colmap as $pk => $map){
+                    if ($pk !== $key && in_array($pname, $map)) {
+                        $this->error('컬럼 충돌: ' . $pname . ' (part=' . $key . ')', 2);
+                    }
+                }
+            }
+            $this->colmap[$key][$lname] = $pname;
+            $physical_cols[$pname] = $ddl;
+        }
+
+        // 인덱스의 컬럼명도 물리명으로 치환
+        $physical_idxs = array();
+        if (is_array($idxs)) {
+            foreach ($idxs as $ix){
+                $cols  = isset($ix['cols']) ? $ix['cols'] : array();
+                $pcols = array();
+                foreach ($cols as $c){
+                    $pcols[] = $this->get_physical_col($key, $c);
+                }
+                $ix['cols'] = $pcols;
+                if (!isset($ix['name']) || !strlen($ix['name'])) {
+                    $ix['name'] = $key . '_idx_' . implode('_', $pcols);
+                }
+                $physical_idxs[] = $ix;
+            }
+        }
+
+        // 테이블 적용은 물리 컬럼/인덱스 기준
+        $this->apply_columns($physical_cols);
+        $this->apply_indexes($physical_idxs);
+
+        // allowed_columns 는 물리 기준으로 병합
+        if (is_array($allowed_log) && count($allowed_log)) {
+            foreach ($allowed_log as $lname) {
+                $pname = $this->get_physical_col($key, $lname);
+                if (!in_array($pname, $this->allowed_columns)) $this->allowed_columns[] = $pname;
+            }
+        }
+
+
+        // 레지스트리 등록
+        $this->parts[$key] = $schema;
+        if (!in_array($key, $this->bound_schema_parts)) $this->bound_schema_parts[] = $key;
+
+        return $this;
+    }
+
+    /** 현재 바운드된 스키마 파트 키 목록 */
+    public function get_bound_schema_parts(){
+        return $this->bound_schema_parts;
+    }
+
+    /** 허용 컬럼 재계산(바운드된 파트 기준) */
+    public function rebuild_allowed_columns(){
+        $this->allowed_columns = array('wr_id');
+        foreach ($this->bound_schema_parts as $key) {
+            $class = '\\weaver\\store_manager\\parts\\' . ucfirst($key);
+            if (!class_exists($class)) {
+                $file = dirname(__FILE__) . '/parts/' . ucfirst($key) . '.php';
+                if (file_exists($file)) require_once $file;
+            }
+            if (!class_exists($class)) continue;
+            $schema = new $class();
+
+            // 목록 파트는 base ext 컬럼 허용 목록에 포함하지 않음
+            if ($this->is_list_part_schema($schema)) continue;
+
+            if (method_exists($schema, 'get_allowed_columns')) {
+                $allow = $schema->get_allowed_columns();
+                if (is_array($allow)) {
+                    foreach ($allow as $lname) {
+                        $pname = $this->get_physical_col($key, $lname);
+                        if (!in_array($pname, $this->allowed_columns)) $this->allowed_columns[] = $pname;
+                    }
+                }
+            }
+        }
+        return $this->allowed_columns;
+    }
+
+    /** 컬럼 적용 (MySQL5.6 → SHOW COLUMNS로 사전 체크) */
+    protected function apply_columns($columns){
+        if (!is_array($columns) || !count($columns)) return;
+
+        $table = $this->get_ext_table_name();
+        foreach ($columns as $col => $ddl) {
+            // 빈 DDL은 스킵(생성/허용 제외)
+            if (!is_string($ddl) || !strlen(trim($ddl))) continue;
+
+            if (!$this->table_has_column($table, $col)) {
+                $sql = "ALTER TABLE `{$table}` ADD COLUMN `{$col}` {$ddl}";
+                sql_query($sql, true);
+            } else {
+                // 타입/NULL/DEFAULT 차이 감지 → MODIFY
+                $current = $this->get_column_info($table, $col); // SHOW COLUMNS
+                if ($this->column_definition_differs($current, $ddl)) {
+                    $sql = "ALTER TABLE `{$table}` MODIFY COLUMN `{$col}` {$ddl}";
+                    sql_query($sql, true);
+                }
+            }
+        }
+    }
+
+    /** 인덱스 적용 */
+    protected function apply_indexes($indexes){
+        if (!is_array($indexes) || !count($indexes)) return;
+
+        $table = $this->get_ext_table_name();
+        foreach ($indexes as $ix) {
+            $name = isset($ix['name']) ? $ix['name'] : '';
+            $type = isset($ix['type']) ? strtoupper($ix['type']) : 'INDEX';
+            $cols = isset($ix['cols']) ? $ix['cols'] : array();
+            if (!strlen($name) || !is_array($cols) || !count($cols)) continue;
+
+            if (!$this->table_has_index($table, $name)) {
+                $qcols = array(); foreach ($cols as $c) { $qcols[] = '`' . $c . '`'; }
+                $sql = "ALTER TABLE `{$table}` ADD {$type} `{$name}` (" . implode(',', $qcols) . ")";
+                sql_query($sql, true);
+            }
+        }
+    }
+
+    /** 현재 확장 테이블 컬럼 목록 */
+    public function get_current_table_columns(){
+        $table = $this->get_ext_table_name();
+        $cols = array();
+        $res = sql_query("SHOW COLUMNS FROM `{$table}`");
+        while ($row = sql_fetch_array($res)) {
+            if (isset($row['Field'])) $cols[] = $row['Field'];
+        }
+        return $cols;
+    }
+
+    /**
+     * 스키마 차이 계산
+     * - defined: 파트들이 정의한 컬럼(= $this->allowed_columns)
+     * - current: 실제 테이블 컬럼
+     * @return array array('missing'=>[], 'extraneous'=>[])
+     */
+    public function get_schema_diff(){
+        $defined = array_values(array_unique($this->allowed_columns));
+        if (!in_array('wr_id', $defined)) $defined[] = 'wr_id';
+
+        $current = $this->get_current_table_columns();
+
+        $missing = array();
+        foreach ($defined as $c) {
+            if (!in_array($c, $current)) $missing[] = $c;
+        }
+
+        $extraneous = array();
+        foreach ($current as $c) {
+            if (!in_array($c, $defined) && $c !== 'wr_id') $extraneous[] = $c;
+        }
+
+        return array('missing' => $missing, 'extraneous' => $extraneous);
+    }
+
+    /**
+     * 컬럼 정리(삭제)
+     * - $columns_to_drop 비우면 현재 정의에 없는 컬럼(extraneous)을 모두 삭제
+     * - wr_id는 항상 보호
+     * @param array $columns_to_drop
+     * @return array 실제로 삭제된 컬럼 목록
+     */
+    public function prune_columns($columns_to_drop = array(), $include_list_parts = true){
+        $table = $this->get_ext_table_name();
+
+        // ==== 1) 기본 확장 테이블 정리(현행 유지) ====
+        if (!is_array($columns_to_drop) || !count($columns_to_drop)) {
+            $diff = $this->get_schema_diff(); // defined vs current
+            $columns_to_drop = isset($diff['extraneous']) ? $diff['extraneous'] : array();
+        }
+
+        $to_drop = array();
+        foreach ($columns_to_drop as $c) {
+            if ($c === 'wr_id') continue;
+            $to_drop[] = $c;
+        }
+
+        $dropped = array();
+        foreach ($to_drop as $col) {
+            if ($this->table_has_column($table, $col)) {
+                $sql = "ALTER TABLE `{$table}` DROP COLUMN `{$col}`";
+                sql_query($sql, true);
+                $dropped[] = $col;
+            }
+        }
+
+        // ==== 2) 목록 파트 테이블 정리(추가) ====
+        if ($include_list_parts && is_array($this->parts) && count($this->parts)) {
+            foreach ($this->parts as $part_key => $schema) {
+                // 목록 파트가 아니면 스킵
+                if (!$this->is_list_part_schema($schema)) continue;
+
+                // 해당 목록 파트의 정의/현재 컬럼 수집
+                $array_table = method_exists($this, 'get_list_table_name')
+                    ? $this->get_list_table_name($part_key)
+                    : ($this->get_ext_table_name().'_'.strtolower($part_key));
+
+                $current_cols = $this->get_current_list_table_columns($part_key);
+                if (!count($current_cols)) continue;
+
+                $defined = array(); // 파트가 정의한 "논리 컬럼명"
+                if (method_exists($schema, 'get_columns')) {
+                    $cols = (array)$schema->get_columns($this->bo_table);
+                    foreach ($cols as $lname => $ddl) {
+                        // 빈 DDL은 사실상 미사용 컬럼으로 취급(생성 안 됨) → 여기선 '정의'로 보지 않음
+                        if (!is_string($ddl) || !strlen(trim($ddl))) continue;
+                        $defined[] = $lname;
+                    }
+                }
+
+                // extraneous = 현재 - (reserved + 정의)
+                $reserved = array('id', 'wr_id','ord'); // 절대 삭제 금지
+                $defined_map = array(); foreach ($defined as $_c){ $defined_map[$_c] = true; }
+                $reserved_map = array(); foreach ($reserved as $_c){ $reserved_map[$_c] = true; }
+
+                $drop_list = array();
+                foreach ($current_cols as $cname) {
+                    if (isset($reserved_map[$cname])) continue;
+                    if (!isset($defined_map[$cname])) $drop_list[] = $cname;
+                }
+
+                foreach ($drop_list as $col) {
+                    if ($this->table_has_column($array_table, $col)) {
+                        $sql = "ALTER TABLE `{$array_table}` DROP COLUMN `{$col}`";
+                        sql_query($sql, true);
+                    }
+                }
+            }
+        }
+
+        return $dropped;
+    }
+
+    /** 현재 확장 테이블 인덱스 목록 반환 (PRIMARY 제외) */
+    public function get_current_table_indexes(){
+        $table = $this->get_ext_table_name();
+        $indexes = array();
+        $res = sql_query("SHOW INDEX FROM `{$table}`");
+        while ($row = sql_fetch_array($res)) {
+            if (!isset($row['Key_name'])) continue;
+            $name = $row['Key_name'];
+            if ($name === 'PRIMARY') continue;
+            if (!isset($indexes[$name])) $indexes[$name] = array();
+            if (isset($row['Column_name'])) $indexes[$name][] = $row['Column_name'];
+        }
+        return $indexes;
+    }
+
+    /** 모든 파트 정의 인덱스 합산 */
+    public function get_all_defined_indexes(){
+        $all = array();
+        foreach ($this->bound_schema_parts as $key) {
+            $class = '\\weaver\\store_manager\\parts\\' . ucfirst($key);
+            if (!class_exists($class)) {
+                $file = dirname(__FILE__) . '/parts/' . ucfirst($key) . '.php';
+                if (file_exists($file)) require_once $file;
+            }
+            if (!class_exists($class)) continue;
+            $schema = new $class();
+            if (method_exists($schema, 'get_indexes')) {
+                $ix = $schema->get_indexes($this->bo_table);
+                if (is_array($ix) && count($ix)) $all = array_merge($all, $ix);
+            }
+        }
+        return $all;
+    }
+
+    /**
+     * 인덱스 차이 계산
+     * - defined: 파트들이 정의한 인덱스 이름 집합
+     * - current: 실제 테이블 인덱스 이름 집합
+     */
+    public function get_index_diff($defined_indexes){
+        $defined_names = array();
+        if (is_array($defined_indexes)) {
+            foreach ($defined_indexes as $ix) {
+                if (isset($ix['name']) && strlen($ix['name'])) $defined_names[] = $ix['name'];
+            }
+        }
+
+        $current_map = $this->get_current_table_indexes();
+        $current_names = array_keys($current_map);
+
+        $missing = array();
+        foreach ($defined_names as $n) {
+            if (!in_array($n, $current_names)) $missing[] = $n;
+        }
+
+        $extraneous = array();
+        foreach ($current_names as $n) {
+            if (!in_array($n, $defined_names)) $extraneous[] = $n;
+        }
+
+        return array('missing' => $missing, 'extraneous' => $extraneous);
+    }
+
+    /**
+     * 인덱스 정리(삭제)
+     * - $index_names_to_drop 비우면 현재 정의에 없는 인덱스 전부 삭제
+     * - PRIMARY는 건드리지 않음
+     * @param array $index_names_to_drop
+     * @param array $defined_indexes 현재 정의(파트 합산) 배열
+     * @return array 실제로 삭제된 인덱스명 목록
+     */
+    public function prune_indexes($index_names_to_drop = array(), $defined_indexes = array()){
+        $table = $this->get_ext_table_name();
+
+        if (!is_array($index_names_to_drop) || !count($index_names_to_drop)) {
+            $diff = $this->get_index_diff($defined_indexes);
+            $index_names_to_drop = isset($diff['extraneous']) ? $diff['extraneous'] : array();
+        }
+
+        $dropped = array();
+        foreach ($index_names_to_drop as $name) {
+            if ($name === 'PRIMARY') continue;
+            if ($this->table_has_index($table, $name)) {
+                $sql = "ALTER TABLE `{$table}` DROP INDEX `{$name}`";
+                sql_query($sql, true);
+                $dropped[] = $name;
+            }
+        }
+        return $dropped;
+    }
+
+    /**
+     * 저장(set)
+     * - 폼이 part 중첩 배열 구조여도(set만으로) 처리되도록 내부 평탄화
+     * - wr_subject 비어오면 '/' 기본값 보정
+     * - wv_write_board() 호출 결과가 문자열(에러)이면 즉시 error()
+     * - 목록 파트(array_part=true)는 별도 테이블에 자동 저장
+     * @return int wr_id
+     */
+    public function set($data = array()){
+        $table = $this->get_ext_table_name();
+        if (!is_array($data)) $data = array();
+
+
+        // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
+        $existing_wr_id = isset($data['wr_id']) ? (int)$data['wr_id'] : 0;
+
+        if ($existing_wr_id <= 0) {
+            if (!isset($data['wr_subject']) || !strlen(trim($data['wr_subject']))) {
+                $data['wr_subject'] = '/';
+            }
+            $wr_id = $this->create_post_stub_and_get_wr_id($data);
+            $data['wr_id'] = $wr_id;
+            $existing_wr_id = $wr_id;
+        }else{
+            $data['w']='u';
+            $data['extend_data']['mb_id']=$data['mb_id'];
+            $this->create_post_stub_and_get_wr_id($data);
+        }
+        $wr_id = $existing_wr_id;
+
+        $prev_ext_row   = $existing_wr_id > 0 ? $this->fetch_store_row($existing_wr_id) : array();
+
+
+
+        // === 일반 파트: 배열/파일 필드 공통 처리 ===
+        if (is_array($this->parts) && count($this->parts)) {
+            foreach ($this->parts as $pkey => $schema) {
+
+                $allowed = $schema->get_allowed_columns();
+                $is_list_part = $this->is_list_part_schema($schema);
+                if ($is_list_part) {
+                    $allowed = array($pkey);
+                    $def = array_merge($schema->get_columns($this->bo_table),array_flip($this->meta_column));
+
+                    $def_cols = array(); foreach ($def as $cname => $_ddl){ $def_cols[$cname] = true; }
+
+                    $t   = $this->get_list_table_name($pkey);
+                    $wr  = (int)$existing_wr_id;
+
+                    $sel = array_unique(array_merge(array('id','wr_id'),$schema->get_allowed_columns()));
+
+                    $sql = "SELECT ".implode(',', array_map(function($c){ return '`'.$c.'`'; }, $sel))." FROM `{$t}` WHERE wr_id='{$wr}'";
+                    $rs = sql_query($sql);
+                    $list_part_rows = array();
+                    while($r = sql_fetch_array($rs)){
+                        $nr = array();
+                        foreach ($r as $key=>$val){
+                            $nr[$key]=wv_base64_decode_unserialize($val);
+                        }
+                        $list_part_rows[] = $nr;
+                     }
+
+                    $prev_ext_row[$pkey] = wv_base64_encode_serialize($list_part_rows);
+
+                    $list_part_form_array_intersect=array();
+                    foreach ($data[$pkey] as $i => $row) {
+
+                        $list_part_form_array_intersect[$i] = array_intersect_key($row, $def_cols);
+                    }
+                    $data[$pkey] = $list_part_form_array_intersect;
+
+                }
+
+
+                if (!is_array($allowed) || !count($allowed)) continue;
+                if (!isset($data[$pkey]) || !is_array($data[$pkey])) $data[$pkey] = array();
+
+
+
+                foreach ($allowed as $logical_col) {
+
+                    if (!isset($data[$pkey]) || !is_array($data[$pkey])) $data[$pkey] = array();
+
+                    if($logical_col==$pkey){
+                        $logical_col='';
+                        $data_pkey_logical_col = &$data[$pkey];
+
+                    }else{
+                        $data_pkey_logical_col = &$data[$pkey][$logical_col];
+                    }
+
+                    $file_upload_array = wv_parse_file_array_tree($pkey,$logical_col);
+
+
+                    if($file_upload_array){
+                        if(!isset($data_pkey_logical_col)){
+                            $data_pkey_logical_col=array();
+                        }
+
+                        $data_pkey_logical_col = wv_merge_by_key_recursive($data_pkey_logical_col,$file_upload_array);
+
+                    }
+
+
+                    $phys = $this->get_physical_col($pkey, $logical_col);
+
+                    $prev_serialized = isset($prev_ext_row[$phys]) ? $prev_ext_row[$phys] : '';
+
+                    $prev_decoded    = wv_base64_decode_unserialize($prev_serialized);
+
+                    wv_walk_by_ref_diff($data_pkey_logical_col,function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col) {
+
+
+
+                        if(!is_array($arr)){
+                            return false;
+                        }
+
+
+
+                        $parent_key = wv_array_last($node);
+                        $is_old_file = wv_array_has_all_keys($this->file_meta_column ,$arr2);
+                        $is_new_file = wv_array_has_all_keys($this->file_arr_key ,$arr);
+                        $int_key = is_numeric($parent_key);
+                        $is_new = ($int_key or $is_new_file) ;
+                        if(isset($arr['id']) and $arr['id']){
+                            $is_new=false;
+                        }
+                        $is_delete = isset($arr['delete']);
+
+
+
+
+                        if($is_delete and $is_new){
+                            alert('delete : id가 없습니다.');
+                        }
+                        if($is_new and $arr2['id']){
+                            alert('insert : key 중복생성');
+                        }
+                        if(!$is_new and $arr['id']!=$arr2['id']){
+                            alert('update : id 체크 오류');
+                        }
+
+                        $i=0;
+                        foreach ($arr as $k=>&$v){
+
+
+                            if(is_numeric($k) and  !$v['delete'] and array_filter($v)){
+                                $v['ord']=$i;
+                                $i++;
+                            }
+                        }
+
+                        if($is_new_file and !$is_delete){
+
+                            $save_result = $this->save_uploaded_files($arr,'weaver/store_manager/'.$this->bo_table.'/'.date('Ym'));
+                            foreach ($this->file_arr_key as $key) {
+                                unset($arr[$key]);
+                            }
+
+                            $arr = array_merge($arr,$save_result);
+                            if($is_old_file){
+                                $this->delete_physical_paths_safely(array($arr2['path']));
+                            }
+
+                        }
+
+
+
+
+                        if($is_new){
+                            if(!array_filter($arr)){
+                                $arr='';return false;
+                            }
+
+                            if(!$is_list_part or (($is_list_part and count($node)<2) === false)){
+                                $arr['id'] = uniqid().$parent_key;
+                            }
+                        }else{
+
+
+
+                            if($is_delete){
+
+                                wv_walk_by_ref_diff($arr,function (&$arr,$arr2,$node){
+                                    if(wv_array_has_all_keys($this->file_meta_column ,$arr2)){
+                                        $this->delete_physical_paths_safely(array($arr2['path']));
+                                    }
+                                },$arr2);
+
+                                if(!$is_list_part or (($is_list_part and count($node)<2) === false)){
+                                    $combined = 'unset($data_pkey_logical_col'. wv_array_to_text($node,"['","']").');';
+
+                                    @eval("$combined;");
+                                }
+                                return false;
+                            }else{
+                                if($is_old_file){
+                                    $arr = array_merge($arr2,$arr);
+                                }
+                            }
+
+                        }
+
+
+                    },$prev_decoded);
+                    if(is_array($data_pkey_logical_col) and !count($data_pkey_logical_col)){
+                        $data_pkey_logical_col = '';
+                    }
+
+
+                }
+
+
+                if ($is_list_part) {
+                    foreach ($data_pkey_logical_col as $row){
+                        if($row['id'] and $row['delete']){
+                            sql_query("DELETE FROM `{$t}` WHERE wr_id='".intval($wr)."' AND id='".intval($row['id'])."'");
+                            continue;
+                        }
+
+                        $sets = array();
+
+
+                        $sets['ord'] = sql_escape_string((string)$row['ord']);
+
+                        foreach ($def_cols as $col => $_u){
+                            if ($col==='id'  ) continue;
+                            if(is_array($row[$col])){
+                                $row[$col] = wv_base64_encode_serialize($row[$col]);
+                            }
+                            $sets[$col] = sql_escape_string($row[$col]);
+                        }
+                        if($row['id']){
+                            sql_query("UPDATE `{$t}` SET ".wv_array_to_sql_set($sets)." WHERE id='".intval($row['id'])."' AND wr_id='".intval($wr)."'", true);
+                        }elseif(array_filter($row)){
+                            $sets['wr_id'] = $wr;
+
+                            sql_query("INSERT INTO `{$t}` SET ".wv_array_to_sql_set($sets), true);
+                        }
+
+                    }
+                }
+            }
+        }
+
+
+
+        // === 평면화: 일반 파트만 물리 컬럼으로 펼치고 part 키 제거(목록 파트 제외) ===
+        if (count($this->parts)) {
+            foreach ($this->parts as $key => $schema) {
+                if (!isset($data[$key]) || !is_array($data[$key])) continue;
+                if ($this->is_list_part_schema($schema)) continue;
+
+                foreach ($data[$key] as $k => $v) {
+                    $phys = $this->get_physical_col($key, $k);
+                    if (!array_key_exists($phys, $data)) $data[$phys] = $v;
+                }
+                unset($data[$key]);
+            }
+        }
+
+
+
+
+        // === 확장테이블 업서트(허용 컬럼만) ===
+        $filtered = array('wr_id' => $wr_id);
+        foreach ($data as $k => $v) {
+            if (in_array($k, $this->allowed_columns)) $filtered[$k] = $v;
+        }
+
+        if (count($filtered) > 1) {
+            $cols = array(); $vals = array(); $updates = array();
+            foreach ($filtered as $k => $v) {
+                $cols[] = "`{$k}`";
+                if(is_array($v)){
+                    $v=wv_base64_encode_serialize($v);
+                }
+
+                if ($v === null || (is_string($v) && strtoupper($v) === 'NULL')) {
+                    $vals[] = "NULL";
+                    if ($k !== 'wr_id') $updates[] = "`{$k}`=NULL";
+                } else {
+                    $vals[] = "'" . sql_escape_string($v) . "'";
+                    if ($k !== 'wr_id') $updates[] = "`{$k}`=VALUES(`{$k}`)";
+                }
+            }
+
+            $sql = "INSERT INTO `{$table}` (".implode(',', $cols).") VALUES (".implode(',', $vals).")
+                ON DUPLICATE KEY UPDATE ".(count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
+
+            sql_query($sql, true);
+        }
+
+        // === 목록 파트 저장 ===
+
+
+        return $wr_id;
+    }
+
+
+    /** 단건 조회 → Store 객체 (write + ext row 동시 보유) */
+    public function get($wr_id){
+        $wr_id = (int)$wr_id;
+
+        // write/ext 먼저 로드
+        $write_row = $this->fetch_write_row($wr_id);
+        $ext_row   = $this->fetch_store_row($wr_id);
+        if (!isset($write_row['wr_id'])) $write_row['wr_id'] = $wr_id;
+        if (!isset($ext_row['wr_id']))   $ext_row['wr_id']   = $wr_id;
+
+        // 컨테이너
+        $store = new Store($this, $wr_id, $write_row, $ext_row);
+
+        // 목록 파트 데이터 미리 모으기
+        $ap = $this->fetch_list_part_rows_for_wr_ids(array($wr_id));
+
+        // ✅ 모든 파트(일반 + 목록) 프록시로 감싸기
+        foreach ($this->parts as $pkey => $schema) {
+            $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $ext_row, $pkey);
+            if ($this->is_list_part_schema($schema)) {
+                $proxy->list = isset($ap[$pkey][$wr_id]) ? $ap[$pkey][$wr_id] : array();
+            }
+            $store->$pkey = $proxy;
+        }
+
+        return $store;
+    }
+
+    public function get_parts(){
+        return $this->parts; // bind_schema에서 채운 parts 배열
+    }
+
+    /** 삭제 */
+    public function delete($wr_id){
+        $table = $this->get_ext_table_name();
+        $wr_id = (int)$wr_id;
+        $sql = "DELETE FROM `{$table}` WHERE wr_id = {$wr_id}";
+        sql_query($sql, true);
+        return true;
+    }
+
+    /** 유틸: 컬럼 존재 여부 */
+    protected function table_has_column($table, $column){
+        $sql = "SHOW COLUMNS FROM `{$table}` LIKE '" . sql_escape_string($column) . "'";
+        $row = sql_fetch($sql);
+        return $row ? true : false;
+    }
+
+    /** 유틸: 인덱스 존재 여부 */
+    protected function table_has_index($table, $index_name){
+        $sql = "SHOW INDEX FROM `{$table}` WHERE Key_name = '" . sql_escape_string($index_name) . "'";
+        $row = sql_fetch($sql);
+        return $row ? true : false;
+    }
+
+    /** g5_board 조회 */
+    protected function fetch_board_row($bo_table){
+        global $g5;
+        $table = isset($g5['board_table']) ? $g5['board_table'] : G5_TABLE_PREFIX . 'board';
+        $sql = "SELECT * FROM {$table} WHERE bo_table = '{$bo_table}' LIMIT 1";
+        $row = sql_fetch($sql);
+        return $row ? $row : null;
+    }
+
+    /**
+     * 게시글 자동 생성 스텁
+     * - common.lib.php의 wv_write_board() 호출
+     * - 성공 시 wr_id 정수 리턴, 실패 시 error()
+     */
+    protected function create_post_stub_and_get_wr_id($data=array()){
+        if (!function_exists('wv_write_board')) {
+            $this->error('wv_write_board 함수를 찾을 수 없습니다.', 2);
+        }
+        $wr_id = wv_write_board($this->bo_table, $data);
+        if ((int)$wr_id == false) {
+            $this->error($wr_id, 2);
+        }
+        return (int)$wr_id;
+    }
+
+    public function get_write_table_name(){
+        global $g5;
+        $write_table = isset($g5['write_prefix']) ? $g5['write_prefix'].$this->bo_table : G5_TABLE_PREFIX.'write_'.$this->bo_table;
+        return $write_table;
+    }
+
+    public function fetch_write_row($wr_id){
+        $wr_id = (int)$wr_id;
+        if ($wr_id <= 0) return array();
+        $table = $this->get_write_table_name();
+        $sql = "SELECT * FROM `{$table}` WHERE wr_id = {$wr_id} LIMIT 1";
+        $row = sql_fetch($sql);
+        return $row ? $row : array();
+    }
+
+    public function fetch_store_row($wr_id){
+        $wr_id = (int)$wr_id;
+        if ($wr_id <= 0) return array();
+        $table = $this->get_ext_table_name();
+        $sql = "SELECT * FROM `{$table}` WHERE wr_id = {$wr_id} LIMIT 1";
+        $row = sql_fetch($sql);
+        return $row ? $row : array('wr_id' => $wr_id);
+    }
+
+    public function physical_col($part_key, $logical){
+        if($logical==''){
+            return $part_key;
+        }
+        if ($this->column_naming === 'auto_prefix') return $part_key . '_' . $logical;
+        return $logical; // strict일 땐 그대로(충돌 감지)
+    }
+
+    public function get_physical_col($part_key, $logical){
+        return isset($this->colmap[$part_key][$logical]) ? $this->colmap[$part_key][$logical] : $this->physical_col($part_key, $logical);
+    }
+
+    public function get_part_allowed_physical($part_key){
+        return isset($this->colmap[$part_key]) ? array_values($this->colmap[$part_key]) : array();
+    }
+
+    protected function get_column_info($table, $col){
+        $row = sql_fetch("SHOW COLUMNS FROM `{$table}` LIKE '".sql_escape_string($col)."'");
+        return $row ? $row : null; // keys: Field, Type, Null, Key, Default, Extra
+    }
+
+    protected function column_definition_differs($cur, $ddl){
+        if (!$cur) return true;
+
+        // cur: ['Type'=>'varchar(255)','Null'=>'YES','Default'=>null,'Extra'=>...]
+        $cur_type = isset($cur['Type']) ? strtolower(trim($cur['Type'])) : '';
+        $cur_null = isset($cur['Null']) ? strtoupper(trim($cur['Null'])) : 'YES';
+        $cur_defv = array_key_exists('Default', $cur) ? $cur['Default'] : null;
+
+        $ddl_norm = strtoupper(preg_replace('/\s+/', ' ', trim($ddl)));
+
+        // 기대 타입 추출 (예: VARCHAR(255), DECIMAL(10,7))
+        if (preg_match('/^\s*([A-Z0-9_]+(?:\(\s*\d+(?:\s*,\s*\d+)?\s*\))?)/i', $ddl, $m)) {
+            $exp_type = strtolower($m[1]);
+        } else {
+            $exp_type = '';
+        }
+
+        // NULL 허용 여부
+        $exp_null_yes = (strpos($ddl_norm, 'NOT NULL') === false); // NOT NULL 없으면 YES로 간주
+
+        // DEFAULT NULL 명시 여부
+        $exp_def_null = (strpos($ddl_norm, 'DEFAULT NULL') !== false);
+
+        // 비교(느슨한): 타입, NULL 여부, DEFAULT NULL
+        if ($exp_type && $cur_type !== $exp_type) return true;
+        if (($cur_null === 'YES') !== $exp_null_yes) return true;
+
+        if ($exp_def_null) {
+            if ($cur_defv !== null) return true;
+        }
+
+        return false;
+    }
+
+    public function get_list($opts = array()){
+        global $g5;
+
+        $bo_table = isset($this->bo_table) ? $this->bo_table : '';
+        if(!$bo_table){
+            return array('list'=>array(), 'total_count'=>0, 'total_page'=>0, 'page'=>1, 'page_rows'=>0, 'from_record'=>0);
+        }
+
+        // 옵션 기본값
+        $defaults = array(
+            'page'       => 1,
+            'rows'       => 20,
+            'where'      => array(),
+            'where_w'    => array(),
+            'where_s'    => array(),
+            'select_w'   => 'w.*',
+            'select_s'   => 'auto',
+            'order_by'   => 'w.wr_id DESC',
+            'nest_parts' => true,
+            // JOIN 옵션 (단일 or 배열의 배열)
+            'join'       => array()
+        );
+        foreach($defaults as $k=>$v){
+            if(!isset($opts[$k])) $opts[$k] = $v;
+        }
+
+        $page     = (int)$opts['page']; if($page < 1) $page = 1;
+        $rows     = (int)$opts['rows']; if($rows < 1) $rows = 20;
+        $select_w = trim($opts['select_w']);
+        $select_s_opt = trim($opts['select_s']);
+        $order_by = trim($opts['order_by']);
+        $nest     = (bool)$opts['nest_parts'];
+
+        // 테이블명
+        $write_table = $this->get_write_table_name();
+        $base_table  = $this->get_ext_table_name();
+
+        // WHERE 생성(공통/개별 write/base)
+        $where_all = array();
+
+        if($opts['where']){
+            if(is_array($opts['where'])){
+                foreach($opts['where'] as $w){
+                    $w = trim($w);
+                    if($w !== '') $where_all[] = '(' . $w . ')';
+                }
+            }else{
+                $w = trim($opts['where']);
+                if($w !== '') $where_all[] = '(' . $w . ')';
+            }
+        }
+
+        // write 전용 WHERE
+        if($opts['where_w']){
+            if(is_array($opts['where_w'])){
+                foreach($opts['where_w'] as $w){
+                    $w = trim($w);
+                    if($w !== '') $where_all[] = '( ' . $this->qualify_where($w, 'w') . ' )';
+                }
+            }else{
+                $w = trim($opts['where_w']);
+                if($w !== '') $where_all[] = '( ' . $this->qualify_where($w, 'w') . ' )';
+            }
+        }
+
+        // base 전용 WHERE
+        if($opts['where_s']){
+            if(is_array($opts['where_s'])){
+                foreach($opts['where_s'] as $w){
+                    $w = trim($w);
+                    if($w !== '') $where_all[] = '( ' . $this->qualify_where($w, 's') . ' )';
+                }
+            }else{
+                $w = trim($opts['where_s']);
+                if($w !== '') $where_all[] = '( ' . $this->qualify_where($w, 's') . ' )';
+            }
+        }
+
+        // 목록 파트 WHERE: where_{part} 옵션 처리 (EXISTS)
+        if(is_array($this->parts) && count($this->parts)){
+            foreach($this->parts as $pkey => $schema){
+                if(!$this->is_list_part_schema($schema)) continue;
+                $opt_key = 'where_'.strtolower($pkey);
+                if(!isset($opts[$opt_key])) continue;
+
+                $conds = $opts[$opt_key];
+                $tbl = $this->get_list_table_name($pkey);
+
+                // 파트 컬럼 정의에서 기본 타겟 추정 (name 우선)
+                $def = $schema->get_columns($this->bo_table);
+                $target_col = isset($def['name']) ? 'name' : (count($def)?key($def):'');
+
+                if(is_string($conds) && strlen(trim($conds)) && $target_col){
+                    $k = sql_escape_string(trim($conds));
+                    $where_all[] = "EXISTS (SELECT 1 FROM `{$tbl}` t WHERE t.wr_id = w.wr_id AND t.`{$target_col}` LIKE '%{$k}%')";
+                }else if(is_array($conds)){
+                    // 간단 DSL: contains / contains_all / eq / gte / lte
+                    if(isset($conds['contains'])){
+                        $vals = is_array($conds['contains']) ? $conds['contains'] : array($conds['contains']);
+                        foreach($vals as $v){
+                            $v = sql_escape_string(trim($v));
+                            if($v === '' || !$target_col) continue;
+                            $where_all[] = "EXISTS (SELECT 1 FROM `{$tbl}` t WHERE t.wr_id = w.wr_id AND t.`{$target_col}` LIKE '%{$v}%')";
+                        }
+                    }
+                    if(isset($conds['contains_all']) && is_array($conds['contains_all'])){
+                        foreach($conds['contains_all'] as $v){
+                            $v = sql_escape_string(trim($v));
+                            if($v === '' || !$target_col) continue;
+                            $where_all[] = "EXISTS (SELECT 1 FROM `{$tbl}` t WHERE t.wr_id = w.wr_id AND t.`{$target_col}` LIKE '%{$v}%')";
+                        }
+                    }
+                    if(isset($conds['eq']) && is_array($conds['eq'])){
+                        foreach($conds['eq'] as $col => $val){
+                            $col = preg_replace('/[^A-Za-z0-9_]/','',$col);
+                            $val = sql_escape_string($val);
+                            if($col === '') continue;
+                            $where_all[] = "EXISTS (SELECT 1 FROM `{$tbl}` t WHERE t.wr_id = w.wr_id AND t.`{$col}` = '{$val}')";
+                        }
+                    }
+                    if(isset($conds['gte']) && is_array($conds['gte'])){
+                        foreach($conds['gte'] as $col => $val){
+                            $col = preg_replace('/[^A-Za-z0-9_]/','',$col);
+                            $n = (int)$val;
+                            if($col === '') continue;
+                            $where_all[] = "EXISTS (SELECT 1 FROM `{$tbl}` t WHERE t.wr_id = w.wr_id AND t.`{$col}` >= '{$n}')";
+                        }
+                    }
+                    if(isset($conds['lte']) && is_array($conds['lte'])){
+                        foreach($conds['lte'] as $col => $val){
+                            $col = preg_replace('/[^A-Za-z0-9_]/','',$col);
+                            $n = (int)$val;
+                            if($col === '') continue;
+                            $where_all[] = "EXISTS (SELECT 1 FROM `{$tbl}` t WHERE t.wr_id = w.wr_id AND t.`{$col}` <= '{$n}')";
+                        }
+                    }
+                }
+            }
+        }
+
+        $where_sql = $where_all ? implode(' AND ', $where_all) : '1';
+
+        // --- JOIN 처리 시작 ---
+        $default_joins = array(
+            // 항상 멤버 조인 (on 컬럼명만 주면 w.{col} = alias.{col})
+            array(
+                'table'  => $g5['member_table'],
+                'on'     => 'mb_id',
+                'select' => 'jm.mb_name, jm.mb_level',
+                'type'   => 'LEFT',
+                'as'     => 'jm'
+            )
+        );
+
+        // 사용자 조인 정규화
+        $user_joins = array();
+        if (isset($opts['join'])) {
+            if (is_array($opts['join'])) {
+                if (isset($opts['join']['table'])) {
+                    $user_joins = array($opts['join']);
+                } else if (isset($opts['join'][0]) && is_array($opts['join'][0])) {
+                    $user_joins = $opts['join'];
+                }
+            }
+        }
+
+        $joins = array_merge($default_joins, $user_joins);
+
+        $join_sql = '';
+        $join_selects = array();
+        $join_alias_count = 0;
+
+        // 캐시
+        static $join_columns_cache = array();
+
+        foreach($joins as $j){
+            $join_alias_count++;
+
+            $j_table = isset($j['table']) ? $j['table'] : '';
+            if ($j_table === '') continue;
+
+            $j_type = isset($j['type']) ? strtoupper(trim($j['type'])) : 'LEFT';
+            if ($j_type !== 'LEFT' && $j_type !== 'INNER' && $j_type !== 'RIGHT') $j_type = 'LEFT';
+
+            $j_as = isset($j['as']) && $j['as'] !== '' ? $j['as'] : ('j'.$join_alias_count);
+
+            // on 처리
+            $j_on = '';
+            if (isset($j['on']) && trim($j['on']) !== '') {
+                $on_val = trim($j['on']);
+                if (strpos($on_val, '=') !== false) {
+                    $j_on = $on_val;
+                } else {
+                    $j_on = 'w.'.$on_val.' = '.$j_as.'.'.$on_val;
+                }
+            } else if (isset($j['on_col']) && trim($j['on_col']) !== '') {
+                $col  = trim($j['on_col']);
+                $j_on = 'w.'.$col.' = '.$j_as.'.'.$col;
+            }
+            if ($j_on === '') continue;
+
+            // select 처리
+            if (isset($j['select']) && trim($j['select']) !== '') {
+                $sel = trim($j['select']);
+
+                // 1) '*' 단독이면 컬럼을 전개하면서 alias_col 로 별칭
+                if ($sel === '*') {
+                    if (!isset($join_columns_cache[$j_table])) {
+                        $cols = array();
+                        $rs = sql_query("SHOW COLUMNS FROM {$j_table}");
+                        while ($c = sql_fetch_array($rs)) {
+                            if (isset($c['Field'])) $cols[] = $c['Field'];
+                            else if (isset($c[0]))   $cols[] = $c[0];
+                        }
+                        $join_columns_cache[$j_table] = $cols;
+                    }
+                    $cols = $join_columns_cache[$j_table];
+                    foreach ($cols as $_c) {
+                        $join_selects[] = $j_as.'.'.$_c.' AS '.$j_as.'_'.$_c;
+                    }
+
+                } else if (strpos($sel, ',') !== false) {
+                    // 2) 콤마 구분 나열이면 각 토큰을 안전하게 전개
+                    $tokens = explode(',', $sel);
+                    foreach ($tokens as $tok) {
+                        $tok = trim($tok);
+                        if ($tok === '') continue;
+
+                        // 이미 AS 있으면 그대로
+                        if (stripos($tok, ' as ') !== false) {
+                            $join_selects[] = $tok;
+                            continue;
+                        }
+                        // 점이 없으면 alias와 안전 별칭 부여
+                        if (strpos($tok, '.') === false) {
+                            $join_selects[] = $j_as.'.'.$tok.' AS '.$j_as.'_'.$tok;
+                        } else {
+                            $parts = explode('.', $tok, 2);
+                            if (count($parts) === 2) {
+                                $join_selects[] = $tok.' AS '.$parts[0].'_'.$parts[1];
+                            } else {
+                                $join_selects[] = $tok;
+                            }
+                        }
+                    }
+
+                } else {
+                    // 3) 단일 토큰
+                    if (stripos($sel, ' as ') !== false) {
+                        $join_selects[] = $sel;
+                    } else if (strpos($sel, '.') === false) {
+                        $join_selects[] = $j_as.'.'.$sel.' AS '.$j_as.'_'.$sel;
+                    } else {
+                        $parts = explode('.', $sel, 2);
+                        if (count($parts) === 2) {
+                            $join_selects[] = $sel.' AS '.$parts[0].'_'.$parts[1];
+                        } else {
+                            $join_selects[] = $sel;
+                        }
+                    }
+                }
+            }
+
+            $join_sql .= " {$j_type} JOIN {$j_table} {$j_as} ON ({$j_on}) ";
+        }
+        // --- JOIN 처리 끝 ---
+
+        // 전체 카운트 (JOIN 반영)
+        $sql_cnt =
+            " SELECT COUNT(*) AS cnt
+          FROM {$write_table} AS w
+          LEFT JOIN {$base_table} AS s ON s.wr_id = w.wr_id
+          {$join_sql}
+          WHERE {$where_sql} ";
+        $row_cnt = sql_fetch($sql_cnt);
+        $total_count = isset($row_cnt['cnt']) ? (int)$row_cnt['cnt'] : 0;
+
+        $total_page = $rows > 0 ? (int)ceil($total_count / $rows) : 0;
+        if($total_page > 0 && $page > $total_page) $page = $total_page;
+        $from_record = ($page - 1) * $rows; if($from_record < 0) $from_record = 0;
+
+        // 확장테이블 선택 컬럼 산출 (select_s='auto' 또는 's.*' 또는 빈 문자열일 때)
+        $ext_select_cols = array();
+        $select_s = '';
+        if($select_s_opt === '' || $select_s_opt === 'auto' || strtolower($select_s_opt) === 's.*'){
+            // 1) 실제 존재하는 확장테이블 컬럼
+            $existing = $this->get_current_table_columns();
+            $existing_map = array();
+            foreach($existing as $c){ $existing_map[$c] = true; }
+
+            // 2) 파트가 정의한 물리컬럼(빈 DDL은 테이블에 없으므로 1)과 교집합 해야 함)
+            $phys_map = array();
+            if (is_array($this->colmap)){
+                foreach($this->colmap as $part_key => $map){
+                    if (!is_array($map)) continue;
+                    foreach($map as $lname => $pname){
+                        if (is_string($pname) && strlen($pname)) $phys_map[$pname] = true;
+                    }
+                }
+            }
+
+            // 3) 교집합 만들기 + wr_id 제외
+            foreach($phys_map as $pcol => $_){
+                if ($pcol === 'wr_id') continue;
+                if (isset($existing_map[$pcol])) $ext_select_cols[] = $pcol;
+            }
+
+            if (count($ext_select_cols)){
+                $tmp = array();
+                foreach ($ext_select_cols as $c) $tmp[] = 's.'.$c;
+                $select_s = implode(', ', $tmp);
+            } else {
+                $select_s = '';
+            }
+        } else {
+            $select_s = $select_s_opt; // 사용자가 직접 지정한 select_s 사용
+        }
+
+        // SELECT
+        if($select_w === '') $select_w = 'w.*';
+        $select_sql = $select_w;
+        if ($select_s !== '') $select_sql .= ', '.$select_s;
+
+        // 조인 select 추가
+        if(count($join_selects)){
+            $select_sql .= ', '.implode(', ', $join_selects);
+        }
+
+        $order_sql = $order_by !== '' ? " ORDER BY {$order_by} " : '';
+        $limit_sql = $rows > 0 ? " LIMIT {$from_record}, {$rows} " : '';
+
+        $sql =
+            " SELECT {$select_sql}
+          FROM {$write_table} AS w
+          LEFT JOIN {$base_table} AS s ON s.wr_id = w.wr_id
+          {$join_sql}
+          WHERE {$where_sql} {$order_sql} {$limit_sql} ";
+
+        $q = sql_query($sql);
+        $list = array();
+
+        // 중첩 대상 맵 (선택된 확장 컬럼만 우선 사용, 없으면 테이블 전체 컬럼으로 fallback)
+        $ext_cols_map = array();
+        if ($nest){
+            if (count($ext_select_cols)){
+                foreach ($ext_select_cols as $c) $ext_cols_map[$c] = true;
+            } else {
+                $ext_cols = $this->get_current_table_columns();
+                foreach ($ext_cols as $c) $ext_cols_map[$c] = true;
+            }
+        }
+
+        while ($r = sql_fetch_array($q)) {
+            $row = $r;
+
+            // 1) 평면 → 중첩 (목록 파트는 제외)
+            if ($nest && is_array($this->parts) && count($this->parts)) {
+                foreach ($this->parts as $pkey => $schema) {
+                    if ($this->is_list_part_schema($schema)) continue; // 목록 파트는 별도 테이블
+                    $allowed = method_exists($schema, 'get_allowed_columns') ? (array)$schema->get_allowed_columns() : array();
+                    if (!count($allowed)) continue;
+
+                    if (!isset($row[$pkey]) || !is_array($row[$pkey])) $row[$pkey] = array();
+
+                    foreach ($allowed as $lname) {
+                        $pname = $this->get_physical_col($pkey, $lname);
+                        if (array_key_exists($pname, $row)) {
+                            $row[$pkey][$lname] = $row[$pname];
+                            unset($row[$pname]); // 상위 평면 키 제거
+                        }
+                    }
+                }
+            }
+
+            // 2) b64s 디코드 (중첩 컬럼에 한정)
+            if ($nest && is_array($this->parts) && count($this->parts)) {
+                foreach ($this->parts as $pkey => $schema) {
+                    if (!isset($row[$pkey]) || !is_array($row[$pkey])) continue;
+                    foreach ($row[$pkey] as $_k => $_v) {
+                        if (is_string($_v) && $_v !== '' && method_exists($this, 'decode_b64s')) {
+                            $try = $this->decode_b64s($_v);
+                            if (is_array($try)) $row[$pkey][$_k] = $try;
+                        }
+                    }
+                }
+            }
+
+            $this->inject_value_maps_into_row($row);
+            $list[] = $row;
+        }
+
+// --- 목록 파트 주입: $row['menu'] = [ {...}, {...} ] ---
+        if(count($list) && is_array($this->parts) && count($this->parts)){
+            $wr_ids = array();
+            foreach($list as $r){
+                if(isset($r['wr_id'])) $wr_ids[] = (int)$r['wr_id'];
+            }
+            $ap = $this->fetch_list_part_rows_for_wr_ids($wr_ids);
+            if(is_array($ap) && count($ap)){
+                foreach($list as $i => $r){
+                    $wid = isset($r['wr_id']) ? (int)$r['wr_id'] : 0;
+                    if($wid <= 0) continue;
+                    foreach($this->parts as $pkey=>$schema){
+                        if(!$this->is_list_part_schema($schema)) continue;
+                        $list[$i][$pkey] = isset($ap[$pkey][$wid]) ? $ap[$pkey][$wid] : array();
+                    }
+                }
+            }else{
+                foreach($list as $i => $r){
+                    foreach($this->parts as $pkey=>$schema){
+                        if($this->is_list_part_schema($schema) && !isset($list[$i][$pkey])) $list[$i][$pkey] = array();
+                    }
+                }
+            }
+        }
+// --- 목록 파트 주입 끝 ---
+
+        return array(
+            'list'         => $list,
+            'total_count'  => $total_count,
+            'total_page'   => $total_page,
+            'page'         => $page,
+            'page_rows'    => $rows,
+            'from_record'  => $from_record,
+            'write_table'  => $write_table,
+            'base_table'   => $base_table,
+            'sql'          => $sql,
+            'sql_count'    => $sql_cnt
+        );
+    }
+
+    /**
+     * WHERE 보조: "field = 'x'" 같은 조각에 별칭 접두어를 안전하게 붙임
+     * 예) qualify_where("wr_id > 0", "w") → "w.wr_id > 0"
+     * 매우 단순한 방식이라, 복잡한 SQL에는 직접 별칭을 명시하는 것을 권장
+     */
+    protected function qualify_where($expr, $alias){
+        $expr = preg_replace('/\b(wr_id|mb_id|wr_datetime|wr_subject|wr_hit|wr_good|wr_nogood|wr_comment)\b/', $alias.'.$1', $expr);
+        return $expr;
+    }
+
+    protected function get_ext_select_columns($exclude_cols = array()){
+        // 1) 실제 존재하는 확장테이블 컬럼
+        $existing = $this->get_current_table_columns();
+        $existing_map = array();
+        foreach($existing as $c){ $existing_map[$c] = true; }
+
+        // 2) 파트가 정의한 물리컬럼 합집합 (bind_schema()에서 $this->colmap 채워짐)
+        $phys_map = array();
+        if (is_array($this->colmap)){
+            foreach($this->colmap as $part => $map){
+                if (!is_array($map)) continue;
+                foreach($map as $lname => $pname){
+                    if (is_string($pname) && strlen($pname)) $phys_map[$pname] = true;
+                }
+            }
+        }
+
+        // 3) 교집합 만들기
+        $cols = array();
+        foreach($phys_map as $pcol => $_){
+            if (isset($existing_map[$pcol])) $cols[] = $pcol;
+        }
+
+        // 4) 제외 처리 (wr_id 등)
+        if (is_array($exclude_cols) && count($exclude_cols)){
+            $ex = array(); foreach($exclude_cols as $e){ $ex[$e] = true; }
+            $filtered = array();
+            foreach($cols as $c){ if (!isset($ex[$c])) $filtered[] = $c; }
+            $cols = $filtered;
+        }
+
+        return $cols;
+    }
+
+    // StoreManager 안에 추가
+    public function render_part($part_key, $wr_id = 0, $context = 'form', $vars = array()){
+        $part_key = trim($part_key);
+        if (!isset($this->parts[$part_key])) return '';
+        $skin_id = wv_make_skin_id();
+        $skin_selector = wv_make_skin_selector($skin_id);
+        // skin root
+        $root = ($this->plugin_theme_path ? rtrim($this->plugin_theme_path, '/') : rtrim(dirname(__FILE__).'/theme/basic/pc', '/'));
+        if (!$root) { // 혹시라도 null/빈문자면 기본 경로로
+            $root = rtrim(dirname(__FILE__).'/theme/basic/pc', '/');
+        }
+
+// 외부에서 skin_root 지정시 우선
+        if (is_array($vars) && !empty($vars['skin_root'])) {
+            $root = rtrim($vars['skin_root'], '/');
+        }
+
+        // 기본 row 구성
+        $row = array();
+        if ($wr_id) {
+            $write_row = $this->fetch_write_row($wr_id);
+            $ext_row   = $this->fetch_store_row($wr_id);
+            if (!isset($write_row['wr_id'])) $write_row['wr_id'] = (int)$wr_id;
+            if (!isset($ext_row['wr_id']))   $ext_row['wr_id']   = (int)$wr_id;
+            $row = array_merge($write_row, $ext_row);
+        }
+
+
+        $schema = $this->parts[$part_key];
+
+        // 목록 파트라면 리스트 주입
+        $list = array();
+        $rows = array();
+        if ($this->is_list_part_schema($schema)) {
+            $row[$part_key] = $this->get_list_part_list($wr_id, $part_key);
+            $list = $row[$part_key];
+            $rows = $row[$part_key];
+        }
+
+        // $only / $fields (기존 체인 호환)
+        $only = array();
+        if (is_array($vars) && isset($vars['only'])) {
+            $only = is_array($vars['only']) ? $vars['only'] : array($vars['only']);
+        } else if (is_array($vars) && isset($vars['fields'])) {
+            $only = is_array($vars['fields']) ? $vars['fields'] : array($vars['fields']);
+        }
+        // 문자열만 남기기
+        $tmp = array();
+        foreach ($only as $_v) { if (is_string($_v) && $_v !== '') $tmp[] = $_v; }
+        $only = $tmp;
+
+        // 일반 파트면: 평면 -> 중첩 + b64s 디코드
+        if (!$this->is_list_part_schema($schema)) {
+            if (!isset($row[$part_key]) || !is_array($row[$part_key])) $row[$part_key] = array();
+
+            if (method_exists($schema, 'get_allowed_columns')) {
+                $allowed = (array)$schema->get_allowed_columns();
+                foreach ($allowed as $lname) {
+                    $pname = $this->get_physical_col($part_key, $lname);
+                    if (array_key_exists($pname, $row)) {
+                        $row[$part_key][$lname] = $row[$pname];
+                        unset($row[$pname]);
+                    }
+                }
+            }
+            foreach ($row[$part_key] as $_k => $_v) {
+                if (is_string($_v) && $_v !== '' && method_exists($this, 'decode_b64s')) {
+                    $try = $this->decode_b64s($_v);
+                    if (is_array($try)) $row[$part_key][$_k] = $try;
+                }
+            }
+        }
+
+        // 스킨 변수 바인딩
+        $bo_table = $this->bo_table;
+        $part     = $part_key;
+        if (is_array($vars)) {
+            foreach($vars as $k => $v){ ${$k} = $v; }
+        }
+        // $only가 컨테이너에서 필요하므로 보장
+        if (!isset($only)) { $only = array(); }
+
+        if(!array_filter($row[$part_key])){
+            $row[$part_key]=(array)'';
+
+        }
+        // 1) 필드 배열 요청이면: (A) 컨테이너 우선, 없으면 (B) 개별 파일들
+        if (count($only) && !$this->is_list_part_schema($schema)) {
+            // (A) 컨테이너 파일: {part}/{context}.php, {context}/{part}.php, {part}/{context}/index.php
+            $container = $this->resolve_part_skin_path($part_key, $context, $vars);
+            if ($container && file_exists($container)) {
+                ob_start();
+                include $container;                 // 컨테이너 안에서 $only 사용해 부분 렌더
+                return ob_get_clean();
+            }
+
+
+            // (B) 개별 파일: {root}/{part}/{context}/{col}.php 또는 {root}/{context}/{part}/{col}.php
+            ob_start();
+            foreach ($only as $col) {
+                $col = preg_replace('/[^A-Za-z0-9_\-]/', '', $col);
+                if ($col === '') continue;
+
+                $candidates = array(
+                    $root . '/' . $part_key . '/' . $context . '/' . $col . '.php',
+                    $root . '/' . $context  . '/' . $part_key . '/' . $col . '.php'
+                );
+                $skin = '';
+                foreach ($candidates as $f) {
+                    if (file_exists($f)) { $skin = $f; break; }
+                }
+                if ($skin) {
+                    include $skin;
+                } else {
+                    echo "<!-- StoreManager: column skin not found ({$part_key}/{$context}/{$col}.php) -->";
+                }
+            }
+            return ob_get_clean();
+        }
+
+        // 2) render_all() 스타일: 디렉터리 안의 *.php 전부 렌더 (컨테이너가 있으면 컨테이너 포함 경로로도 동작)
+        if (!$this->is_list_part_schema($schema)) {
+            $dir1 = $root . '/' . $part_key . '/' . $context;
+            $dir2 = $root . '/' . $context  . '/' . $part_key;
+            $dir  = is_dir($dir1) ? $dir1 : (is_dir($dir2) ? $dir2 : '');
+
+            if ($dir !== '') {
+                $files = array();
+                if ($h = @opendir($dir)) {
+                    while (($f = readdir($h)) !== false) {
+                        if ($f === '.' || $f === '..') continue;
+                        if (substr($f, -4) === '.php' && is_file($dir.'/'.$f)) $files[] = $f;
+                    }
+                    closedir($h);
+                }
+                sort($files);
+                ob_start();
+                foreach ($files as $f) {
+                    include $dir . '/' . $f;
+                }
+                return ob_get_clean();
+            }
+        }
+
+        // 3) 최종 폴백: 단일 스킨 파일
+        $skin = $this->resolve_part_skin_path($part_key, $context, $vars);
+        if (!$skin || !file_exists($skin)) {
+            return "<!-- StoreManager: skin not found ({$part_key}/{$context}) -->";
+        }
+
+        ob_start();
+        include $skin;
+        return ob_get_clean();
+    }
+
+    protected function resolve_part_skin_path($part_key, $context = 'form', $vars = array()){
+        // 기본 테마 루트
+
+        $root = isset($this->plugin_theme_path) ? rtrim($this->plugin_theme_path, '/')
+            : rtrim(dirname(__FILE__).'/theme/basic/pc', '/');
+
+        if (isset($vars['skin_root']) && $vars['skin_root']) {
+            $root = rtrim($vars['skin_root'], '/');
+        }
+
+        $context  = preg_replace('/[^a-zA-Z0-9_\/-]/', '', $context);
+        $part_key = preg_replace('/[^a-zA-Z0-9_\/-]/', '', $part_key);
+
+        // 우선순위: {part}/{context}.php → {context}/{part}.php → {part}/{context}/index.php
+        $candidates = array(
+            $root . '/' . $part_key . '/' . $context . '.php',       // ex) .../menu/form.php   (권장)
+            $root . '/' . $context  . '/' . $part_key . '.php',      // ex) .../form/menu.php   (요청 호환)
+            $root . '/' . $part_key . '/' . $context . '/index.php',
+        );
+
+        foreach($candidates as $f){
+            if (file_exists($f)) return $f;
+        }
+        return '';
+    }
+
+    protected function get_schema_value_maps_cached($schema){
+        static $cache = array();
+        $cls = is_object($schema) ? get_class($schema) : '';
+        if (!$cls) return array();
+        if (isset($cache[$cls])) return $cache[$cls];
+
+        $allowed = method_exists($schema,'get_allowed_columns') ? $schema->get_allowed_columns() : array();
+        $allowed = is_array($allowed) ? array_values($allowed) : array();
+
+        $maps = array();
+        $ref = new \ReflectionObject($schema);
+        foreach($ref->getProperties() as $p){
+            $name = $p->getName();
+
+            // ★ base 찾기: 허용 컬럼명 + '_' 로 시작하는지 검사
+            $base = '';
+            foreach($allowed as $col){
+                if (strpos($name, $col.'_') === 0) { $base = $col; break; }
+            }
+            if ($base === '') continue;
+
+            $p->setAccessible(true);
+            $val = $p->getValue($schema);
+            if (is_array($val)) {
+                $maps[$name] = array('base'=>$base, 'map'=>$val);
+            }
+        }
+        $cache[$cls] = $maps;
+        return $maps;
+    }
+
+    protected function inject_value_maps_into_row(&$row){
+        // nest_parts=true 기준: $row['{part}']['{logical}'] 구조
+        if (!is_array($this->parts) || !count($this->parts)) return;
+
+        foreach($this->parts as $pkey => $schema){
+            // 목록 파트는 건너뜀(원하면 별도 정의 가능)
+            if ($this->is_list_part_schema($schema)) continue;
+
+            if (!isset($row[$pkey]) || !is_array($row[$pkey])) continue;
+
+            $maps = $this->get_schema_value_maps_cached($schema);
+            if (!count($maps)) continue;
+
+            foreach($maps as $vname => $spec){
+                $base = $spec['base'];
+                $map  = $spec['map'];
+                $code = isset($row[$pkey][$base]) ? $row[$pkey][$base] : null;
+                $row[$pkey][$vname] = isset($map[$code]) ? $map[$code] : null;
+            }
+        }
+    }
+
+    // 업로드 수집: name="파트명[컬럼][]" 만 지원(요청 스펙)
+    protected function collect_uploaded_for_field($part_key, $logical_col){
+        $F = $this->get_files_tree_for_part($part_key);
+        if (!$F || !isset($F['name']) || !is_array($F['name'])) return array();
+
+        // 공백 등 보정된 실제 키 검색
+        $real = array_key_exists($logical_col, $F['name']) ? $logical_col : '';
+        if ($real === '') {
+            $target = trim((string)$logical_col);
+            foreach ($F['name'] as $k => $_v){
+                if (trim((string)$k) === $target) { $real = (string)$k; break; }
+            }
+        }
+        if ($real === '' || !isset($F['name'][$real])) return array();
+
+        // 스칼라만 허용
+        if (is_array($F['name'][$real])) return array();
+
+        $spec = array(
+            'name'     => $F['name'][$real],
+            'type'     => isset($F['type'][$real]) ? $F['type'][$real] : null,
+            'tmp_name' => isset($F['tmp_name'][$real]) ? $F['tmp_name'][$real] : null,
+            'error'    => isset($F['error'][$real]) ? $F['error'][$real] : null,
+            'size'     => isset($F['size'][$real]) ? $F['size'][$real] : null,
+        );
+        $list = $this->normalize_files_spec($spec);
+        if (!count($list)) return array();
+
+        $subdir = 'weaver/store_manager/'.$this->bo_table.'/'.date('Ym');
+        return $this->save_uploaded_files($list, $subdir);
+    }
+
+    protected function normalize_files_spec($spec){
+        $out = array();
+        if (is_array($spec['name'])) {
+            $n = count($spec['name']);
+            for ($i=0;$i<$n;$i++){
+                $out[] = array(
+                    'name'     => $spec['name'][$i],
+                    'type'     => $spec['type'][$i],
+                    'tmp_name' => $spec['tmp_name'][$i],
+                    'error'    => $spec['error'][$i],
+                    'size'     => $spec['size'][$i],
+                );
+            }
+        } else {
+            $out[] = $spec;
+        }
+        // 유효 파일만
+        $ok = array();
+        foreach ($out as $f){
+            $errv = isset($f['error']) ? (int)$f['error'] : UPLOAD_ERR_NO_FILE;
+            if ($errv !== UPLOAD_ERR_OK) continue;
+            if (!isset($f['tmp_name']) || !is_uploaded_file($f['tmp_name'])) continue;
+            if (!isset($f['size']) || (int)$f['size'] <= 0) continue;
+            $ok[] = $f;
+        }
+        return $ok;
+    }
+
+    protected function sanitize_filename($name){
+        $name = preg_replace('/[^\w\.\-\(\)\[\]\s가-힣]/u', '_', (string)$name);
+        if (strlen($name) > 120) $name = substr($name, -120);
+        return $name ? $name : 'file';
+    }
+
+    protected function unique_filename($dir, $ext){
+        do {
+            $rnd = substr(md5(uniqid('', true)), 0, 12);
+            $fname = date('Ymd_His').'_'.$rnd.'.'.$ext;
+        } while (file_exists($dir.'/'.$fname));
+        return $fname;
+    }
+
+    protected function encode_b64s($value){
+        if (function_exists('wv_base64_encode_serialize')) return wv_base64_encode_serialize($value);
+        return base64_encode(serialize($value));
+    }
+
+    public function decode_b64s($str){
+        if (!is_string($str) || $str === '') return null;
+        if (function_exists('wv_base64_decode_unserialize')) return wv_base64_decode_unserialize($str);
+        $v = @unserialize(@base64_decode($str));
+        return $v;
+    }
+
+    public function is_list_part_schema($schema){
+        if (!is_object($schema)) return false;
+
+
+        if (is_callable(array($schema, 'is_list_part'))) {
+            $v = $schema->is_list_part();
+            return $v ? true : false;
+        }
+
+        return false;
+    }
+
+    // {ext_table}_{part}
+    public function get_list_table_name($part_key){
+        return $this->get_ext_table_name().'_'.strtolower($part_key);
+    }
+
+    // 기존 ensure_array_table → rename & 그대로 사용
+    protected function ensure_list_table($part_key, $schema = null){
+        $table = $this->get_list_table_name($part_key);
+
+        // 1) 베이스: id, wr_id, ord + 인덱스
+        $sql = "
+        CREATE TABLE IF NOT EXISTS `{$table}` (
+            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `wr_id` INT(11) NOT NULL,
+            `ord` INT(11) DEFAULT NULL,
+            PRIMARY KEY (`id`),
+            KEY `wr_id_ord_idx` (`wr_id`, `ord`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+    ";
+        sql_query($sql, true);
+
+        // 2) 혹시 기존 테이블에 ord/인덱스 없으면 보강
+        if(!$this->table_has_column($table, 'ord')){
+            sql_query("ALTER TABLE `{$table}` ADD COLUMN `ord` INT(11) DEFAULT NULL", true);
+        }
+        if(!$this->table_has_index($table, 'wr_id_ord_idx')){
+            sql_query("ALTER TABLE `{$table}` ADD INDEX `wr_id_ord_idx` (`wr_id`, `ord`)", true);
+        }
+
+        // 3) 파트 정의 컬럼 반영
+        if($schema && method_exists($schema, 'get_columns')){
+            $cols = (array)$schema->get_columns($this->bo_table);
+            foreach($cols as $name => $ddl){
+                if($name === 'id' || $name === 'wr_id' || $name === 'ord') continue;
+                if(!is_string($ddl) || !strlen(trim($ddl))) continue;
+
+                if(!$this->table_has_column($table, $name)){
+                    sql_query("ALTER TABLE `{$table}` ADD COLUMN `{$name}` {$ddl}", true);
+                }else{
+                    $cur = $this->get_column_info($table, $name);
+                    if($this->column_definition_differs($cur, $ddl)){
+                        sql_query("ALTER TABLE `{$table}` MODIFY COLUMN `{$name}` {$ddl}", true);
+                    }
+                }
+            }
+        }
+    }
+
+    protected function apply_list_part_schema($part_key, $schema){
+        $this->ensure_list_table($part_key, $schema);
+        $t = $this->get_list_table_name($part_key);
+
+        if(method_exists($schema, 'get_indexes')){
+            $idx = (array)$schema->get_indexes($this->bo_table);
+            foreach($idx as $ix){
+                $name = isset($ix['name']) ? $ix['name'] : '';
+                $type = isset($ix['type']) ? strtoupper($ix['type']) : 'INDEX';
+                $cols = isset($ix['cols']) ? $ix['cols'] : array();
+                if(!$name || !count($cols)) continue;
+
+                if(!$this->table_has_index($t, $name)){
+                    $qcols = array();
+                    foreach($cols as $c){ $qcols[] = '`'.$c.'`'; }
+                    sql_query("ALTER TABLE `{$t}` ADD {$type} `{$name}` (".implode(',', $qcols).")", true);
+                }
+            }
+        }
+    }
+
+    protected function get_current_list_table_columns($part_key){
+        $table = $this->get_list_table_name($part_key);
+        $cols = array();
+        $res = sql_query("SHOW COLUMNS FROM `{$table}`");
+        while ($row = sql_fetch_array($res)) {
+            if (isset($row['Field'])) $cols[] = $row['Field'];
+        }
+        return $cols;
+    }
+
+    protected function fetch_list_part_rows_for_wr_ids($wr_ids){
+        $out = array();
+        if(!is_array($this->parts) || !count($this->parts)) return $out;
+        if(!is_array($wr_ids) || !count($wr_ids)) return $out;
+
+        $ids = array();
+        foreach($wr_ids as $id){ $id = (int)$id; if($id>0) $ids[] = $id; }
+        if(!count($ids)) return $out;
+        $in = implode(',', $ids);
+
+        foreach($this->parts as $pkey => $schema){
+            if(!$this->is_list_part_schema($schema)) continue;
+
+            $t = $this->get_list_table_name($pkey);
+            $def = $schema->get_columns($this->bo_table);
+            $cols = array('id','wr_id');
+            foreach($def as $cname => $_ddl){ $cols[] = $cname; }
+            $cols = array_unique($cols);
+
+            $existing = array();
+            $rs = sql_query("SHOW COLUMNS FROM `{$t}`");
+            while($c = sql_fetch_array($rs)){
+                $existing[] = isset($c['Field']) ? $c['Field'] : $c[0];
+            }
+            $emap = array(); foreach($existing as $_c){ $emap[$_c]=true; }
+            $sel = array(); foreach($cols as $_c){ if(isset($emap[$_c])) $sel[] = '`'.$_c.'`'; }
+            if(!count($sel)) continue;
+
+            $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id IN ({$in}) ORDER BY wr_id ASC, ord ASC, id ASC";
+            $qry = sql_query($sql);
+            while($r = sql_fetch_array($qry)){
+                $wid = (int)$r['wr_id'];
+                $row = array();
+                if (isset($r['id']))  $row['id']  = (int)$r['id'];
+                if (isset($r['ord'])) $row['ord'] = (int)$r['ord'];
+                foreach($def as $cname => $_ddl){
+                    if(isset($r[$cname])) $row[$cname] = $r[$cname];
+                }
+                $out[$pkey][$wid][] = $row;
+            }
+        }
+        return $out;
+    }
+
+    public function get_list_part_list($wr_id, $part_key){
+        $wr_id = (int)$wr_id; if($wr_id <= 0) return array();
+        if (!isset($this->parts[$part_key])) return array();
+        $schema = $this->parts[$part_key];
+        if (!$this->is_list_part_schema($schema)) return array();
+
+        $t   = $this->get_list_table_name($part_key);
+        $def = $schema->get_columns($this->bo_table);
+
+        // 실제 존재 컬럼 맵
+        $emap = array();
+        $rs = sql_query("SHOW COLUMNS FROM `{$t}`");
+        while ($c = sql_fetch_array($rs)){
+            $fname = isset($c['Field']) ? $c['Field'] : (isset($c[0]) ? $c[0] : '');
+            if ($fname) $emap[$fname] = true;
+        }
+
+        $sel = array('`id`','`wr_id`');
+        $has_ord = isset($emap['ord']);
+        if ($has_ord) $sel[] = '`ord`';
+        foreach ($def as $cname => $_ddl){ if (isset($emap[$cname])) $sel[] = '`'.$cname.'`'; }
+        if (count($sel) <= 2) return array();
+
+        $order = $has_ord ? "ORDER BY `ord` ASC, `id` ASC" : "ORDER BY `id` ASC";
+        $q = sql_query("SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id='{$wr_id}' {$order}");
+
+        $out = array();
+        while ($r = sql_fetch_array($q)){
+            $row = array('id' => isset($r['id']) ? (int)$r['id'] : 0);
+            if ($has_ord && isset($r['ord'])) $row['ord'] = (int)$r['ord'];
+            foreach ($def as $cname => $_ddl){
+                if (!isset($r[$cname])) continue;
+                $val = $r[$cname];
+                if (is_string($val) && $val !== '' && method_exists($this, 'decode_b64s')) {
+                    $try = $this->decode_b64s($val);
+                    if (is_array($try)) $val = $try;
+                }
+                $row[$cname] = $val;
+            }
+            $out[] = $row;
+        }
+        return $out;
+    }
+
+    public function field_value_compare_merge($new, $old /* , ...$keys */){
+        $args = func_get_args();
+        $new_value  = array_shift($args);
+        $old_value  = array_shift($args);
+        $start_path = $args;
+
+        $is_numeric_key = function($k){
+            return is_int($k) || (is_string($k) && preg_match('/^\d+$/', $k));
+        };
+
+        // "모든 키가 숫자"인 배열
+        $is_list_array = function($arr) use ($is_numeric_key){
+            if (!is_array($arr) || !count($arr)) return false;
+//            dd($arr);
+            foreach (array_keys($arr) as $k){
+                if (!$is_numeric_key($k)) {
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        // 자식 중에 "리스트배열"이 하나라도 있으면 현재 노드는 '리스트의 부모'로 간주
+        // → 현재 레벨은 assoc로 내려가고, 자식 레벨에서 리스트 병합 수행
+        $has_list_children = function($arr) use ($is_list_array){
+            if (!is_array($arr)) return false;
+            foreach ($arr as $v){
+                if (is_array($v) && $is_list_array($v)) return true;
+            }
+            return false;
+        };
+
+        // 신규 항목( id 없음 )이 "사실상 비어있는지" 판정
+        $is_effectively_empty = null;
+        $is_effectively_empty = function($node) use (&$is_effectively_empty){
+            if (is_array($node)) {
+                foreach ($node as $k => $v) {
+                    if ($k === 'id' || $k === 'ord' || $k === 'delete') continue;
+                    if (is_array($v)) {
+                        if (!$is_effectively_empty($v)) return false;
+                    } else {
+                        if (is_string($v)) { if (trim($v) !== '') return false; }
+                        else if (is_numeric($v)) { return false; }
+                        else if (is_bool($v)) { if ($v) return false; }
+                        else if (!empty($v)) { return false; }
+                    }
+                }
+                return true;
+            }
+            if (is_string($node)) return trim($node) === '';
+            if (is_numeric($node)) return false;
+            if (is_bool($node)) return !$node;
+            return empty($node);
+        };
+
+
+
+
+        // 🔸 삭제 대상의 물리 경로를 수집하는 클로저 (필요 최소 로직만)
+        $collect_delete_paths = function($node){
+            $paths = array();
+
+            // 1) files 배열 형태 지원
+            if (is_array($node) && isset($node['files']) && is_array($node['files'])){
+                foreach ($node['files'] as $f){
+                    if (is_array($f) && isset($f['path']) && $f['path'] !== ''){
+                        $paths[] = $f['path'];
+                    }
+                }
+            }
+
+            // 2) 단일 파일 메타 형태 지원 (source/path/type/created_at 가 같은 레벨에 있는 경우)
+            if (is_array($node) && isset($node['path']) && $node['path'] !== ''){
+                $paths[] = $node['path'];
+            }
+
+            // 3) 혹시 더 깊은 곳에 섞여있을 수 있으므로 얕은 재귀 탐색(최소)
+            if (is_array($node)){
+                foreach ($node as $v){
+                    if (is_array($v)){
+                        $sub = call_user_func($GLOBALS['__wv_collect_paths__'], $v);
+                        if ($sub && is_array($sub)){
+                            foreach ($sub as $p){ $paths[] = $p; }
+                        }
+                    }
+                }
+            }
+
+            // 중복 제거
+            if (!empty($paths)) $paths = array_values(array_unique($paths));
+            return $paths;
+        };
+        // PHP 5.6에서 클로저 내부 재귀를 위해 글로벌 핸들 사용
+        $GLOBALS['__wv_collect_paths__'] = $collect_delete_paths;
+
+        // 연관배열 병합: new 키는 덮어쓰기/재귀, 누락키는 old 유지
+        $merge_assoc = function($new_node, $old_node) use (&$merge_node,$collect_delete_paths){
+            $result = is_array($old_node) ? $old_node : array();
+
+            if (!is_array($new_node)) return $new_node !== null ? $new_node : $old_node;
+
+            foreach ($new_node as $k => $v){
+
+                $result[$k] = $merge_node(
+                    $v,
+                    (is_array($old_node) && array_key_exists($k, $old_node)) ? $old_node[$k] : null
+                );
+            }
+
+            if (is_array($old_node)){
+                foreach ($old_node as $k => $v){
+                    if (!array_key_exists($k, $new_node)){
+                        $result[$k] = $v;
+                    }
+                }
+            }
+            $old_paths = $collect_delete_paths($old_list_orig);
+
+            if ($old_paths){
+                $new_paths = $collect_delete_paths($result);
+                $keep = array_flip($new_paths);
+                $to_del = array();
+                foreach ($old_paths as $p){ if (!isset($keep[$p])) $to_del[$p] = true; }
+                if ($to_del && method_exists($this, 'delete_physical_paths_safely')){
+                    $this->delete_physical_paths_safely(array_keys($to_del));
+                }
+            }
+
+            return $result;
+        };
+
+
+
+        // 리스트 병합:
+        // - id 있으면 매칭/삭제/병합
+        // - id 없으면 항상 '신규'로 보고 (숫자키도 id로 쓰지 않음) old의 max(id)+1 부여
+        // - ord는 new 리스트 순서대로 1부터
+        // - new에 없는 old는 뒤에 이어붙이고 ord 연속
+// ... (윗부분 동일)
+        $merge_list = function($new_list, $old_list) use (&$merge_node, &$is_effectively_empty,$collect_delete_paths){
+            $result    = array();
+            $old_by_id = array();
+            $max_id    = 0;
+            $old_list_orig = $old_list;
+            if (is_string($old_list)) {
+                $decoded = wv_base64_decode_unserialize($old_list);
+                if (is_array($decoded)) $old_list = $decoded;
+            }
+
+            if (is_array($old_list)){
+                foreach ($old_list as $ov){
+
+                    $oid = isset($ov['id']) ? $ov['id'] : null;
+
+                    if (is_numeric($oid)){
+
+                        $old_by_id[(string)$oid] = $ov;
+                        if ($oid > $max_id) $max_id = $oid;
+                    }
+                }
+            }
+
+            if (!is_array($new_list)) $new_list = array();
+
+            $next_id = $max_id;
+            $seq_ord = 0;
+
+            // 런타임(파트/테이블/스키마/wr_id) 컨텍스트
+            $rt = (is_array($this->list_db_runtime) ? $this->list_db_runtime : null);
+            $db_ready = ($rt && !empty($rt['enabled']) && !empty($rt['part']) && !empty($rt['wr_id']) && $rt['schema']);
+
+            $t = $db_ready ? $this->get_list_table_name($rt['part']) : null;
+            $def_cols_map = array();
+            if ($db_ready) {
+                $def = (array)$rt['schema']->get_columns($this->bo_table);
+                foreach ($def as $cn => $_ddl){ $def_cols_map[$cn] = true; }
+
+            }
+
+
+
+            // 헬퍼: 컬럼값을 DB에 넣을 값으로 직렬화/문자화
+            $to_db_value = function($col, $val, $prev_row){
+                // 삭제 플래그면 빈 배열 직렬화(래퍼 없음)
+                if (is_array($val) && isset($val['delete']) &&
+                    ($val['delete'] === 1 || $val['delete'] === '1' || $val['delete'] === true || $val['delete'] === 'on' || $val['delete'] === 'Y' || $val['delete'] === 'y')) {
+                    return $this->encode_b64s(array());
+                }
+
+                // 과거 호환: files 래퍼가 오면 벗겨서 저장
+                if (is_array($val) && isset($val['files']) && is_array($val['files'])) {
+                    $val = $val['files'];
+                }
+
+                // 배열(단일 메타 or 메타 배열 or 일반 배열) 그대로 직렬화 저장
+                if (is_array($val)) {
+                    return $this->encode_b64s($val);
+                }
+
+                // 스칼라는 문자열로
+                return (string)$val;
+            };
+;
+;
+;
+;
+
+            foreach ($new_list as $nk => $nv){
+                if (!is_array($nv)) continue;
+
+                $id  = (isset($nv['id']) && is_numeric($nv['id'])) ? (int)$nv['id'] : null;
+                $del = isset($nv['delete']) ? (bool)$nv['delete'] : false;
+
+
+                if ($id !== null){
+
+                    if ($del){
+
+                        // ✅ 물리 파일 삭제: old에 같은 id가 존재할 때만 처리
+                        if (isset($old_by_id[(string)$id])){
+                            $old_item = $old_by_id[(string)$id];
+
+                            // 삭제 경로 수집
+                            if($db_ready){
+                                $paths = array();
+                                $paths = array_merge($paths, $collect_delete_paths($old_item));
+
+
+
+                            }else{
+                                $paths = array_merge($collect_delete_paths($old_item), $collect_delete_paths($nv));
+                            }
+
+                            // delete_physical_paths_safely()가 존재하면 호출 (없어도 치명 오류 방지)
+                            if (!empty($paths) && method_exists($this, 'delete_physical_paths_safely')){
+                                $this->delete_physical_paths_safely($paths /* , $keep_paths = array() */);
+                            }
+
+                            if ($db_ready) {
+                                sql_query("DELETE FROM `{$t}` WHERE wr_id='".intval($rt['wr_id'])."' AND id='".intval($id)."'");
+                            }
+
+                            unset($old_by_id[(string)$id]);
+                        }
+                        continue;
+                    }
+
+
+                    $old_item = isset($old_by_id[(string)$id]) ? $old_by_id[(string)$id] : null;
+                    $merged   = $merge_node($nv, $old_item);
+                    $merged['id'] = $id;
+
+                    $seq_ord += 1;
+                    $merged['ord'] = $seq_ord;
+
+                    if ($db_ready) {
+                        $sets = array("`ord`='".sql_escape_string((string)$seq_ord)."'");
+                        foreach ($def_cols_map as $col => $_u){
+                            if ($col==='id' || $col==='wr_id' || $col==='ord') continue;
+                            if (array_key_exists($col, $merged)) {
+                                $dbv = $to_db_value($col, $merged[$col], $old_item);
+                                $sets[] = "`{$col}`='".sql_escape_string($dbv)."'";
+                            }
+                            // 없으면 그대로 두기(업데이트 안 함)
+                        }
+                        if (count($sets)) {
+                            $usql = "UPDATE `{$t}` SET ".implode(',', $sets)." WHERE id='".intval($id)."' AND wr_id='".intval($rt['wr_id'])."'";
+                            sql_query($usql, true);
+                        }
+                    }
+
+                    $result[] = $merged;
+                    if (isset($old_by_id[(string)$id])) unset($old_by_id[(string)$id]);
+                } else {
+                    // 신규: 숫자키는 id로 사용하지 않음(요구사항)
+                    if ($is_effectively_empty($nv)) {
+                        continue;
+                    }
+                    $next_id += 1;
+                    $merged = $merge_node($nv, null);
+                    $merged['id'] = $next_id;
+
+                    $seq_ord += 1;
+                    $merged['ord'] = $seq_ord;
+
+                    if ($db_ready) {
+                        $fields = array('`wr_id`','`ord`');
+                        $values = array("'".intval($rt['wr_id'])."'", "'".sql_escape_string((string)$seq_ord)."'");
+
+                        foreach ($def_cols_map as $col => $_u){
+                            if ($col==='id' || $col==='wr_id' || $col==='ord') continue;
+                            if (!array_key_exists($col, $merged)) continue;
+                            $dbv = $to_db_value($col, $merged[$col], array());
+                            $fields[] = '`'.$col.'`';
+                            $values[] = "'".sql_escape_string($dbv)."'";
+                        }
+
+                        if (count($fields) > 2) {
+
+                            $isql = "INSERT INTO `{$t}` (".implode(',', $fields).") VALUES (".implode(',', $values).")";
+
+                            sql_query($isql, true);
+                        }
+                    }
+
+                    $result[] = $merged;
+                }
+            }
+//            dd($result);
+            // new에 언급되지 않은 기존(old) 항목 보존 (ord 연속)
+            foreach ($old_by_id as $remain){
+                $seq_ord += 1;
+                $remain['ord'] = $seq_ord;
+                if ($db_ready) {
+                    $rid = isset($remain['id']) ? (int)$remain['id'] : 0;
+                    if ($rid > 0) {
+                        $usql = "UPDATE `{$t}` SET `ord`='".sql_escape_string((string)$seq_ord)."' WHERE id='".intval($rid)."' AND wr_id='".intval($rt['wr_id'])."'";
+                        sql_query($usql, true);
+                    }
+                }
+
+                $result[] = $remain;
+            }
+
+            $old_paths = $collect_delete_paths($old_list_orig);
+            if ($old_paths) {
+                $new_paths = $collect_delete_paths($result);
+                $keep = array_flip($new_paths);
+                $to_del = array();
+                foreach ($old_paths as $p){ if (!isset($keep[$p])) $to_del[$p] = true; }
+                if ($to_del && method_exists($this, 'delete_physical_paths_safely')){
+                    $this->delete_physical_paths_safely(array_keys($to_del));
+                }
+            }
+
+
+            return $result;
+        };
+
+
+        $merge_node = function($new_node, $old_node) use (&$merge_node, $merge_list, $merge_assoc, $is_list_array, $has_list_children){
+
+            if (is_array($new_node)){
+
+
+                if ($is_list_array($new_node) && !$has_list_children($new_node)){
+                    return $merge_list($new_node, $old_node);
+                } else {
+
+                    return $merge_assoc($new_node, $old_node);
+                }
+            }
+
+            return $new_node !== null ? $new_node : $old_node;
+        };
+
+        // 시작 경로 노드 가져오기
+        $get_node_from = function($root, $path){
+            $node = $root;
+            foreach ($path as $step){
+                if (is_array($node) && array_key_exists($step, $node)){
+                    $node = $node[$step];
+                } else {
+                    $node = null;
+                    break;
+                }
+            }
+            return $node;
+        };
+
+        $new_start = $get_node_from($new_value, $start_path);
+        $old_start = $get_node_from($old_value, $start_path);
+
+        return $merge_node($new_start, $old_start);
+    }
+
+    protected function save_uploaded_files($files, $subdir){
+        // data 경로
+        $base = defined('G5_DATA_PATH') ? G5_DATA_PATH : (defined('G5_PATH') ? G5_PATH.'/data' : dirname(__FILE__).'/../../data');
+        $dir  = rtrim($base, '/').'/'.trim($subdir, '/');
+
+        if (!is_dir($dir)) {
+            @mkdir($dir, G5_DIR_PERMISSION, true);
+            @chmod($dir, G5_DIR_PERMISSION);
+        }
+
+        $just_one = false;
+        if(isset($files['tmp_name'])){
+            $files = array($files);
+            $just_one=true;
+        }
+        $out = array();
+        foreach ($files as $f){
+            $src = $this->sanitize_filename($f['name']);
+            $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
+
+            // 이미지 타입 검사(이미지 아니어도 저장할거면 이 체크 제거)
+            if (!in_array($ext, array('jpg','jpeg','png','gif','webp'))) continue;
+
+            $save = $this->unique_filename($dir, $ext);
+            if (!@move_uploaded_file($f['tmp_name'], $dir.'/'.$save)) continue;
+            @chmod($dir.'/'.$save, G5_FILE_PERMISSION);
+
+            // 타입 숫자 (IMAGETYPE_*)
+            $itype = 0;
+            if (function_exists('exif_imagetype')) $itype = @exif_imagetype($dir.'/'.$save);
+            if (!$itype && function_exists('getimagesize')) {
+                $info = @getimagesize($dir.'/'.$save);
+                if (is_array($info) && isset($info[2])) $itype = (int)$info[2];
+            }
+
+            $rel  = '/data/'.trim($subdir,'/').'/'.$save;
+            $out[] = array(
+                'source'     => $src,
+                'path'       => $rel,
+                'type'       => (int)$itype,
+                'created_at' => defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s')
+            );
+        }
+        if($just_one){
+            return $out[0];
+        }
+        return $out;
+    }
+
+    // 물리 경로로 변환(G5_DATA_PATH 하위만 허용) 후 안전 삭제
+    protected function delete_physical_paths_safely($paths){
+        if (!is_array($paths) || !count($paths)) return;
+
+        $base = defined('G5_DATA_PATH') ? rtrim(G5_DATA_PATH, '/') : (defined('G5_PATH') ? rtrim(G5_PATH,'/').'/data' : '');
+        if ($base === '') return;
+
+        foreach ($paths as $rel){
+            $rel = ltrim($rel, '/'); // 예: data/weaver/...
+            // 허용 루트 강제: data/ 로 시작하지 않으면 스킵
+            if (strpos($rel, 'data/') !== 0) continue;
+
+            $abs = $base . '/' . substr($rel, strlen('data/')); // base/data + 나머지
+            $abs = preg_replace('#/+#', '/', $abs);
+
+            // 경로 탈출 방지
+            $real_base = realpath($base);
+            $real_abs  = @realpath($abs);
+            if ($real_base && $real_abs && strpos($real_abs, $real_base) === 0) {
+                @unlink($real_abs);
+            }
+        }
+    }
+
+}
+
+StoreManager::getInstance();

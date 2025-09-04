@@ -1,0 +1,47 @@
+@charset "utf-8";
+
+.ff-NotoSansCJKSC{font-family: 'Noto Sans CJK SC', "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif}
+
+
+@font-face {
+    font-family: 'Noto Sans CJK SC';
+    font-style: normal;
+    font-weight: 100;
+    src: url('./NotoSansCJKsc-Thin.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+@font-face {
+    font-family: 'Noto Sans CJK SC';
+    font-style: normal;
+    font-weight: 200;
+    src: url('./NotoSansCJKsc-DemiLight.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+@font-face {
+    font-family: 'Noto Sans CJK SC';
+    font-style: normal;
+    font-weight: 300;
+    src: url('./NotoSansCJKsc-Light.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+@font-face {
+    font-family: 'Noto Sans CJK SC';
+    font-style: normal;
+    font-weight: 400;
+    src: url('./NotoSansCJKsc-Regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+@font-face {
+    font-family: 'Noto Sans CJK SC';
+    font-style: normal;
+    font-weight: 500;
+    src: url('./NotoSansCJKsc-Medium.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+@font-face {
+    font-family: 'Noto Sans CJK SC';
+    font-style: normal;
+    font-weight: 700;
+    src: url('./NotoSansCJKsc-Bold.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+@font-face {
+    font-family: 'Noto Sans CJK SC';
+    font-style: normal;
+    font-weight: 900;
+    src: url('./NotoSansCJKsc-Black.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}

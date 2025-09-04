@@ -1,0 +1,38 @@
+@charset "utf-8";
+
+.ff-NanumSquareNeo{font-family: 'NanumSquareNeo', "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;}
+
+@font-face {
+    font-family: 'NanumSquareNeo';
+    src: url('./NanumSquareNeoTTF-aLt.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NanumSquareNeo';
+    src: url('./NanumSquareNeoTTF-bRg.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NanumSquareNeo';
+    src: url('./NanumSquareNeoTTF-cBd.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NanumSquareNeo';
+    src: url('./NanumSquareNeoTTF-dEb.woff2') format('woff2');
+    font-weight: 800;
+
+}
+
+@font-face {
+    font-family: 'NanumSquareNeo';
+    src: url('./NanumSquareNeoTTF-eHv.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+}
