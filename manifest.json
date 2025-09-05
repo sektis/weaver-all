@@ -46,6 +46,5 @@
     "plugins/widget/manifest.json": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/widget/manifest.json",
     "plugins/wv_css/manifest.json": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/wv_css/manifest.json",
     "setting.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/setting.php",
-    "tools/flatten.ps1": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/tools/flatten.ps1",
     "_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/_common.php"
 }
