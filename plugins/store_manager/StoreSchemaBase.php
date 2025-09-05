@@ -89,6 +89,11 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
      * @return string
      */
     public function render_part($column, $type, $vars = array()){
+        // 목록 파트는 특수 처리 (menu/form.php 같은 통합 스킨)
+        if ($this->is_list_part()) {
+            return $this->render_list_part_template($type, $vars);
+        }
+
         if (is_array($column)) {
             $html = '';
             foreach ($column as $col) {
@@ -119,7 +124,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         $bo_table = $this->bo_table;
 
         if (is_array($vars) && count($vars)) {
-            foreach ($vars as $__k => $__v) { $$__k = $__v; }
+            foreach ($vars as $__k => $__v) { $__k = $__v; }
         }
         $skin_id = wv_make_skin_id();
         $skin_selector = wv_make_skin_selector($skin_id);
@@ -128,29 +133,75 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         return ob_get_clean();
     }
 
-    /**
-     * 파트의 모든 컬럼 템플릿을 순회 렌더(파일 있는 것만)
-     *
-     * @param string $type 'view'|'form'
-     * @param array  $vars
-     * @return string
-     */
-    public function render_all($type, $vars = array()){
-        $cols = array_keys($this->columns);
-        return $this->render_part($cols, $type, $vars);
-    }
 
     public function is_list_part(){
         return $this->list_part ? true : false;
     }
 
-    public function test(){
-        return $this->part_key;
-    }
 
     public function get_part_key() { return $this->part_key; }
     public function get_bo_table() { return $this->bo_table; }
     public function get_manager()  { return $this->manager; }
     public function get_plugin_theme_path() { return $this->plugin_theme_path; }
 
+    protected function render_list_part_template($context, $vars = array()){
+        if (!$this->is_list_part()) return '';
+
+        $root = isset($this->plugin_theme_path) ? rtrim($this->plugin_theme_path, '/')
+            : rtrim(dirname(__FILE__).'/theme/basic/pc', '/');
+
+        if (isset($vars['skin_root']) && $vars['skin_root']) {
+            $root = rtrim($vars['skin_root'], '/');
+        }
+
+        $context  = preg_replace('/[^a-zA-Z0-9_\/-]/', '', $context);
+        $part_key = preg_replace('/[^a-zA-Z0-9_\/-]/', '', $this->part_key);
+
+        // 목록 파트 스킨 경로 우선순위
+        $candidates = array(
+            $root . '/' . $part_key . '/' . $context . '.php',        // ex) menu/form.php (권장)
+            $root . '/' . $context  . '/' . $part_key . '.php',       // ex) form/menu.php
+            $root . '/' . $part_key . '/' . $context . '/index.php',  // ex) menu/form/index.php
+        );
+
+        $skin_path = '';
+        foreach($candidates as $f){
+            if (file_exists($f)) {
+                $skin_path = $f;
+                break;
+            }
+        }
+
+        if (!$skin_path) {
+            return "<!-- StoreSchemaBase: list part skin not found ({$part_key}/{$context}) -->";
+        }
+
+        // 스킨 변수 준비
+        $row = isset($vars['row']) ? $vars['row'] : array();
+        $list = isset($vars['list']) ? $vars['list'] : array();
+        $rows = $list; // 호환성
+        $bo_table = $this->bo_table;
+        $part = $part_key;
+
+        // 기본 데이터가 없으면 빈 배열로 초기화
+        if (!isset($row[$part_key]) || !is_array($row[$part_key])) {
+            $row[$part_key] = array();
+        }
+
+        // 추가 변수들 바인딩
+        if (is_array($vars)) {
+            foreach($vars as $k => $v){
+                if ($k !== 'row' && $k !== 'list') ${$k} = $v;
+            }
+        }
+        if(!array_filter($row[$part_key])){
+            $row[$part_key]=(array)'';
+        }
+        $skin_id = function_exists('wv_make_skin_id') ? wv_make_skin_id() : 'skin_'.uniqid();
+        $skin_selector = function_exists('wv_make_skin_selector') ? wv_make_skin_selector($skin_id) : '.'.$skin_id;
+
+        ob_start();
+        include $skin_path;
+        return ob_get_clean();
+    }
 }

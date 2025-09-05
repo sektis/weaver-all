@@ -588,15 +588,12 @@ class StoreManager extends Makeable{
 
                     $prev_decoded    = wv_base64_decode_unserialize($prev_serialized);
 
-                    wv_walk_by_ref_diff($data_pkey_logical_col,function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col) {
-
+                    $walk_function = function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col,&$walk_function) {
 
 
                         if(!is_array($arr)){
                             return false;
                         }
-
-
 
                         $parent_key = wv_array_last($node);
                         $is_old_file = wv_array_has_all_keys($this->file_meta_column ,$arr2);
@@ -618,16 +615,19 @@ class StoreManager extends Makeable{
                             alert('insert : key 중복생성');
                         }
                         if(!$is_new and $arr['id']!=$arr2['id']){
+
                             alert('update : id 체크 오류');
                         }
-
                         $i=0;
                         foreach ($arr as $k=>&$v){
-
-
                             if(is_numeric($k) and  !$v['delete'] and array_filter($v)){
                                 $v['ord']=$i;
                                 $i++;
+                            }
+                            if(!$is_delete){
+
+                                  wv_walk_by_ref_diff($v,$walk_function,$arr2[$k],array_merge($node,(array)$k));
+
                             }
                         }
 
@@ -649,9 +649,14 @@ class StoreManager extends Makeable{
 
 
                         if($is_new){
-                            if(!array_filter($arr)){
-                                $arr='';return false;
+
+                            if(empty_except_keys($arr,array('ord'))){
+                                $combined = 'unset($data_pkey_logical_col'. wv_array_to_text($node,"['","']").');';
+
+                                @eval("$combined;");
+                                return false;
                             }
+
 
                             if(!$is_list_part or (($is_list_part and count($node)<2) === false)){
                                 $arr['id'] = uniqid().$parent_key;
@@ -683,7 +688,13 @@ class StoreManager extends Makeable{
                         }
 
 
-                    },$prev_decoded);
+
+                        return false;
+
+                    };
+
+                    wv_walk_by_ref_diff($data_pkey_logical_col,$walk_function,$prev_decoded);
+
                     if(is_array($data_pkey_logical_col) and !count($data_pkey_logical_col)){
                         $data_pkey_logical_col = '';
                     }
@@ -705,7 +716,9 @@ class StoreManager extends Makeable{
                         $sets['ord'] = sql_escape_string((string)$row['ord']);
 
                         foreach ($def_cols as $col => $_u){
-                            if ($col==='id'  ) continue;
+
+                            if ($col==='id' or $col=='delete'  ) continue;
+
                             if(is_array($row[$col])){
                                 $row[$col] = wv_base64_encode_serialize($row[$col]);
                             }
@@ -715,7 +728,6 @@ class StoreManager extends Makeable{
                             sql_query("UPDATE `{$t}` SET ".wv_array_to_sql_set($sets)." WHERE id='".intval($row['id'])."' AND wr_id='".intval($wr)."'", true);
                         }elseif(array_filter($row)){
                             $sets['wr_id'] = $wr;
-
                             sql_query("INSERT INTO `{$t}` SET ".wv_array_to_sql_set($sets), true);
                         }
 
@@ -799,6 +811,7 @@ class StoreManager extends Makeable{
         foreach ($this->parts as $pkey => $schema) {
             $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $ext_row, $pkey);
             if ($this->is_list_part_schema($schema)) {
+
                 $proxy->list = isset($ap[$pkey][$wr_id]) ? $ap[$pkey][$wr_id] : array();
             }
             $store->$pkey = $proxy;
@@ -1413,186 +1426,8 @@ class StoreManager extends Makeable{
         return $cols;
     }
 
-    // StoreManager 안에 추가
-    public function render_part($part_key, $wr_id = 0, $context = 'form', $vars = array()){
-        $part_key = trim($part_key);
-        if (!isset($this->parts[$part_key])) return '';
-        $skin_id = wv_make_skin_id();
-        $skin_selector = wv_make_skin_selector($skin_id);
-        // skin root
-        $root = ($this->plugin_theme_path ? rtrim($this->plugin_theme_path, '/') : rtrim(dirname(__FILE__).'/theme/basic/pc', '/'));
-        if (!$root) { // 혹시라도 null/빈문자면 기본 경로로
-            $root = rtrim(dirname(__FILE__).'/theme/basic/pc', '/');
-        }
-
-// 외부에서 skin_root 지정시 우선
-        if (is_array($vars) && !empty($vars['skin_root'])) {
-            $root = rtrim($vars['skin_root'], '/');
-        }
-
-        // 기본 row 구성
-        $row = array();
-        if ($wr_id) {
-            $write_row = $this->fetch_write_row($wr_id);
-            $ext_row   = $this->fetch_store_row($wr_id);
-            if (!isset($write_row['wr_id'])) $write_row['wr_id'] = (int)$wr_id;
-            if (!isset($ext_row['wr_id']))   $ext_row['wr_id']   = (int)$wr_id;
-            $row = array_merge($write_row, $ext_row);
-        }
 
 
-        $schema = $this->parts[$part_key];
-
-        // 목록 파트라면 리스트 주입
-        $list = array();
-        $rows = array();
-        if ($this->is_list_part_schema($schema)) {
-            $row[$part_key] = $this->get_list_part_list($wr_id, $part_key);
-            $list = $row[$part_key];
-            $rows = $row[$part_key];
-        }
-
-        // $only / $fields (기존 체인 호환)
-        $only = array();
-        if (is_array($vars) && isset($vars['only'])) {
-            $only = is_array($vars['only']) ? $vars['only'] : array($vars['only']);
-        } else if (is_array($vars) && isset($vars['fields'])) {
-            $only = is_array($vars['fields']) ? $vars['fields'] : array($vars['fields']);
-        }
-        // 문자열만 남기기
-        $tmp = array();
-        foreach ($only as $_v) { if (is_string($_v) && $_v !== '') $tmp[] = $_v; }
-        $only = $tmp;
-
-        // 일반 파트면: 평면 -> 중첩 + b64s 디코드
-        if (!$this->is_list_part_schema($schema)) {
-            if (!isset($row[$part_key]) || !is_array($row[$part_key])) $row[$part_key] = array();
-
-            if (method_exists($schema, 'get_allowed_columns')) {
-                $allowed = (array)$schema->get_allowed_columns();
-                foreach ($allowed as $lname) {
-                    $pname = $this->get_physical_col($part_key, $lname);
-                    if (array_key_exists($pname, $row)) {
-                        $row[$part_key][$lname] = $row[$pname];
-                        unset($row[$pname]);
-                    }
-                }
-            }
-            foreach ($row[$part_key] as $_k => $_v) {
-                if (is_string($_v) && $_v !== '' && method_exists($this, 'decode_b64s')) {
-                    $try = $this->decode_b64s($_v);
-                    if (is_array($try)) $row[$part_key][$_k] = $try;
-                }
-            }
-        }
-
-        // 스킨 변수 바인딩
-        $bo_table = $this->bo_table;
-        $part     = $part_key;
-        if (is_array($vars)) {
-            foreach($vars as $k => $v){ ${$k} = $v; }
-        }
-        // $only가 컨테이너에서 필요하므로 보장
-        if (!isset($only)) { $only = array(); }
-
-        if(!array_filter($row[$part_key])){
-            $row[$part_key]=(array)'';
-
-        }
-        // 1) 필드 배열 요청이면: (A) 컨테이너 우선, 없으면 (B) 개별 파일들
-        if (count($only) && !$this->is_list_part_schema($schema)) {
-            // (A) 컨테이너 파일: {part}/{context}.php, {context}/{part}.php, {part}/{context}/index.php
-            $container = $this->resolve_part_skin_path($part_key, $context, $vars);
-            if ($container && file_exists($container)) {
-                ob_start();
-                include $container;                 // 컨테이너 안에서 $only 사용해 부분 렌더
-                return ob_get_clean();
-            }
-
-
-            // (B) 개별 파일: {root}/{part}/{context}/{col}.php 또는 {root}/{context}/{part}/{col}.php
-            ob_start();
-            foreach ($only as $col) {
-                $col = preg_replace('/[^A-Za-z0-9_\-]/', '', $col);
-                if ($col === '') continue;
-
-                $candidates = array(
-                    $root . '/' . $part_key . '/' . $context . '/' . $col . '.php',
-                    $root . '/' . $context  . '/' . $part_key . '/' . $col . '.php'
-                );
-                $skin = '';
-                foreach ($candidates as $f) {
-                    if (file_exists($f)) { $skin = $f; break; }
-                }
-                if ($skin) {
-                    include $skin;
-                } else {
-                    echo "<!-- StoreManager: column skin not found ({$part_key}/{$context}/{$col}.php) -->";
-                }
-            }
-            return ob_get_clean();
-        }
-
-        // 2) render_all() 스타일: 디렉터리 안의 *.php 전부 렌더 (컨테이너가 있으면 컨테이너 포함 경로로도 동작)
-        if (!$this->is_list_part_schema($schema)) {
-            $dir1 = $root . '/' . $part_key . '/' . $context;
-            $dir2 = $root . '/' . $context  . '/' . $part_key;
-            $dir  = is_dir($dir1) ? $dir1 : (is_dir($dir2) ? $dir2 : '');
-
-            if ($dir !== '') {
-                $files = array();
-                if ($h = @opendir($dir)) {
-                    while (($f = readdir($h)) !== false) {
-                        if ($f === '.' || $f === '..') continue;
-                        if (substr($f, -4) === '.php' && is_file($dir.'/'.$f)) $files[] = $f;
-                    }
-                    closedir($h);
-                }
-                sort($files);
-                ob_start();
-                foreach ($files as $f) {
-                    include $dir . '/' . $f;
-                }
-                return ob_get_clean();
-            }
-        }
-
-        // 3) 최종 폴백: 단일 스킨 파일
-        $skin = $this->resolve_part_skin_path($part_key, $context, $vars);
-        if (!$skin || !file_exists($skin)) {
-            return "<!-- StoreManager: skin not found ({$part_key}/{$context}) -->";
-        }
-
-        ob_start();
-        include $skin;
-        return ob_get_clean();
-    }
-
-    protected function resolve_part_skin_path($part_key, $context = 'form', $vars = array()){
-        // 기본 테마 루트
-
-        $root = isset($this->plugin_theme_path) ? rtrim($this->plugin_theme_path, '/')
-            : rtrim(dirname(__FILE__).'/theme/basic/pc', '/');
-
-        if (isset($vars['skin_root']) && $vars['skin_root']) {
-            $root = rtrim($vars['skin_root'], '/');
-        }
-
-        $context  = preg_replace('/[^a-zA-Z0-9_\/-]/', '', $context);
-        $part_key = preg_replace('/[^a-zA-Z0-9_\/-]/', '', $part_key);
-
-        // 우선순위: {part}/{context}.php → {context}/{part}.php → {part}/{context}/index.php
-        $candidates = array(
-            $root . '/' . $part_key . '/' . $context . '.php',       // ex) .../menu/form.php   (권장)
-            $root . '/' . $context  . '/' . $part_key . '.php',      // ex) .../form/menu.php   (요청 호환)
-            $root . '/' . $part_key . '/' . $context . '/index.php',
-        );
-
-        foreach($candidates as $f){
-            if (file_exists($f)) return $f;
-        }
-        return '';
-    }
 
     protected function get_schema_value_maps_cached($schema){
         static $cache = array();
@@ -1860,7 +1695,7 @@ class StoreManager extends Makeable{
                 if (isset($r['id']))  $row['id']  = (int)$r['id'];
                 if (isset($r['ord'])) $row['ord'] = (int)$r['ord'];
                 foreach($def as $cname => $_ddl){
-                    if(isset($r[$cname])) $row[$cname] = $r[$cname];
+                    if(isset($r[$cname])) $row[$cname] = wv_base64_decode_unserialize($r[$cname]);
                 }
                 $out[$pkey][$wid][] = $row;
             }

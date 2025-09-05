@@ -1618,20 +1618,22 @@ if(!function_exists('wv_walk_by_ref')){
 
 
 
-        if($func($arr,$arr2,$node)!==false){
-
-            foreach ($arr as $k => &$v){
-                $cur_node = $node;
-                $cur_node[] = $k;   // 전체 경로
-
-
-                    wv_walk_by_ref_diff($v,$func,isset($arr2[$k])?$arr2[$k]:array(),$cur_node);
-
-
-
-            }
-            unset($v); // ★ 참조 foreach 후 반드시 해제 (레퍼런스 끌고 다니는 버그 방지)
+        if($func($arr,$arr2,$node)===false){
+            return false;
         }
+
+        foreach ($arr as $k => &$v){
+            $cur_node = $node;
+            $cur_node[] = $k;   // 전체 경로
+
+
+                wv_walk_by_ref_diff($v,$func,isset($arr2[$k])?$arr2[$k]:array(),$cur_node);
+
+
+
+        }
+        unset($v); // ★ 참조 foreach 후 반드시 해제 (레퍼런스 끌고 다니는 버그 방지)
+        return true;
 
     }
 }
@@ -1672,7 +1674,18 @@ if(!function_exists('wv_array_to_sql_set')){
     }
 
 }
+function empty_except_keys($arr, $exclude_keys = array()){
+    // 제외할 키 제거
+    $arr = array_diff_key($arr, array_flip($exclude_keys));
 
+    // 의미있는 값만 남기기: ''와 null 제거 (0/'0'은 남김)
+    $arr = array_filter($arr, function($v){
+        return $v !== '' && $v !== null && !(is_array($v) && count($v) === 0);
+    });
+
+    // 남은 게 없으면 비었다고 판단
+    return count($arr) === 0;
+}
 /**
  * 쇼핑몰 관련 함수
  */

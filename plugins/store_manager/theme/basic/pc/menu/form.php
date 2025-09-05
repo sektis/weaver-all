@@ -1,6 +1,6 @@
 <?php
-$row['menu'] = (array) $row['menu'];
 
+$row['menu'] = (array) $row['menu'];
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative d-flex-center flex-nowrap">
     <style>
@@ -28,6 +28,7 @@ $row['menu'] = (array) $row['menu'];
         <div class="wv-ps-list  vstack" style="row-gap: var(--wv-50)">
 
             <?php $n = 1; foreach ($row['menu'] as $k => $v) {
+
                 $id      = isset($v['id'])      ? (string)$v['id']      : '';
                 $ord     = isset($v['ord'])     ? (int)$v['ord']        : $n;
                 $name    = isset($v['name'])    ? (string)$v['name']    : '';
@@ -38,11 +39,12 @@ $row['menu'] = (array) $row['menu'];
                 $images  = (isset($v['images']) && is_array($v['images'])) ? $v['images'] : array();
                 $demo_class = !$v ? 'wv-ps-demo' : '';
                 $img_count = count(array_filter($images));
+
                 ?>
                 <div class="wv-ps-each <?php echo $demo_class; ?>">
                     <!-- 필수 hidden -->
-                    <input type="hidden" name="store[menu][<?php echo $k; ?>][id]"  value="<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">
-                    <input type="hidden" name="store[menu][<?php echo $k; ?>][ord]" value="<?php echo (int)$ord; ?>">
+                    <input type="hidden" name="menu[<?php echo $k; ?>][id]"  value="<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">
+                    <input type="hidden" name="menu[<?php echo $k; ?>][ord]" value="<?php echo (int)$ord; ?>">
 
                     <div class="vstack" style="row-gap: var(--wv-15)">
 
@@ -55,7 +57,7 @@ $row['menu'] = (array) $row['menu'];
                                                     type="text"
                                                     class="form-control js-menu-name"
                                                     id="<?php echo $skin_id; ?>-name-<?php echo $k; ?>"
-                                                    name="store[menu][<?php echo $k; ?>][name]"
+                                                    name="menu[<?php echo $k; ?>][name]"
                                                     maxlength="20"
                                                     placeholder="메뉴명"
                                                     value="<?php echo htmlspecialchars($name, ENT_QUOTES); ?>"
@@ -67,7 +69,7 @@ $row['menu'] = (array) $row['menu'];
                                         <div class="form-check form-switch align-self-center"  >
                                             <input class="form-check-input" type="checkbox"
                                                    id="<?php echo $skin_id; ?>-main-<?php echo $k; ?>"
-                                                   name="store[menu][<?php echo $k; ?>][is_main]"
+                                                   name="menu[<?php echo $k; ?>][is_main]"
                                                    value="1" <?php echo $is_main ? 'checked' : ''; ?>>
                                             <label class="form-check-label" for="<?php echo $skin_id; ?>-main-<?php echo $k; ?>">대표메뉴로 표시</label>
                                         </div>
@@ -84,7 +86,7 @@ $row['menu'] = (array) $row['menu'];
                             <div class="form-floating mb-1">
                             <textarea class="form-control js-desc"
                                       id="<?php echo $skin_id; ?>-desc-<?php echo $k; ?>"
-                                      name="store[menu][<?php echo $k; ?>][desc]"
+                                      name="menu[<?php echo $k; ?>][desc]"
                                       placeholder="메뉴 부가설명"
                                       maxlength="100"
                                       style="height: 90px;"><?php echo htmlspecialchars($desc, ENT_QUOTES); ?></textarea>
@@ -105,8 +107,8 @@ $row['menu'] = (array) $row['menu'];
                             $p_demo = ($pid==='') ? 'wv-ps-demo' : '';
                             ?>
                             <div class="wv-ps-each <?php echo $p_demo; ?>" style="padding:10px;">
-                                <input type="hidden" name="store[menu][<?php echo $k; ?>][prices][<?php echo $pk; ?>][id]"  value="<?php echo htmlspecialchars($pid, ENT_QUOTES); ?>">
-                                <input type="hidden" name="store[menu][<?php echo $k; ?>][prices][<?php echo $pk; ?>][ord]" value="<?php echo (int)$pord; ?>">
+                                <input type="hidden" name="menu[<?php echo $k; ?>][prices][<?php echo $pk; ?>][id]"  value="<?php echo htmlspecialchars($pid, ENT_QUOTES); ?>">
+                                <input type="hidden" name="menu[<?php echo $k; ?>][prices][<?php echo $pk; ?>][ord]" value="<?php echo (int)$pord; ?>">
 
                                 <div class="d-flex justify-content-between  ">
                                     <div class="grid-2 w-100">
@@ -114,7 +116,7 @@ $row['menu'] = (array) $row['menu'];
                                             <input type="text"
                                                    class="form-control"
                                                    id="<?php echo $skin_id; ?>-pname-<?php echo $k.'-'.$pk; ?>"
-                                                   name="store[menu][<?php echo $k; ?>][prices][<?php echo $pk; ?>][name]"
+                                                   name="menu[<?php echo $k; ?>][prices][<?php echo $pk; ?>][name]"
                                                    maxlength="20"
                                                    placeholder="옵션명"
                                                    value="<?php echo htmlspecialchars($pname, ENT_QUOTES); ?>">
@@ -124,7 +126,7 @@ $row['menu'] = (array) $row['menu'];
                                             <input type="text"
                                                    class="form-control js-int-only"
                                                    id="<?php echo $skin_id; ?>-pval-<?php echo $k.'-'.$pk; ?>"
-                                                   name="store[menu][<?php echo $k; ?>][prices][<?php echo $pk; ?>][price]"
+                                                   name="menu[<?php echo $k; ?>][prices][<?php echo $pk; ?>][price]"
                                                    placeholder="가격"
                                                    inputmode="numeric" step="1" min="0"
                                                    value="<?php echo htmlspecialchars($pval, ENT_QUOTES); ?>">
@@ -134,7 +136,7 @@ $row['menu'] = (array) $row['menu'];
 
                                     <div class="wv-ps-box ms-3">
                                         <label class="h-100">
-                                            <input type="checkbox" class="d-none" name="store[menu][<?php echo $k; ?>][prices][<?php echo $pk; ?>][delete]" value="1">
+                                            <input type="checkbox" class="d-none" name="menu[<?php echo $k; ?>][prices][<?php echo $pk; ?>][delete]" value="1">
                                             <span class="btn btn-danger text-nowrap h-100 d-flex-center">삭제</span>
                                         </label>
                                     </div>
@@ -160,10 +162,10 @@ $row['menu'] = (array) $row['menu'];
                         <div class="wv-ps-each  ">
                             <label   class="wh-100 cursor-pointer d-flex-center text-center position-relative">
                                 <input type="file"
-                                       name="store[menu][<?php echo $k; ?>][images][]"
+                                       name="menu[<?php echo $k; ?>][images][]"
                                        multiple accept="image/*"
                                        class="d-none"
-                                       data-max-count="<?php echo (int)$image_max; ?>">
+                                       data-max-count="<?php echo $this->image_max_count; ?>">
                                 <div class="vstack h-100 justify-content-center" style="row-gap:6px">
                                     <i class="fa-solid fa-plus fs-[30///700/] d-block"></i>
                                     <p class="m-0">
@@ -183,13 +185,13 @@ $row['menu'] = (array) $row['menu'];
                             $i_demo = ($iid==='') ? 'wv-ps-demo' : '';
                             ?>
                             <div class="wv-ps-each <?php echo $i_demo; ?>">
-                                <?php if ($path) { ?>
-                                    <img src="<?php echo htmlspecialchars($path, ENT_QUOTES); ?>" alt="" class="wh-100 object-fit-contain">
-                                <?php } ?>
-                                <input type="hidden" name="store[menu][<?php echo $k; ?>][images][<?php echo $ik; ?>][id]" value="<?php echo htmlspecialchars($iid, ENT_QUOTES); ?>">
+
+                                <img src="<?php echo htmlspecialchars($path, ENT_QUOTES); ?>" alt="" class="wh-100 object-fit-contain">
+
+                                <input type="hidden" name="menu[<?php echo $k; ?>][images][<?php echo $ik; ?>][id]" value="<?php echo htmlspecialchars($iid, ENT_QUOTES); ?>">
                                 <p class="position-absolute wv-ps-num"></p>
                                 <label class="position-absolute wv-ps-delete-label">
-                                    <input type="checkbox" name="store[menu][<?php echo $k; ?>][images][<?php echo $ik; ?>][delete]" value="1" class="d-none">
+                                    <input type="checkbox" name="menu[<?php echo $k; ?>][images][<?php echo $ik; ?>][delete]" value="1" class="d-none">
                                     <span></span>
                                 </label>
                             </div>
@@ -199,7 +201,7 @@ $row['menu'] = (array) $row['menu'];
 
                         <div class=" wv-ps-box ">
                             <label class=" ">
-                                <input type="checkbox" class="d-none" name="store[menu][<?php echo $k; ?>][delete]" value="1">
+                                <input type="checkbox" class="d-none" name="menu[<?php echo $k; ?>][delete]" value="1">
                                 <span class="btn w-100 border btn-danger">삭제</span>
                             </label>
                         </div>

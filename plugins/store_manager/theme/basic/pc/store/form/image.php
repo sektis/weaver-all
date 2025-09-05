@@ -1,4 +1,5 @@
 <?php
+//dd($row['image']);
 
 $row['image'] = (array) $row['image'];
 

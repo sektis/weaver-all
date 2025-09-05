@@ -78,7 +78,7 @@ $(document).ready(function () {
                 var $img = $row.find('img').first();
                 if ($img.length) {
                     var url = URL.createObjectURL(files[i]);
-                    $img.attr('src', url);
+                    $img.attr('src', url).show();
                 }
 
                 $row.removeClass('wv-ps-demo')
@@ -151,7 +151,9 @@ $(document).ready(function () {
             reindexRow($newRow, pos, next);
 
             // 추가: 새 행에서 미리보기 이미지 제거
-            $newRow.find('img').remove();
+            $newRow.find('img').attr('src','').hide();
+            $newRow.find('.wv-ps-file-count').text('0');
+            $newRow.find('.wv-ps-each:not(.wv-ps-demo):has([name*="[id]"][value=""])').remove()
             $newRow.show();
             // 마지막 실제 행 뒤에 삽입 (업로더/타일 앞이 아닌, 실제 컨텐츠 끝에 추가)
             $newRow.removeClass('wv-ps-demo')

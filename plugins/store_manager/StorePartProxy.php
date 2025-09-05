@@ -99,9 +99,11 @@ class StorePartProxy{
     /** 목록 파트의 리스트를 필요시 지연 로딩 */
     protected function ensure_list_rows() {
         if (!$this->is_list_part()) return array();
+
         if (is_array($this->list) && count($this->list)) return $this->list;
 
         $pkey = $this->get_part_key();
+
         if ($pkey !== '' && $this->wr_id > 0 && $this->manager && method_exists($this->manager, 'get_list_part_list')) {
             $this->list = $this->manager->get_list_part_list($this->wr_id, $pkey);
         } else {
@@ -215,91 +217,73 @@ class StorePartProxy{
 
 
     public function render_part($arg1, $arg2 = null, $arg3 = array()){
+        // CSS/JS 자산 로딩
+        add_javascript('<script src="'.$this->manager->plugin_url.'/js/parts.js?ver='.G5_JS_VER.'"></script>', 11);
+        add_stylesheet('<link rel="stylesheet" href="'.$this->manager->plugin_url.'/css/parts.css?ver='.G5_CSS_VER.'">', 11);
 
-        add_javascript('<script src="'.$this->manager->plugin_url.'/js/parts.js?ver='.G5_JS_VER.'"></script>',11);;
-        add_stylesheet('<link rel="stylesheet" href="'.$this->manager->plugin_url.'/css/parts.css?ver='.G5_CSS_VER.'">',11);
         $pkey = $this->get_part_key();
 
         if ($this->is_list_part()) {
-            // 목록 파트: context만 의미 있음
+            // 목록 파트: context 파라미터 정리
             $context = 'form';
             $vars = array();
 
             if (is_string($arg1) && is_string($arg2)) {
-                // render_part('menu', 'form', vars) 형태 → 첫 인자는 무시, 둘째가 context
+                // render_part('menu', 'form', vars) 형태
                 $context = $arg2;
                 $vars = is_array($arg3) ? $arg3 : array();
             } else {
-                // render_part('form', vars)
+                // render_part('form', vars) 형태
                 $context = is_string($arg1) ? $arg1 : 'form';
                 $vars = is_array($arg2) ? $arg2 : array();
             }
 
-            // 매니저 스킨 렌더에 위임 (권장 경로)
-            if ($this->manager && method_exists($this->manager, 'render_part') && $pkey !== '') {
-                return $this->manager->render_part($pkey, $this->wr_id, $context, $vars);
-            }
-
-            // 폴백: 파트가 직접 렌더 할 수 있으면 row/list 구성해서 전달
+            // row/list 데이터 준비
             $row = $this->ensure_rows();
             $row[$pkey] = $this->ensure_list_rows();
-            $vars_fb = array_merge(array('row' => $row, 'list' => $row[$pkey]), $vars);
+            $vars = array_merge(array('row' => $row, 'list' => $row[$pkey]), $vars);
 
-            if (is_object($this->part) && method_exists($this->part, 'render_all')) {
-                return $this->part->render_all($context, $vars_fb);
-            }
+            // StoreSchemaBase로 직접 위임
             if (is_object($this->part) && method_exists($this->part, 'render_part')) {
-                return $this->part->render_part($pkey, $context, $vars_fb);
+                return $this->part->render_part($pkey, $context, $vars);
             }
-            return null;
+            return '';
         }
 
-        // ---- 일반 파트 ----
-        $row = $this->ensure_rows(); // 스킨에서 $row['col'] 접근
+        // 일반 파트: row 데이터 준비 후 StoreSchemaBase로 위임
+        $row = $this->ensure_rows();
 
         if (is_object($this->part) && method_exists($this->part, 'render_part')) {
-            return $this->part->render_part($arg1, $arg2, array('row' => $row));
+            return $this->part->render_part($arg1, $arg2, array_merge(array('row' => $row), is_array($arg3) ? $arg3 : array()));
         }
-        return null;
+
+        return '';
     }
 
     /** render_all('form') */
-    public function render_all($context, $vars = array())
-    {
+    public function render_all($context, $vars = array())    {
         $pkey = $this->get_part_key();
 
-
-
         if ($this->is_list_part()) {
-            // 목록 파트도 render_all 지원
-            if ($this->manager && method_exists($this->manager, 'render_part') && $pkey !== '') {
-                return $this->manager->render_part($pkey, $this->wr_id, (string)$context, is_array($vars)?$vars:array());
-            }
-            $row = $this->ensure_rows();
-            $row[$pkey] = $this->ensure_list_rows();
-            $vars = array_merge(array('row' => $row, 'list' => $row[$pkey]), is_array($vars)?$vars:array());
-
-            if (is_object($this->part) && method_exists($this->part, 'render_all')) {
-                return $this->part->render_all((string)$context, $vars);
-            }
-            if (is_object($this->part) && method_exists($this->part, 'render_part')) {
-                return $this->part->render_part($pkey, (string)$context, $vars);
-            }
-            return null;
+            // 목록 파트: render_part로 위임
+            return $this->render_part('*', (string)$context, is_array($vars) ? $vars : array());
         }
 
-        // 일반 파트
+        // 일반 파트: 모든 허용 컬럼 배열로 render_part 호출
+
+        $allowed = (array)array_keys($this->part->get_columns());
+
+
+        if (!count($allowed)) return '';
+
         $row = $this->ensure_rows();
-        if (is_object($this->part) && method_exists($this->part, 'render_all')) {
-            return $this->part->render_all((string)$context, array_merge(array('row'=>$row), is_array($vars)?$vars:array()));
-        }
-        // 일부 스킨은 render_part로 전체를 그리는 경우
-        if (is_object($this->part) && method_exists($this->part, 'render_part')) {
-            return $this->part->render_part('*', (string)$context, array('row'=>$row));
-        }
-        return null;
-    }
 
+        if (is_object($this->part) && method_exists($this->part, 'render_part')) {
+            return $this->part->render_part($allowed, (string)$context, array_merge(array('row' => $row), is_array($vars) ? $vars : array()));
+        }
+
+        return '';
+    }
 
 
     /** 스키마의 맵핑 프로퍼티 → 가상 파생키로 확장 */
