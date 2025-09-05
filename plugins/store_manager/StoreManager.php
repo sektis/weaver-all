@@ -119,6 +119,7 @@ class StoreManager extends Makeable{
         }
 
         if (!class_exists($class)) {
+
             $this->error('스키마 파트 클래스를 찾을 수 없습니다. (key=' . $key . ', class=' . $class . ')', 2);
         }
 
