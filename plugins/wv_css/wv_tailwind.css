@@ -159,6 +159,9 @@
   .w-\[400px\] {
     width: var(--wv-400) !important;
   }
+  .w-\[500px\] {
+    width: var(--wv-500) !important;
+  }
   .w-\[800px\] {
     width: var(--wv-800) !important;
   }

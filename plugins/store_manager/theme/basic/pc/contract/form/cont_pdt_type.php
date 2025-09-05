@@ -1,8 +1,8 @@
 <div>
-    <div class="form-floating">
+     <div class="form-floating">
         <select name="contract[cont_pdt_type]" id="contract[cont_pdt_type]" class="form-select required" required>
             <option value="">선택하세요.</option>
-            <?php foreach ($this->cont_pdt_type_text as $key=>$val){
+            <?php foreach ($this->cont_pdt_type_arr as $key=>$val){
                 echo option_selected($key,$row['cont_pdt_type'],$val);
             } ?>
         </select>
