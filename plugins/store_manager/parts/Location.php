@@ -22,4 +22,10 @@ class Location extends StoreSchemaBase implements StoreSchemaInterface{
             array('name' => 'ix_region_depth', 'type' => 'INDEX', 'cols' => array('region_1depth_name','region_2depth_name','region_3depth_name'))
         );
     }
+
+    public function column_extend($row){
+        $arr = array();
+        $arr['address_name_full'] = $row['address_name'].' '.$row['address_detail_name'];
+        return $arr;
+    }
 }

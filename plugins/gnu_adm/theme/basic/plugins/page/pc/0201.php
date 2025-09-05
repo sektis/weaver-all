@@ -70,6 +70,7 @@ $list = $store_result['list'];
                     <tbody class="text-center">
                     <?php
                     for ($i = 0; $i < count($list); $i++) {
+//                        dd($list);
                         ?>
                         <tr>
                             <td><?php echo $list[$i]['mb_id']; ?></td>

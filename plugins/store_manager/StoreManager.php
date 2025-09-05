@@ -1460,25 +1460,38 @@ class StoreManager extends Makeable{
         return $maps;
     }
 
+//    protected function inject_value_maps_into_row(&$row){
+//        // nest_parts=true 기준: $row['{part}']['{logical}'] 구조
+//        if (!is_array($this->parts) || !count($this->parts)) return;
+//
+//        foreach($this->parts as $pkey => $schema){
+//            // 목록 파트는 건너뜀(원하면 별도 정의 가능)
+//            if ($this->is_list_part_schema($schema)) continue;
+//
+//            if (!isset($row[$pkey]) || !is_array($row[$pkey])) continue;
+//
+//            $maps = $this->get_schema_value_maps_cached($schema);
+//            if (!count($maps)) continue;
+//
+//            foreach($maps as $vname => $spec){
+//                $base = $spec['base'];
+//                $map  = $spec['map'];
+//                $code = isset($row[$pkey][$base]) ? $row[$pkey][$base] : null;
+//                $row[$pkey][$vname] = isset($map[$code]) ? $map[$code] : null;
+//            }
+//        }
+//    }
+
     protected function inject_value_maps_into_row(&$row){
-        // nest_parts=true 기준: $row['{part}']['{logical}'] 구조
         if (!is_array($this->parts) || !count($this->parts)) return;
 
         foreach($this->parts as $pkey => $schema){
-            // 목록 파트는 건너뜀(원하면 별도 정의 가능)
             if ($this->is_list_part_schema($schema)) continue;
-
             if (!isset($row[$pkey]) || !is_array($row[$pkey])) continue;
 
-            $maps = $this->get_schema_value_maps_cached($schema);
-            if (!count($maps)) continue;
-
-            foreach($maps as $vname => $spec){
-                $base = $spec['base'];
-                $map  = $spec['map'];
-                $code = isset($row[$pkey][$base]) ? $row[$pkey][$base] : null;
-                $row[$pkey][$vname] = isset($map[$code]) ? $map[$code] : null;
-            }
+            // ✅ StorePartProxy 로직 재사용
+            $proxy = new \weaver\store_manager\StorePartProxy($this, 0, $schema, array(), $pkey);
+            $proxy->apply_value_maps($row[$pkey]);
         }
     }
 
@@ -1704,48 +1717,58 @@ class StoreManager extends Makeable{
     }
 
     public function get_list_part_list($wr_id, $part_key){
-        $wr_id = (int)$wr_id; if($wr_id <= 0) return array();
-        if (!isset($this->parts[$part_key])) return array();
-        $schema = $this->parts[$part_key];
-        if (!$this->is_list_part_schema($schema)) return array();
+        $wr_id = (int)$wr_id;
+        if($wr_id <= 0) return array();
 
-        $t   = $this->get_list_table_name($part_key);
-        $def = $schema->get_columns($this->bo_table);
+        // fetch_list_part_rows_for_wr_ids 재사용
+        $all_data = $this->fetch_list_part_rows_for_wr_ids(array($wr_id));
 
-        // 실제 존재 컬럼 맵
-        $emap = array();
-        $rs = sql_query("SHOW COLUMNS FROM `{$t}`");
-        while ($c = sql_fetch_array($rs)){
-            $fname = isset($c['Field']) ? $c['Field'] : (isset($c[0]) ? $c[0] : '');
-            if ($fname) $emap[$fname] = true;
-        }
-
-        $sel = array('`id`','`wr_id`');
-        $has_ord = isset($emap['ord']);
-        if ($has_ord) $sel[] = '`ord`';
-        foreach ($def as $cname => $_ddl){ if (isset($emap[$cname])) $sel[] = '`'.$cname.'`'; }
-        if (count($sel) <= 2) return array();
-
-        $order = $has_ord ? "ORDER BY `ord` ASC, `id` ASC" : "ORDER BY `id` ASC";
-        $q = sql_query("SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id='{$wr_id}' {$order}");
-
-        $out = array();
-        while ($r = sql_fetch_array($q)){
-            $row = array('id' => isset($r['id']) ? (int)$r['id'] : 0);
-            if ($has_ord && isset($r['ord'])) $row['ord'] = (int)$r['ord'];
-            foreach ($def as $cname => $_ddl){
-                if (!isset($r[$cname])) continue;
-                $val = $r[$cname];
-                if (is_string($val) && $val !== '' && method_exists($this, 'decode_b64s')) {
-                    $try = $this->decode_b64s($val);
-                    if (is_array($try)) $val = $try;
-                }
-                $row[$cname] = $val;
-            }
-            $out[] = $row;
-        }
-        return $out;
+        // 해당 part_key와 wr_id의 데이터 반환
+        return isset($all_data[$part_key][$wr_id]) ? $all_data[$part_key][$wr_id] : array();
     }
+//    public function get_list_part_list($wr_id, $part_key){
+//        $wr_id = (int)$wr_id; if($wr_id <= 0) return array();
+//        if (!isset($this->parts[$part_key])) return array();
+//        $schema = $this->parts[$part_key];
+//        if (!$this->is_list_part_schema($schema)) return array();
+//
+//        $t   = $this->get_list_table_name($part_key);
+//        $def = $schema->get_columns($this->bo_table);
+//
+//        // 실제 존재 컬럼 맵
+//        $emap = array();
+//        $rs = sql_query("SHOW COLUMNS FROM `{$t}`");
+//        while ($c = sql_fetch_array($rs)){
+//            $fname = isset($c['Field']) ? $c['Field'] : (isset($c[0]) ? $c[0] : '');
+//            if ($fname) $emap[$fname] = true;
+//        }
+//
+//        $sel = array('`id`','`wr_id`');
+//        $has_ord = isset($emap['ord']);
+//        if ($has_ord) $sel[] = '`ord`';
+//        foreach ($def as $cname => $_ddl){ if (isset($emap[$cname])) $sel[] = '`'.$cname.'`'; }
+//        if (count($sel) <= 2) return array();
+//
+//        $order = $has_ord ? "ORDER BY `ord` ASC, `id` ASC" : "ORDER BY `id` ASC";
+//        $q = sql_query("SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id='{$wr_id}' {$order}");
+//
+//        $out = array();
+//        while ($r = sql_fetch_array($q)){
+//            $row = array('id' => isset($r['id']) ? (int)$r['id'] : 0);
+//            if ($has_ord && isset($r['ord'])) $row['ord'] = (int)$r['ord'];
+//            foreach ($def as $cname => $_ddl){
+//                if (!isset($r[$cname])) continue;
+//                $val = $r[$cname];
+//                if (is_string($val) && $val !== '' && method_exists($this, 'decode_b64s')) {
+//                    $try = $this->decode_b64s($val);
+//                    if (is_array($try)) $val = $try;
+//                }
+//                $row[$cname] = $val;
+//            }
+//            $out[] = $row;
+//        }
+//        return $out;
+//    }
 
     public function field_value_compare_merge($new, $old /* , ...$keys */){
         $args = func_get_args();

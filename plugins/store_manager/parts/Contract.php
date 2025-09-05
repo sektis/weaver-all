@@ -5,7 +5,7 @@ use weaver\store_manager\StoreSchemaInterface;
 
 class Contract extends StoreSchemaBase{
 
-    protected $cont_pdt_type_text = array(1=>'매장',2=>'포장');
+    protected $cont_pdt_type_arr = array(1=>'매장',2=>'포장');
     protected $columns = array(
         'mb_id' => "",
         'cont_pdt_type' => "TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1=매장,2=포장'",
@@ -18,6 +18,13 @@ class Contract extends StoreSchemaBase{
             array()
         );
     }
+
+    public function column_extend($row){
+        $arr = array();
+        $arr['cont_pdt_type_text'] = $this->cont_pdt_type_arr[$row['cont_pdt_type']];
+        return $arr;
+    }
+
 
     protected function get_member_options($where='1',$selected='',$fields='mb_id,mb_name'){
         global $g5;

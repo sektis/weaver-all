@@ -287,6 +287,43 @@ class StorePartProxy{
 
 
     /** 스키마의 맵핑 프로퍼티 → 가상 파생키로 확장 */
+//    protected function get_schema_value_maps()    {
+//        static $cache = array();
+//        $cls = is_object($this->part) ? get_class($this->part) : '';
+//        if (!$cls) return array();
+//        if (isset($cache[$cls])) return $cache[$cls];
+//
+//        $allowed = array();
+//        if (is_object($this->part) && method_exists($this->part, 'get_allowed_columns')) {
+//            $allowed = (array)$this->part->get_allowed_columns();
+//        }
+//        $allowed = is_array($allowed) ? array_values($allowed) : array();
+//
+//        $maps = array(); // 예: ['cont_pdt_type_text' => ['base'=>'cont_pdt_type','map'=>[1=>'매장',2=>'포장']]]
+//
+//        $ref = new \ReflectionObject($this->part);
+//        $props = $ref->getProperties();
+//        foreach ($props as $p) {
+//            $name = $p->getName();
+//
+//            // 허용 컬럼 중 "col_" prefix로 시작하면 base로 인정
+//            $base = '';
+//            foreach ($allowed as $col) {
+//                if (strpos($name, $col . '_') === 0) { $base = $col; break; }
+//            }
+//            if ($base === '') continue;
+//
+//            $p->setAccessible(true);
+//            $val = $p->getValue($this->part);
+//            if (is_array($val)) {
+//                $maps[$name] = array('base' => $base, 'map' => $val);
+//            }
+//        }
+//
+//        $cache[$cls] = $maps;
+//        return $maps;
+//    }
+
     protected function get_schema_value_maps()
     {
         static $cache = array();
@@ -294,49 +331,39 @@ class StorePartProxy{
         if (!$cls) return array();
         if (isset($cache[$cls])) return $cache[$cls];
 
-        $allowed = array();
-        if (is_object($this->part) && method_exists($this->part, 'get_allowed_columns')) {
-            $allowed = (array)$this->part->get_allowed_columns();
-        }
-        $allowed = is_array($allowed) ? array_values($allowed) : array();
-
-        $maps = array(); // 예: ['cont_pdt_type_text' => ['base'=>'cont_pdt_type','map'=>[1=>'매장',2=>'포장']]]
-
-        $ref = new \ReflectionObject($this->part);
-        $props = $ref->getProperties();
-        foreach ($props as $p) {
-            $name = $p->getName();
-
-            // 허용 컬럼 중 "col_" prefix로 시작하면 base로 인정
-            $base = '';
-            foreach ($allowed as $col) {
-                if (strpos($name, $col . '_') === 0) { $base = $col; break; }
-            }
-            if ($base === '') continue;
-
-            $p->setAccessible(true);
-            $val = $p->getValue($this->part);
-            if (is_array($val)) {
-                $maps[$name] = array('base' => $base, 'map' => $val);
-            }
+        // ✅ 단순화: column_extend 메서드만 체크
+        $maps = array();
+        if (method_exists($this->part, 'column_extend')) {
+            $maps['column_extend'] = array('type' => 'extend_method');
         }
 
         $cache[$cls] = $maps;
         return $maps;
     }
+    //    protected function apply_value_maps(&$row)
+//    {
+//        $maps = $this->get_schema_value_maps();
+//        $virt = array();
+//        foreach ($maps as $vname => $spec) {
+//            $base = isset($spec['base']) ? $spec['base'] : '';
+//            $map  = isset($spec['map'])  ? $spec['map']  : array();
+//            $code = isset($row[$base]) ? $row[$base] : '';
+//            $row[$vname] = isset($map[$code]) ? $map[$code] : '';
+//            $virt[$vname] = true;
+//        }
+//        $this->virtual_keys = array_keys($virt);
+//    }
 
     protected function apply_value_maps(&$row)
     {
-        $maps = $this->get_schema_value_maps();
-        $virt = array();
-        foreach ($maps as $vname => $spec) {
-            $base = isset($spec['base']) ? $spec['base'] : '';
-            $map  = isset($spec['map'])  ? $spec['map']  : array();
-            $code = isset($row[$base]) ? $row[$base] : '';
-            $row[$vname] = isset($map[$code]) ? $map[$code] : '';
-            $virt[$vname] = true;
+        if (is_object($this->part) && method_exists($this->part, 'column_extend')) {
+            $extended = $this->part->column_extend($row);
+            if (is_array($extended)) {
+                foreach($extended as $key => $value) {
+                    $row[$key] = $value;
+                }
+            }
         }
-        $this->virtual_keys = array_keys($virt);
     }
 
     protected function get_virtual_keys()
