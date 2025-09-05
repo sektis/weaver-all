@@ -2197,6 +2197,74 @@ class StoreManager extends Makeable{
         }
     }
 
+
+    /**
+     * location 플러그인의 region depth 스킨 렌더링
+     * @param array $options 스킨 옵션
+     * @return string 렌더링된 HTML
+     */
+    public function render_location_region_selector($options = array()){
+        // location 플러그인이 있는지 확인
+        if (!wv()->has_plugin('location')) {
+            return '<!-- Location 플러그인이 활성화되지 않았습니다. -->';
+        }
+
+        $defaults = array(
+            'skin_type' => 'region/depth',
+            'multiple' => true,
+            'max_count' => 3,
+            'theme' => 'basic',
+            'device' => 'pc'
+        );
+
+        $options = array_merge($defaults, $options);
+
+        // location 플러그인의 Widget 렌더링 호출
+        return wv()->location->render_widget($options['skin_type'], $options);
+    }
+
+    /**
+     * 주소 검색 API 프록시
+     * @param string $query 검색어
+     * @return array 검색 결과
+     */
+    public function search_address($query){
+        if (!wv()->has_plugin('location')) {
+            return array();
+        }
+
+        // location 플러그인의 API 호출
+        return wv()->location->api_search($query);
+    }
+
+    /**
+     * 현재 위치 기반 주소 정보 가져오기
+     * @param float $lat 위도
+     * @param float $lng 경도
+     * @return array 주소 정보
+     */
+    public function get_address_by_coords($lat, $lng){
+        if (!wv()->has_plugin('location')) {
+            return array();
+        }
+
+        return wv()->location->coord_to_address($lat, $lng);
+    }
+
+    /**
+     * location 파트 렌더링 (통합 주소 선택기 포함)
+     * @param int $wr_id
+     * @param string $context form|view|edit
+     * @param array $vars 추가 변수
+     * @return string
+     */
+    public function render_location_part($wr_id = 0, $context = 'form', $vars = array()){
+        // location 플러그인 연동 변수 추가
+        $vars['location_plugin_available'] = wv()->has_plugin('location');
+        $vars['location_ajax_url'] = wv()->has_plugin('location') ? wv()->location->ajax_url() : '';
+
+        return $this->render_part('location', $wr_id, $context, $vars);
+    }
 }
 
 StoreManager::getInstance();
