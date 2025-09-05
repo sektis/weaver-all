@@ -12,6 +12,7 @@ class Location extends StoreSchemaBase implements StoreSchemaInterface{
         'region_2depth_name' => "VARCHAR(255) DEFAULT NULL",
         'region_3depth_name' => "VARCHAR(255) DEFAULT NULL",
         'address_name' => "VARCHAR(255) DEFAULT NULL",
+        'address_detail_name' => "VARCHAR(255) DEFAULT NULL",
         'address'=>''
     );
 

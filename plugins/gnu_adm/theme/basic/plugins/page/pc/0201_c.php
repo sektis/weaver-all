@@ -60,7 +60,7 @@ $store = wv()->store_manager->made()->get($wr_id);
                 <div class="mx-fit">
                     <div class="info-wrap ">
                         <div class="info-title">기본정보</div>
-                        <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-10)">
+                        <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-30)">
                             <?php echo $store->store->render_part(array('name','image','category'),'form');; ?>
                             <?php echo $store->location->render_part('address','form');; ?>
                             <?php echo $store->store->render_part(array('tel','notice'),'form');; ?>

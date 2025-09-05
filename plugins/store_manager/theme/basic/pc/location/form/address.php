@@ -16,13 +16,13 @@ if (isset($row['location']) && is_array($row['location'])) {
     $location_data = $row['location'];
 }
 
-// 개별 필드 값 추출
-$lat = isset($location_data['lat']) ? $location_data['lat'] : '';
-$lng = isset($location_data['lng']) ? $location_data['lng'] : '';
-$region_1depth_name = isset($location_data['region_1depth_name']) ? $location_data['region_1depth_name'] : '';
-$region_2depth_name = isset($location_data['region_2depth_name']) ? $location_data['region_2depth_name'] : '';
-$region_3depth_name = isset($location_data['region_3depth_name']) ? $location_data['region_3depth_name'] : '';
-$address_name = isset($location_data['address_name']) ? $location_data['address_name'] : '';
+// 개별 필드 값 직접 추출 (store_manager 클래스의 물리키→논리키 변환 활용)
+$lat = isset($row['lat']) ? $row['lat'] : '';
+$lng = isset($row['lng']) ? $row['lng'] : '';
+$region_1depth_name = isset($row['region_1depth_name']) ? $row['region_1depth_name'] : '';
+$region_2depth_name = isset($row['region_2depth_name']) ? $row['region_2depth_name'] : '';
+$region_3depth_name = isset($row['region_3depth_name']) ? $row['region_3depth_name'] : '';
+$address_name = isset($row['address_name']) ? $row['address_name'] : '';
 
 // Location 플러그인 address 스킨에 전달할 초기 데이터
 $address_skin_data = array(
@@ -30,6 +30,7 @@ $address_skin_data = array(
     'lng' => $lng,
     'address_name' => $address_name
 );
+
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> store-manager-location-address-form position-relative" style="">
     <style>
@@ -52,10 +53,23 @@ $address_skin_data = array(
     </style>
 
     <div class="position-relative col col-lg-auto w-full md:w-full">
-        <div class="container">
-            <div class="form-group mb-3">
-                <label class="form-label">매장 위치 <span class="text-danger">*</span></label>
+        <div class=" ">
+            <div class="wv-vstack" style="row-gap: var(--wv-10)">
+                <p class="wv-ps-subtitle">매장 주소</p>
+                <div class="hstack  " style="gap:var(--wv-10)">
+                    <div class="form-floating position-relative" style="z-index: 10">
+                        <input type="text" name="location[address_name]"   id="location[address_name]" required class="form-control required location-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
+                               value="<?php echo htmlspecialchars($address_name); ?>">
+                        <label for="contract[biz_num]" class="floatingInput">기본주소</label>
+                    </div>
+                    <div class="form-floating position-relative" style="z-index: 10">
+                        <input type="text" name="location[address_detail_name]"   id="location[address_detail_name]" required class="form-control required   "  placeholder="지도에서 검색하거나 핀을 움직이세요."
+                                value="<?php echo htmlspecialchars($row['address_detail_name']); ?>">
+                        <label for="contract[biz_num]" class="floatingInput">상세주소</label>
+                    </div>
+                </div>
 
+                <div class="">
                 <?php
                 // Location 플러그인의 address 스킨 렌더링
 //                if (wv_plugin_exists('location')) {
@@ -63,8 +77,10 @@ $address_skin_data = array(
 //                } else {
 //                    echo '<div class="alert alert-warning">Location 플러그인이 활성화되지 않았습니다.</div>';
 //                }
+
                 echo wv('location')->display('address', $address_skin_data);
                 ?>
+                </div>
             </div>
 
             <!-- Hidden Fields - location 파트의 모든 필드 -->
@@ -73,7 +89,7 @@ $address_skin_data = array(
             <input type="hidden" name="location[region_1depth_name]" class="location-region-1depth-name" value="<?php echo htmlspecialchars($region_1depth_name); ?>">
             <input type="hidden" name="location[region_2depth_name]" class="location-region-2depth-name" value="<?php echo htmlspecialchars($region_2depth_name); ?>">
             <input type="hidden" name="location[region_3depth_name]" class="location-region-3depth-name" value="<?php echo htmlspecialchars($region_3depth_name); ?>">
-            <input type="hidden" name="location[address_name]" class="location-address-name" value="<?php echo htmlspecialchars($address_name); ?>">
+
         </div>
     </div>
 

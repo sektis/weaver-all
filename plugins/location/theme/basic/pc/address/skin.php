@@ -86,20 +86,6 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                                         background: #F9F9F9;
                                     }
 
-        <?php echo $skin_selector?> .address-display {
-                                        padding: var(--wv-12) var(--wv-16);
-                                        background: #F9F9F9;
-                                        border-top: 1px solid #EFEFEF;
-                                        font-size: var(--wv-14);
-                                        color: #0D171B;
-                                        min-height: var(--wv-40);
-                                        display: flex;
-                                        align-items: center;
-                                    }
-
-        <?php echo $skin_selector?> .address-display.empty {
-                                        color: #97989C;
-                                    }
 
         @media (min-width: 992px) {
 
@@ -142,10 +128,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                 </button>
             </div>
 
-            <!-- 선택된 주소 표시 -->
-            <div class="address-display empty">
-                주소를 검색하거나 지도에서 위치를 선택해주세요.
-            </div>
+
         </div>
     </div>
 
@@ -181,6 +164,55 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
             function searchAddress(query) {
                 if (!query.trim()) return;
 
+                // 1. 먼저 카카오 지오코더로 직접 검색 (더 정확한 좌표 획득)
+                if (geocoder) {
+                    geocoder.addressSearch(query.trim(), function(result, status) {
+                        if (status === kakao.maps.services.Status.OK) {
+                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                            // ✅ 지도 센터와 마커 즉시 이동
+                            map.setCenter(coords);
+                            marker.setPosition(coords);
+
+                            // 좌표를 지역 정보로 변환
+                            geocoder.coord2RegionCode(result[0].x, result[0].y, function(regionResult, regionStatus) {
+                                if (regionStatus === kakao.maps.services.Status.OK) {
+                                    for (var i = 0; i < regionResult.length; i++) {
+                                        if (regionResult[i].region_type === 'H') {
+                                            updateLocationData(
+                                                result[0].y,
+                                                result[0].x,
+                                                regionResult[i].region_1depth_name,
+                                                regionResult[i].region_2depth_name,
+                                                regionResult[i].region_3depth_name,
+                                                result[0].address_name || query.trim()
+                                            );
+                                            return;
+                                        }
+                                    }
+                                }
+                                // 지역 정보를 못 가져왔을 때는 검색어를 그대로 사용
+                                updateLocationData(
+                                    result[0].y,
+                                    result[0].x,
+                                    '',
+                                    '',
+                                    '',
+                                    result[0].address_name || query.trim()
+                                );
+                            });
+                            return;
+                        }
+
+                        // 카카오 지오코더 실패 시 location 플러그인 API 사용
+                        useLocationPluginSearch(query);
+                    });
+                } else {
+                    // geocoder가 없으면 location 플러그인 API 사용
+                    useLocationPluginSearch(query);
+                }
+            }
+            function useLocationPluginSearch(query) {
                 $.ajax({
                     url: '<?php echo wv()->location->ajax_url(); ?>',
                     type: 'POST',
@@ -196,7 +228,6 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                     console.warn('주소 검색 실패');
                 });
             }
-
             function handleSearchResults(res) {
                 var results = [];
                 if (Array.isArray(res)) {
@@ -215,12 +246,18 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
 
                     if (region1 && region3) {
                         moveMapToAddress(region1, region2, region3);
+                    } else {
+                        console.warn('지역 정보 부족:', first);
                     }
+                } else {
+                    console.warn('검색 결과 없음');
                 }
             }
-
             function moveMapToAddress(region1, region2, region3) {
-                if (!geocoder) return;
+                if (!geocoder) {
+                    console.warn('Geocoder가 초기화되지 않았습니다.');
+                    return;
+                }
 
                 var fullAddress = region1 + ' ' + (region2 ? region2 + ' ' : '') + region3;
 
@@ -228,14 +265,16 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                     if (status === kakao.maps.services.Status.OK) {
                         var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
 
+                        // ✅ 지도 센터와 마커 이동
                         map.setCenter(coords);
                         marker.setPosition(coords);
 
-                        updateLocationData(result[0].y, result[0].x, region1, region2, region3, fullAddress);
+                        updateLocationData(result[0].y, result[0].x, region1, region2, region3, result[0].address_name || fullAddress);
+                    } else {
+                        console.warn('주소 검색 실패:', fullAddress, status);
                     }
                 });
             }
-
             function updateLocationData(lat, lng, region1, region2, region3, fullAddress) {
                 currentData = {
                     lat: parseFloat(lat),
@@ -248,16 +287,12 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                 };
 
                 // 주소 표시 업데이트
-                var $display = $skin.find('.address-display');
+
                 var displayText = (region1 || '') +
                     (region2 ? ' ' + region2 : '') +
                     (region3 ? ' ' + region3 : '');
 
-                if (displayText.trim()) {
-                    $display.removeClass('empty').text(displayText.trim());
-                } else {
-                    $display.addClass('empty').text('주소를 검색하거나 지도에서 위치를 선택해주세요.');
-                }
+
 
                 // 전역 이벤트 발생
                 triggerAddressChangedEvent(currentData);
@@ -370,9 +405,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                     map.setCenter(coords);
                     marker.setPosition(coords);
 
-                    if (currentData.address_name) {
-                        $skin.find('.address-display').removeClass('empty').text(currentData.address_name);
-                    }
+
                 }
             }
 

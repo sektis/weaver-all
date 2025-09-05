@@ -6,6 +6,8 @@
     "plugins/location/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/plugin.php",
     "plugins/location/README.md": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/README.md",
     "plugins/location/RegionApi.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/RegionApi.php",
+    "plugins/location/theme/basic/pc/address/skin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/theme/basic/pc/address/skin.php",
+    "plugins/location/theme/basic/pc/address/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/theme/basic/pc/address/_common.php",
     "plugins/location/theme/basic/pc/favorite_title/skin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/theme/basic/pc/favorite_title/skin.php",
     "plugins/location/theme/basic/pc/favorite_title/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/theme/basic/pc/favorite_title/_common.php",
     "plugins/location/theme/basic/pc/page/excel.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/location/theme/basic/pc/page/excel.php",
