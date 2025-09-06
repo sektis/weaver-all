@@ -84,7 +84,6 @@ $(document).ready(function () {
                 $row.removeClass('wv-ps-demo')
                 // 표시 보장
                 $row.show();
-                console.log($ps_list.children('.wv-ps-each'));
                 // 마지막 실제 행 뒤에 삽입(.wv-ps-new와 동일)
                 var $lastReal = $ps_list.children('.wv-ps-each').filter(function(){
                     return idField($(this)).length;
@@ -131,6 +130,7 @@ $(document).ready(function () {
 
         $(".wv-ps-new",$ps_col).on('click',function (e) {
             e.preventDefault();
+
             var $ps_list = $(this).closest('.wv-ps-list');
             if (!$ps_list.length) return false;
 

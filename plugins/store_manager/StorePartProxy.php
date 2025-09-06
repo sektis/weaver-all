@@ -183,11 +183,13 @@ class StorePartProxy{
 
         // 목록 파트의 list 바로 접근 허용
         if ($name === 'list' && $this->is_list_part()) {
+
             return $this->ensure_list_rows();
         }
 
         // 가상 파생키 허용
         $virtual = $this->get_virtual_keys();
+
         if (in_array($name, $virtual, true)) {
             $row = $this->ensure_rows();
             return isset($row[$name]) ? $row[$name] : null;
@@ -223,6 +225,7 @@ class StorePartProxy{
 
         $pkey = $this->get_part_key();
 
+
         if ($this->is_list_part()) {
             // 목록 파트: context 파라미터 정리
             $context = 'form';
@@ -240,6 +243,7 @@ class StorePartProxy{
 
             // row/list 데이터 준비
             $row = $this->ensure_rows();
+
             $row[$pkey] = $this->ensure_list_rows();
             $vars = array_merge(array('row' => $row, 'list' => $row[$pkey]), $vars);
 
@@ -354,7 +358,7 @@ class StorePartProxy{
 //        $this->virtual_keys = array_keys($virt);
 //    }
 
-    protected function apply_value_maps(&$row)
+    public function apply_value_maps(&$row)
     {
         if (is_object($this->part) && method_exists($this->part, 'column_extend')) {
             $extended = $this->part->column_extend($row);
