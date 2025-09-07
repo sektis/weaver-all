@@ -9,7 +9,7 @@ class Biz extends StoreSchemaBase implements StoreSchemaInterface{
     protected $columns = array(
         'open_time'=>'TEXT DEFAULT NULL',
         'break_time' => "TEXT DEFAULT NULL",
-        'is_holiday_off' => "TINYINT(1) NOT NULL DEFAULT 0",
+        'is_holiday_off' => "TINYINT(1)  DEFAULT 0",
 
     );
 

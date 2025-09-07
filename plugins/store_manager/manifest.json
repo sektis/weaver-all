@@ -2,7 +2,6 @@
     "plugins/store_manager/css/parts.css": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/css/parts.css",
     "plugins/store_manager/img/x.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/x.png",
     "plugins/store_manager/js/parts.js": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/js/parts.js",
-    "plugins/store_manager/js/parts2.js": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/js/parts2.js",
     "plugins/store_manager/parts/Basic.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Basic.php",
     "plugins/store_manager/parts/Biz.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Biz.php",
     "plugins/store_manager/parts/Contract.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Contract.php",

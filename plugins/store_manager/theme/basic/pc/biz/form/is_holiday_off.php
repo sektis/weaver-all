@@ -21,7 +21,10 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
             <!-- 공휴일 휴무 설정 -->
             <div class="hstack justify-content-between">
                 <div class="wv-ps-subtitle">공휴일</div>
-                <div class="form-check form-switch <?php echo $is_holiday_off?'':'disabled'; ?>">
+                <div class="form-check form-switch <?php echo $is_holiday_off?'':'disabled'; ?>" style="gap:var(--wv-6)">
+                    <label class="form-check-label" for="holiday-off-switch">
+                        <?php echo $is_holiday_off?'설정 함':'설정 안함'; ?>
+                    </label>
                     <input class="form-check-input"
                            type="checkbox"
                            role="switch"
@@ -29,9 +32,7 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
                            value="1"
                         <?php echo $is_holiday_off?'checked':''; ?>
                            id="holiday-off-switch">
-                    <label class="form-check-label" for="holiday-off-switch">
-                        <?php echo $is_holiday_off?'설정 함':'설정 안함'; ?>
-                    </label>
+
                 </div>
             </div>
 
@@ -39,7 +40,6 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
 
             <!-- 정기휴무 설정 -->
             <div class="">
-                <div class="wv-ps-subtitle">정기휴무</div>
                 <div>
                 <?php
                 echo $this->manager->get($row['wr_id'])->dayoffs->render_part('form');

@@ -154,7 +154,11 @@ $(document).ready(function () {
             $newRow.show();
             // 마지막 실제 행 뒤에 삽입 (업로더/타일 앞이 아닌, 실제 컨텐츠 끝에 추가)
             $newRow.removeClass('wv-ps-demo')
-            $base.after($newRow);
+            // $base.after($newRow);
+            var $lastReal = $ps_list.children('.wv-ps-each').filter(function(){
+                return idField($(this)).length;
+            }).last();
+            ($lastReal.length ? $lastReal : $base).after($newRow);
 
             // UX: 첫 입력 포커스
             $newRow.find(':input:visible:first').focus();
@@ -220,7 +224,9 @@ function bracketTokens(name){
     return { root: root, tokens: tokens };
 }
 
-function isNumericToken(t){ return t !== '' && /^\d+$/.test(t); }
+function isNumericToken(t){
+    return t !== '' && /^-?\d+$/.test(t); // -1, 0, 1, 2 등 음수/양수 모두 허용
+}
 
 // .wv-ps-each 내부에서 name이 [id]로 끝나는 필드
 function idField($row){
@@ -241,8 +247,15 @@ function replaceRowIndexInName(name, pos, nextIndex){
     var parsed = bracketTokens(name);
     if (pos < 0 || pos >= parsed.tokens.length) return name;
 
-    // 대상 토큰이 숫자/빈칸([])일 때만 교체 (고정 키 손상 방지)
-    if (parsed.tokens[pos] === '' || isNumericToken(parsed.tokens[pos])){
+    // ✅ 개선: -1 키 (demo)도 숫자로 인식하여 교체 가능하게 수정
+    var targetToken = parsed.tokens[pos];
+    var isReplaceable = (targetToken === '' ||
+        /^-?\d+$/.test(targetToken) || // -1, 0, 1, 2 등 음수/양수 모두 허용
+        targetToken === 'id' ||
+        targetToken === 'ord' ||
+        targetToken === 'delete');
+
+    if (isReplaceable) {
         parsed.tokens[pos] = String(nextIndex);
         return parsed.root + parsed.tokens.map(function(t){ return '[' + t + ']'; }).join('');
     }
@@ -306,7 +319,7 @@ function reindexRow($row, pos, nextIndex){
         // 보조 필드 규칙
         if (/\[id\]$/.test(newName))     $f.val('');             // 신규 id 비움
         if (/\[delete\]$/.test(newName)) $f.prop('checked', false).val('');
-        if (/\[ord\]$/.test(newName))    $f.val(nextIndex + 1);  // 필요 시 정책 변경
+        // if (/\[ord\]$/.test(newName))    $f.val(nextIndex + 1);  // 필요 시 정책 변경
     });
 }
 

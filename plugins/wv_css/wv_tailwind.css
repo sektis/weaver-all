@@ -108,6 +108,9 @@
   .list-item {
     display: list-item !important;
   }
+  .h-\[40px\] {
+    height: var(--wv-40) !important;
+  }
   .h-\[43px\] {
     height: var(--wv-43) !important;
   }
@@ -377,6 +380,9 @@
   .fs-\[33\/\/\/700\/\] {
     font-size: var(--wv-33) !important;
     font-weight: 700 !important;
+  }
+  .fs-\[14\/\/\/\/\] {
+    font-size: var(--wv-14) !important;
   }
   .fs-\[18\/\/\/\/\] {
     font-size: var(--wv-18) !important;
