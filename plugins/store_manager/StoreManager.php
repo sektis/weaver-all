@@ -869,10 +869,13 @@ class StoreManager extends Makeable{
 
                     $prev_decoded    = wv_base64_decode_unserialize($prev_serialized);
 
-                    $walk_function = function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col,&$walk_function) {
+                    $walk_function = function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col,&$walk_function,$data) {
 
 
                         if(!is_array($arr)){
+                            if(is_array($arr2)){
+                                $arr=$arr2;
+                            }
                             return false;
                         }
 
@@ -2568,6 +2571,68 @@ class StoreManager extends Makeable{
         $vars['location_ajax_url'] = wv()->has_plugin('location') ? wv()->location->ajax_url() : '';
 
         return $this->render_part('location', $wr_id, $context, $vars);
+    }
+
+    public function rsync_mapping($bo_table){
+        global $g5;
+        return;
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        $sql = "select * from $write_table where wr_is_comment=0 and wr_id='7112' order by wr_id asc";
+        $result = sql_query($sql);
+
+        while ($row = sql_fetch_array($result)){
+            $data =array();
+
+            $data['wr_id']=$row['wr_id'];
+
+            // store
+            $data['store']['name']=$row['wr_subject'];
+            $data['store']['category']=$this->parts['store']->get_category_index($row['ca_name']);
+            $data['store']['tel']=$row['wr_tel'];
+            $data['store']['notice']=nl2br(strip_tags($row['wr_content']));
+            $images = get_file($bo_table,$row['wr_id']);
+            foreach ($images as $k=>$v){
+                if(!$v['view'])continue;
+                $path_arr = explode('/data/',$v['path']);
+                $data['store']['image'][$k]=array(
+                    'source'=>$v['source'],
+                    'path'=>'https://dum2yo.com/data/'.$path_arr[1].'/'.$v['file'],
+                    'type'=>$v['type'],
+                    'id'=>uniqid().'store',
+                    'ord'=>$k
+                );
+            }
+
+            //location
+
+//            dd($arr);
+//            dd(wv()->location->coords($row['map_lat'],$row['map_lng']));
+            $data['location']['lat'] = $row['map_lat'];
+            $data['location']['lng'] = $row['map_lng'];
+
+            //biz
+            $data['biz']['parking']=nl2br(strip_tags($row['wr_content']));
+
+            $sql2 = "select * from $write_table where wr_is_comment=1 and wr_parent='{$row['wr_id']}' order by wr_id asc, wr_order asc";
+
+            $result2 = sql_query($sql2);
+            $i=0;
+            while ($row2 = sql_fetch_array($result2)){
+                $data['menu'][$i]['name'] = $row2['wr_subject'];
+                $data['menu'][$i]['prices'][0] = str_replace(',','',$row2['wr_10']);
+                $data['menu'][$i]['is_main'] = $row2['wr_1']=='대표메뉴'?1:0;
+                $data['menu'][$i]['use_eum'] = $row2['wr_use_eum'];
+                $data['menu'][$i]['ord'] = $i;
+
+                $i++;
+            }
+            //menu
+
+            wv()->store_manager->made()->set($data);
+            dd(1);
+        }
+
     }
 }
 

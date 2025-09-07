@@ -10,9 +10,10 @@ class Biz extends StoreSchemaBase implements StoreSchemaInterface{
         'open_time'=>'TEXT DEFAULT NULL',
         'break_time' => "TEXT DEFAULT NULL",
         'is_holiday_off' => "TINYINT(1)  DEFAULT 0",
-
+        'parking'=>'varchar(255) not null'
     );
 
+    protected $parking_max_char=20;
 
     public function get_indexes(){
         return array(

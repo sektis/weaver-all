@@ -9,6 +9,7 @@
     "plugins/store_manager/parts/Location.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Location.php",
     "plugins/store_manager/parts/Menu.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Menu.php",
     "plugins/store_manager/parts/Store.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Store.php",
+    "plugins/store_manager/parts/Tempdayoffs.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Tempdayoffs.php",
     "plugins/store_manager/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/plugin.php",
     "plugins/store_manager/Store.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/Store.php",
     "plugins/store_manager/StoreManager.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/StoreManager.php",
@@ -30,5 +31,6 @@
     "plugins/store_manager/theme/basic/pc/store/form/name.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/name.php",
     "plugins/store_manager/theme/basic/pc/store/form/notice.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/notice.php",
     "plugins/store_manager/theme/basic/pc/store/form/tel.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/tel.php",
+    "plugins/store_manager/theme/basic/pc/tempdayoffs/form.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/tempdayoffs/form.php",
     "plugins/store_manager/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/_common.php"
 }

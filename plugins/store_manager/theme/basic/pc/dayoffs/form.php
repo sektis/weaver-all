@@ -30,21 +30,21 @@ $dayoffs_list = $row['dayoffs'];
                                     }
         <?php echo $skin_selector?> .date-roulette-item{height:40px;display:flex;align-items:center;justify-content:center;font-size:var(--wv-16);color:#666;transition:all 0.3s ease;cursor:pointer;}
         <?php echo $skin_selector?> .date-roulette-item.empty{color:transparent;cursor:default;pointer-events:none;}
-        <?php echo $skin_selector?> .date-roulette-item.active{background:#000;color:#fff;font-weight:600;font-size:var(--wv-18);border-radius:var(--wv-4);}
+        <?php echo $skin_selector?> .date-roulette-item.active{background:#efefef;color:#fff;font-weight:600;font-size:var(--wv-18);border-radius:var(--wv-4);}
         <?php echo $skin_selector?> .date-roulette::before, <?php echo $skin_selector?> .date-roulette::after{content:'';position:absolute;left:0;right:0;height:80px;pointer-events:none;z-index:10;}
         <?php echo $skin_selector?> .date-roulette::before{top:0;background:linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0));}
         <?php echo $skin_selector?> .date-roulette::after{bottom:0;background:linear-gradient(to top, rgba(255,255,255,0.9), rgba(255,255,255,0));}
 
         /* 날짜 선택 버튼 */
-        <?php echo $skin_selector?> .date-confirm-btn{background:#007bff;color:white;border:none;padding:var(--wv-12) var(--wv-20);border-radius:var(--wv-4);width:100%;cursor:pointer;margin-top:var(--wv-12);}
-        <?php echo $skin_selector?> .date-confirm-btn:hover{background:#0056b3;}
+        <?php echo $skin_selector?> .date-confirm-btn{background:#0d171b;color:white;border:none;padding:var(--wv-12) var(--wv-20);border-radius:var(--wv-4);width:100%;cursor:pointer;margin-top:var(--wv-12);}
+        <?php echo $skin_selector?> .date-confirm-btn:hover{background:#0d171b;}
         <?php echo $skin_selector?> .date-confirm-btn:disabled{background:#ccc;cursor:not-allowed;}
 
         /* Offcanvas 내부 스타일 */
         <?php echo $skin_selector?> .option-list{display:flex;flex-direction:column;gap:var(--wv-8);}
         <?php echo $skin_selector?> .option-item{padding:var(--wv-12) var(--wv-16);border:1px solid #ddd;border-radius:var(--wv-4);cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:white;}
-        <?php echo $skin_selector?> .option-item:hover{background:#f8f9fa;border-color:#007bff;}
-        <?php echo $skin_selector?> .option-item.selected{background:#e3f2fd;border-color:#007bff;}
+        <?php echo $skin_selector?> .option-item:hover{background:#f8f9fa;border-color:#0d171b;}
+        <?php echo $skin_selector?> .option-item.selected{background:#e3f2fd;border-color:#0d171b;}
         <?php echo $skin_selector?> .option-item i{color:#28a745;opacity:0.5;transition:opacity 0.2s;}
         <?php echo $skin_selector?> .option-item.selected i{opacity:1;}
 
@@ -99,7 +99,7 @@ $dayoffs_list = $row['dayoffs'];
         </div>
 
         <!-- Bootstrap5 Offcanvas -->
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="dayoff-offcanvas" aria-labelledby="dayoff-offcanvas-label">
+        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="dayoff-offcanvas" aria-labelledby="dayoff-offcanvas-label" style="height: auto;max-height: 80dvh">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="dayoff-offcanvas-label"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -111,13 +111,16 @@ $dayoffs_list = $row['dayoffs'];
                 </div>
 
                 <!-- 날짜 룰렛 -->
-                <div class="date-roulette" id="date-roulette" style="display:none;">
+                <div id="date-roulette-wrap" style="display:none;">
+                <div class="date-roulette" id="date-roulette" >
                     <div class="date-roulette-container">
                         <div class="date-roulette-list" id="date-roulette-list">
                             <!-- 동적으로 생성 -->
                         </div>
                     </div>
-                    <button type="button" class="date-confirm-btn" id="date-confirm-btn" disabled>날짜를 선택하세요</button>
+
+                </div>
+                <button type="button" class="date-confirm-btn" id="date-confirm-btn" disabled>날짜를 선택하세요</button>
                 </div>
             </div>
         </div>
@@ -281,7 +284,7 @@ $dayoffs_list = $row['dayoffs'];
 
                     // 일반 옵션 리스트 표시
                     $skin.find('#option-list').show();
-                    $skin.find('#date-roulette').hide();
+                    $skin.find('#date-roulette-wrap').hide();
 
                 } else if (currentType === 'target') {
                     var cycle = currentRow.find('input[name*="[cycle]"]').val();
@@ -294,7 +297,7 @@ $dayoffs_list = $row['dayoffs'];
                         // 날짜 룰렛 표시
                         title = '날짜를 선택해주세요.';
                         $skin.find('#option-list').hide();
-                        $skin.find('#date-roulette').show();
+                        $skin.find('#date-roulette-wrap').show();
 
                         // 현재 선택된 날짜로 룰렛 위치 설정 (정확한 매칭)
                         if (currentValue && currentValue.endsWith('일')) {
@@ -319,7 +322,7 @@ $dayoffs_list = $row['dayoffs'];
                         options = dayOptions;
                         title = '요일을 선택해주세요.';
                         $skin.find('#option-list').show();
-                        $skin.find('#date-roulette').hide();
+                        $skin.find('#date-roulette-wrap').hide();
                     }
                 }
 

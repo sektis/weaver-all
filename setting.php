@@ -25,7 +25,8 @@ $wv_main_menu_array = array(
     array('name' => '마이페이지', 'url' => '/?wv_page_id=0104','icon'=>WV_URL.'/img/foot_5.png'),
 
 );
-wv()->store_manager->make('','restaurant',array('store','location','contract','menu','biz','dayoffs','tempdayoffs'))->prune_columns();
+wv()->store_manager->make('','restaurant',array('biz','store','location','contract','menu','dayoffs','tempdayoffs'))->prune_columns();
+wv()->store_manager->made()->rsync_mapping('sub01_01');
 //dd(wv()->store_manager->make('','restaurant')->bind_schema('location')->location->render_part('address_name','view'));
 
 wv('menu')->make('fixed_bottom')->setMenu($wv_main_menu_array);

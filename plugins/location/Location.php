@@ -124,9 +124,13 @@ class Location extends Plugin {
 
         if (!empty($data['documents'][0])) {
             $arr = array();
-            $arr['lng'] = $data['documents'][0]['x'];
-            $arr['lat'] = $data['documents'][0]['y'];
-            $arr['address'] = $data['documents'][0]['address'];
+            $arr['lng'] = $lng;
+            $arr['lat'] = $lat;
+            $arr['region_1depth_name'] = $data['documents'][0]['address']['region_1depth_name'];
+            $arr['region_2depth_name'] = $data['documents'][0]['address']['region_2depth_name'];
+            $arr['region_3depth_name'] = $data['documents'][0]['address']['region_3depth_name'];
+            $arr['address_name'] = $data['documents'][0]['address']['address_name'];
+            $arr['address_road_name'] = $data['documents'][0]['road_address']['address_name'];
 
         } else {
             return null;
@@ -135,9 +139,42 @@ class Location extends Plugin {
         return $arr;
     }
 
-    public function coords($coords){
-        $this->coords = $coords;
-        return $this;
+    public function coords($lat,$lng){
+        global $config;
+
+
+        $address="x={$lng}&y={$lat}";
+        $url = "https://dapi.kakao.com/v2/local/geo/coord2address.json?" . ($address);
+
+        $headers = [
+            "Authorization: KakaoAK {$config['cf_kakao_rest_key']}"
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        if (!empty($data['documents'][0])) {
+            $arr = array();
+            $arr['lng'] = $lng;
+            $arr['lat'] = $lat;
+            $arr['region_1depth_name'] = $data['documents'][0]['address']['region_1depth_name'];
+            $arr['region_2depth_name'] = $data['documents'][0]['address']['region_2depth_name'];
+            $arr['region_3depth_name'] = $data['documents'][0]['address']['region_3depth_name'];
+            $arr['address_name'] = $data['documents'][0]['address']['address_name'];
+            $arr['address_road_name'] = $data['documents'][0]['road_address']['address_name'];
+
+        } else {
+            return null;
+        }
+
+        return $arr;
     }
 
 

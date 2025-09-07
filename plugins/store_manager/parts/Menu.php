@@ -13,6 +13,7 @@ class Menu extends StoreSchemaBase implements StoreSchemaInterface{
         'images'=>'TEXT DEFAULT NULL',
         'desc'=>'TEXT DEFAULT NULL',
         'is_main' => "TINYINT(1) NOT NULL DEFAULT 0",
+        'use_eum' => "TINYINT(1) NOT NULL DEFAULT 0",
     );
     protected $image_max_count=8;
     public function get_indexes(){

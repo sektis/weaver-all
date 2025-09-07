@@ -128,7 +128,7 @@ $(document).ready(function () {
         })
 
         $(".wv-ps-new",$ps_col).on('click',function (e) {
-            e.preventDefault();
+            // e.preventDefault();
 
             var $ps_list = $(this).closest('.wv-ps-list');
             if (!$ps_list.length) return false;
@@ -159,6 +159,8 @@ $(document).ready(function () {
                 return idField($(this)).length;
             }).last();
             ($lastReal.length ? $lastReal : $base).after($newRow);
+
+            $newRow.trigger('wv-ps-row-created');
 
             // UX: 첫 입력 포커스
             $newRow.find(':input:visible:first').focus();

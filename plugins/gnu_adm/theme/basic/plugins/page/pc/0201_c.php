@@ -70,13 +70,13 @@ $store = wv()->store_manager->made()->get($wr_id);
                     </div>
                     <div class="info-wrap ">
                         <div class="info-title">영업정보</div>
-                        <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-10)">
+                        <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-8)">
                             <?php echo $store->biz->render_all('form'); ?>
                         </div>
                     </div>
                     <div class="info-wrap ">
                         <div class="info-title">메뉴정보</div>
-                        <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-10)">
+                        <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-8)">
                             <?php echo $store->menu->render_all('form');;; ?>
                         </div>
                     </div>

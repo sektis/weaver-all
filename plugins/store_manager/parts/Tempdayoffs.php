@@ -8,8 +8,8 @@ class Tempdayoffs extends StoreSchemaBase implements StoreSchemaInterface{
     public $list_part  = true;
 
     protected $columns = array(
-        'cycle' => " VARCHAR(10) not null",
-        'target' => " VARCHAR(10) not null",
+        'start_date' => "DATE NOT NULL",
+        'end_date' => "DATE NOT NULL",
     );
 
 

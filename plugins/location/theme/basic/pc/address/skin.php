@@ -179,6 +179,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                                 if (regionStatus === kakao.maps.services.Status.OK) {
                                     for (var i = 0; i < regionResult.length; i++) {
                                         if (regionResult[i].region_type === 'H') {
+                                            console.log(result)
                                             updateLocationData(
                                                 result[0].y,
                                                 result[0].x,
@@ -268,7 +269,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                         // ✅ 지도 센터와 마커 이동
                         map.setCenter(coords);
                         marker.setPosition(coords);
-
+                        console.log(result)
                         updateLocationData(result[0].y, result[0].x, region1, region2, region3, result[0].address_name || fullAddress);
                     } else {
                         console.warn('주소 검색 실패:', fullAddress, status);
@@ -301,6 +302,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
             function getCurrentLocation() {
                 if (typeof wv_get_current_location === 'function') {
                     wv_get_current_location(function(result) {
+                        console.log(result)
                         if (result && result.lat && result.lng) {
                             var coords = new kakao.maps.LatLng(result.lat, result.lng);
                             map.setCenter(coords);
@@ -331,6 +333,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                             // 좌표를 주소로 변환
                             geocoder.coord2RegionCode(lng, lat, function(result, status) {
                                 if (status === kakao.maps.services.Status.OK) {
+                                    console.log(result)
                                     for (var i = 0; i < result.length; i++) {
                                         if (result[i].region_type === 'H') {
                                             updateLocationData(
@@ -381,7 +384,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
 
                     // 클릭한 위치의 주소 정보 가져오기
                     geocoder.coord2RegionCode(latlng.getLng(), latlng.getLat(), function(result, status) {
-                        if (status === kakao.maps.services.Status.OK) {
+                        if (status === kakao.maps.services.Status.OK) { console.log(result)
                             for (var i = 0; i < result.length; i++) {
                                 if (result[i].region_type === 'H') {
                                     updateLocationData(
