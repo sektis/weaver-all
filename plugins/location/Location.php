@@ -7,7 +7,7 @@ class Location extends Plugin {
 
 
     use RegionApi;
-    private $locations = array();
+    public $locations = array();
     private $favorite_max_count = 3;
     private $ajax_url = '';
     protected $table = 'wv_location_region';
@@ -124,8 +124,8 @@ class Location extends Plugin {
 
         if (!empty($data['documents'][0])) {
             $arr = array();
-            $arr['lng'] = $lng;
-            $arr['lat'] = $lat;
+            $arr['lng'] = $data['documents'][0][x];
+            $arr['lat'] = $data['documents'][0][y];
             $arr['region_1depth_name'] = $data['documents'][0]['address']['region_1depth_name'];
             $arr['region_2depth_name'] = $data['documents'][0]['address']['region_2depth_name'];
             $arr['region_3depth_name'] = $data['documents'][0]['address']['region_3depth_name'];
