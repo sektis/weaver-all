@@ -48,9 +48,7 @@ $(document).ready(function () {
             var baseStr = info.root + tokens.map(function(t){ return '[' + t + ']'; }).join(''); // 'store[image]'
 
             // 3) 마지막 "실제 행"(id 필드 보유)을 베이스로 사용
-            var $base = $ps_list.children('.wv-ps-each').filter(function(){
-                return idField($(this)).length;
-            }).last();
+            var $base = $ps_list.children('.wv-ps-demo');
             if (!$base.length) return;
 
             // 4) 파일별로 새 행 생성
@@ -59,6 +57,7 @@ $(document).ready(function () {
                 var $row  = $base.clone(true, true);
                 file_list_arr.push(files[i].name);
                 // 이름 재인덱싱 + 값 초기화(.wv-ps-new 동일)
+
                 reindexRow($row, pos, idx);
 
                 // 파일 input 확보(없으면 생성) + 이름: store[image][IDX]
@@ -272,7 +271,9 @@ function findMaxRowIndexAndPos($ps_list){
             if (v > max) max = v;
         }
     });
-
+    if(max<0){
+        max=0;
+    }
     return { max: max, pos: pos };
 }
 
