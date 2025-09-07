@@ -63,3 +63,16 @@
     background: url('../img/x.png') no-repeat center;
     background-size: contain;
 }
+.wv-ps-delete-label-list{
+    display: block;
+    cursor: pointer;
+    height: 100%;
+}
+.wv-ps-delete-label-list>span{
+    height: 100%;
+    display: flex;
+    gap: var(--wv-4);
+    color:#fc5555;
+    align-items: center;
+
+}

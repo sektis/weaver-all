@@ -47,6 +47,15 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
                 </div>
             </div>
 
+            <!-- 임시휴무 설정 -->
+            <div class="">
+                <div>
+                <?php
+                echo $this->manager->get($row['wr_id'])->tempdayoffs->render_part('form');
+                ?>
+                </div>
+            </div>
+
         </div>
     </div>
 

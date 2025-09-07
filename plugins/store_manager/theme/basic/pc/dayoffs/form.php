@@ -83,9 +83,9 @@ $dayoffs_list = $row['dayoffs'];
 
                          
                             <!-- 삭제 체크박스 (weaver 플러그인 규칙) -->
-                            <label class="h-100 d-block ">
+                            <label class="  wv-ps-delete-label-list " style="">
                                 <input type="checkbox" class="d-none" name="dayoffs[<?php echo $k; ?>][delete]" value="1">
-                                <span class="btn w-100 border   h-100 d-flex-center"><i class="fa-solid fa-xmark"></i></span>
+                                <span class="       " style=""><i class="fa-solid fa-circle-minus"></i> 삭제</span>
                             </label>
                         </div>
                     </div>
