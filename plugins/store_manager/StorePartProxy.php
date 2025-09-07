@@ -245,6 +245,8 @@ class StorePartProxy{
             $row = $this->ensure_rows();
 
             $row[$pkey] = $this->ensure_list_rows();
+            $this->part->make_array($row[$pkey]);
+
             $vars = array_merge(array('row' => $row, 'list' => $row[$pkey]), $vars);
 
             // StoreSchemaBase로 직접 위임

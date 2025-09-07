@@ -90,6 +90,31 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
      */
     public function render_part($column, $type, $vars = array()){
         // 목록 파트는 특수 처리 (menu/form.php 같은 통합 스킨)
+
+//        $walk_function = function (&$arr,$arr2,$node) use(&$walk_function)  {
+//
+//
+//            if(!is_array($arr)){
+//                return false;
+//            }
+//            foreach ($arr as $k=>&$v){
+//
+//                wv_walk_by_ref_diff($v,$walk_function,$arr2[$k],array_merge($node,(array)$k));
+//
+//            }
+//            if(wv_is_all_int_keys($arr)){
+//
+//                array_unshift($arr, array());
+//
+//            }
+//
+//
+//            return false;
+//        };
+//        foreach ($this->get_allowed_columns() as $k=>$v){
+//            wv_walk_by_ref_diff($vars['row'][$v],$walk_function);
+//        }
+
         if ($this->is_list_part()) {
             return $this->render_list_part_template($type, $vars);
         }
@@ -123,9 +148,11 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         $part_key = $this->part_key;
         $bo_table = $this->bo_table;
 
+
         if (is_array($vars) && count($vars)) {
             foreach ($vars as $__k => $__v) { $__k = $__v; }
         }
+
         $skin_id = wv_make_skin_id();
         $skin_selector = wv_make_skin_selector($skin_id);
         ob_start();
@@ -176,10 +203,11 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
             return "<!-- StoreSchemaBase: list part skin not found ({$part_key}/{$context}) -->";
         }
 
+
         // 스킨 변수 준비
         $row = isset($vars['row']) ? $vars['row'] : array();
         $list = isset($vars['list']) ? $vars['list'] : array();
-        $rows = $list; // 호환성
+        $row['list'] = $list; // 호환성
         $bo_table = $this->bo_table;
         $part = $part_key;
 
@@ -197,11 +225,17 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         if(!array_filter($row[$part_key])){
             $row[$part_key]=(array)'';
         }
+
         $skin_id = function_exists('wv_make_skin_id') ? wv_make_skin_id() : 'skin_'.uniqid();
         $skin_selector = function_exists('wv_make_skin_selector') ? wv_make_skin_selector($skin_id) : '.'.$skin_id;
 
         ob_start();
         include $skin_path;
         return ob_get_clean();
+    }
+
+    public function make_array(&$arr){
+        $arr =  array_filter((array)$arr);
+        $arr['-1']='';
     }
 }

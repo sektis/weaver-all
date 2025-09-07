@@ -1,8 +1,8 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
-
 // menu 파트처럼 $row['list'] 처리
-$dayoffs_list = isset($row['list']) ? (array)$row['list'] : array();
+
+$dayoffs_list = $row['list'];
 
 // 데이터가 없으면 빈 배열로 초기화 (foreach가 최소 1번은 돌도록)
 if (!count($dayoffs_list)) {

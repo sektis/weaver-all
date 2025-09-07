@@ -1,9 +1,8 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
-
-$break_time = isset($row['break_time']) && is_array($row['open_time']) ? $row['open_time'] : array();
+$this->make_array($row['break_time']);
+$break_time = $row['break_time'];
 $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','sat'=>'토','sun'=>'일');
-
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> position-relative d-flex-center flex-nowrap" style="">
     <style>

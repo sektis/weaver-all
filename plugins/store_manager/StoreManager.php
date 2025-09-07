@@ -387,6 +387,287 @@ class StoreManager extends Makeable{
         return $dropped;
     }
 
+    // StoreManager.php에 추가할 안전한 컬럼 관리 메서드들
+
+    /**
+     * 안전 모드: 추가된 컬럼만 생성하고 삭제는 하지 않음
+     * 서비스 운영 중 안전하게 스키마 업데이트할 때 사용
+     * @param bool $include_list_parts 목록 파트도 포함할지 여부
+     * @return array 실제로 추가된 컬럼 목록
+     */
+    public function sync_columns_safe($include_list_parts = true){
+        $added = array();
+
+        // === 1) 일반 파트 컬럼 안전 추가 ===
+        $diff = $this->get_schema_diff();
+        $missing_cols = isset($diff['missing']) ? $diff['missing'] : array();
+
+        if (count($missing_cols)) {
+            // 물리 컬럼 → DDL 매핑 구성
+            $add_cols = array();
+            foreach ($this->parts as $pkey => $schema) {
+                if ($this->is_list_part_schema($schema)) continue; // 목록 파트는 별도 처리
+
+                $logical_cols = $schema->get_columns($this->bo_table);
+                foreach ($logical_cols as $lname => $ddl) {
+                    $pname = $this->get_physical_col($pkey, $lname);
+                    if (in_array($pname, $missing_cols)) {
+                        $add_cols[$pname] = $ddl;
+                    }
+                }
+            }
+
+            // 추가 실행
+            $table = $this->get_ext_table_name();
+            foreach ($add_cols as $col => $ddl) {
+                if (!is_string($ddl) || !strlen(trim($ddl))) continue;
+                if (!$this->table_has_column($table, $col)) {
+                    $sql = "ALTER TABLE `{$table}` ADD COLUMN `{$col}` {$ddl}";
+                    sql_query($sql, true);
+                    $added[] = $col;
+                }
+            }
+        }
+
+        // === 2) 목록 파트 테이블 안전 추가 ===
+        if ($include_list_parts && is_array($this->parts)) {
+            foreach ($this->parts as $part_key => $schema) {
+                if (!$this->is_list_part_schema($schema)) continue;
+
+                $list_table = $this->get_list_table_name($part_key);
+                $def_cols = $schema->get_columns($this->bo_table);
+
+                foreach ($def_cols as $cname => $ddl) {
+                    if ($cname === 'id' || $cname === 'wr_id' || $cname === 'ord') continue;
+                    if (!is_string($ddl) || !strlen(trim($ddl))) continue;
+
+                    if (!$this->table_has_column($list_table, $cname)) {
+                        $sql = "ALTER TABLE `{$list_table}` ADD COLUMN `{$cname}` {$ddl}";
+                        sql_query($sql, true);
+                        $added[] = "{$part_key}.{$cname}";
+                    }
+                }
+            }
+        }
+
+        return $added;
+    }
+
+    /**
+     * 특정 파트의 특정 컬럼만 삭제 (명시적 삭제)
+     * 개발자가 의도적으로 컬럼을 제거할 때만 사용
+     * @param string $part_key 파트 키 (예: 'basic', 'location')
+     * @param string|array $columns 삭제할 컬럼명(논리명 또는 물리명)
+     * @param bool $is_logical true면 논리명, false면 물리명으로 처리
+     * @return array 실제로 삭제된 컬럼 목록
+     */
+    public function drop_columns_explicit($part_key, $columns, $is_logical = true){
+        if (!is_array($columns)) {
+            $columns = array($columns);
+        }
+
+        $dropped = array();
+
+        if (!isset($this->parts[$part_key])) {
+            return $dropped; // 파트가 없으면 종료
+        }
+
+        $schema = $this->parts[$part_key];
+        $is_list_part = $this->is_list_part_schema($schema);
+
+        if ($is_list_part) {
+            // === 목록 파트 컬럼 삭제 ===
+            $table = $this->get_list_table_name($part_key);
+
+            foreach ($columns as $col) {
+                // 보호 컬럼 체크
+                if ($col === 'id' || $col === 'wr_id' || $col === 'ord') {
+                    continue; // 필수 컬럼은 삭제 불가
+                }
+
+                $physical_col = $is_logical ? $col : $col; // 목록 파트는 논리명=물리명
+
+                if ($this->table_has_column($table, $physical_col)) {
+                    $sql = "ALTER TABLE `{$table}` DROP COLUMN `{$physical_col}`";
+                    sql_query($sql, true);
+                    $dropped[] = "{$part_key}.{$physical_col}";
+                }
+            }
+
+        } else {
+            // === 일반 파트 컬럼 삭제 ===
+            $table = $this->get_ext_table_name();
+
+            foreach ($columns as $col) {
+                $physical_col = $is_logical ? $this->get_physical_col($part_key, $col) : $col;
+
+                // 보호 컬럼 체크
+                if ($physical_col === 'wr_id') {
+                    continue; // wr_id는 삭제 불가
+                }
+
+                if ($this->table_has_column($table, $physical_col)) {
+                    $sql = "ALTER TABLE `{$table}` DROP COLUMN `{$physical_col}`";
+                    sql_query($sql, true);
+                    $dropped[] = $physical_col;
+
+                    // allowed_columns에서도 제거
+                    $key = array_search($physical_col, $this->allowed_columns);
+                    if ($key !== false) {
+                        unset($this->allowed_columns[$key]);
+                        $this->allowed_columns = array_values($this->allowed_columns);
+                    }
+                }
+            }
+        }
+
+        return $dropped;
+    }
+
+    /**
+     * 고아 컬럼 확인 (정의에 없는 컬럼들)
+     * 삭제하기 전에 어떤 컬럼들이 삭제 대상인지 미리 확인
+     * @param bool $include_list_parts 목록 파트도 포함할지 여부
+     * @return array 삭제 대상 컬럼 목록
+     */
+    public function get_orphan_columns($include_list_parts = true){
+        $orphans = array();
+
+        // === 1) 일반 파트 고아 컬럼 ===
+        $diff = $this->get_schema_diff();
+        $extraneous = isset($diff['extraneous']) ? $diff['extraneous'] : array();
+
+        foreach ($extraneous as $col) {
+            if ($col !== 'wr_id') { // wr_id는 항상 보호
+                $orphans['main'][] = $col;
+            }
+        }
+
+        // === 2) 목록 파트 고아 컬럼 ===
+        if ($include_list_parts && is_array($this->parts)) {
+            foreach ($this->parts as $part_key => $schema) {
+                if (!$this->is_list_part_schema($schema)) continue;
+
+                $list_table = $this->get_list_table_name($part_key);
+                $def_cols = $schema->get_columns($this->bo_table);
+                $def_names = array_keys($def_cols);
+                $def_names[] = 'id';
+                $def_names[] = 'wr_id';
+                $def_names[] = 'ord';
+
+                // 현재 테이블의 컬럼들
+                $current_cols = array();
+                $result = sql_query("SHOW COLUMNS FROM `{$list_table}`");
+                while ($row = sql_fetch_array($result)) {
+                    if (isset($row['Field'])) {
+                        $current_cols[] = $row['Field'];
+                    }
+                }
+
+                // 정의에 없는 컬럼 찾기
+                foreach ($current_cols as $col) {
+                    if (!in_array($col, $def_names)) {
+                        $orphans[$part_key][] = $col;
+                    }
+                }
+            }
+        }
+
+        return $orphans;
+    }
+
+    /**
+     * 컬럼 정보 상세 조회 (디버깅/확인용)
+     * @param string $part_key 파트 키 (빈 값이면 메인 테이블)
+     * @return array 컬럼 정보 배열
+     */
+    public function get_column_info_detailed($part_key = ''){
+        $info = array();
+
+        if ($part_key === '') {
+            // === 메인 확장 테이블 ===
+            $table = $this->get_ext_table_name();
+            $info['table'] = $table;
+            $info['type'] = 'main';
+
+            // 정의된 컬럼
+            $info['defined'] = array_values(array_unique($this->allowed_columns));
+
+            // 현재 컬럼
+            $info['current'] = $this->get_current_table_columns();
+
+            // 차이점
+            $diff = $this->get_schema_diff();
+            $info['missing'] = $diff['missing'];
+            $info['extraneous'] = $diff['extraneous'];
+
+        } else {
+            // === 특정 파트 테이블 ===
+            if (!isset($this->parts[$part_key])) {
+                return array('error' => 'Part not found: ' . $part_key);
+            }
+
+            $schema = $this->parts[$part_key];
+            $is_list_part = $this->is_list_part_schema($schema);
+
+            $info['part_key'] = $part_key;
+            $info['type'] = $is_list_part ? 'list_part' : 'regular_part';
+
+            if ($is_list_part) {
+                $table = $this->get_list_table_name($part_key);
+                $info['table'] = $table;
+
+                // 정의된 컬럼
+                $def_cols = $schema->get_columns($this->bo_table);
+                $info['defined'] = array_merge(array('id', 'wr_id', 'ord'), array_keys($def_cols));
+
+                // 현재 컬럼
+                $current = array();
+                $result = sql_query("SHOW COLUMNS FROM `{$table}`");
+                while ($row = sql_fetch_array($result)) {
+                    if (isset($row['Field'])) {
+                        $current[] = $row['Field'];
+                    }
+                }
+                $info['current'] = $current;
+
+                // 차이점
+                $missing = array();
+                foreach ($info['defined'] as $col) {
+                    if (!in_array($col, $current)) {
+                        $missing[] = $col;
+                    }
+                }
+
+                $extraneous = array();
+                foreach ($current as $col) {
+                    if (!in_array($col, $info['defined'])) {
+                        $extraneous[] = $col;
+                    }
+                }
+
+                $info['missing'] = $missing;
+                $info['extraneous'] = $extraneous;
+
+            } else {
+                $info['table'] = $this->get_ext_table_name();
+                $logical_cols = $schema->get_columns($this->bo_table);
+                $physical_cols = array();
+
+                foreach ($logical_cols as $lname => $ddl) {
+                    $pname = $this->get_physical_col($part_key, $lname);
+                    $physical_cols[$lname] = $pname;
+                }
+
+                $info['logical_columns'] = array_keys($logical_cols);
+                $info['physical_columns'] = array_values($physical_cols);
+                $info['mapping'] = $physical_cols;
+            }
+        }
+
+        return $info;
+    }
+
     /** 현재 확장 테이블 인덱스 목록 반환 (PRIMARY 제외) */
     public function get_current_table_indexes(){
         $table = $this->get_ext_table_name();

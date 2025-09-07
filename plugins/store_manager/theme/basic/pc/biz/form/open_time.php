@@ -1,7 +1,7 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
-
-$open_time = isset($row['open_time']) && is_array($row['open_time']) ? $row['open_time'] : array();
+$this->make_array($row['open_time']);
+$open_time = $row['open_time'];
 $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','sat'=>'토','sun'=>'일');
 
 ?>

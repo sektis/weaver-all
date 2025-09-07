@@ -1728,6 +1728,11 @@ if(!function_exists('get_it_thumbnail_array')){
         return array('big_imgs'=>$big_imgs,'thumbnails'=>$thumbnails);
     }
 }
+if(!function_exists('wv_is_all_int_keys')){
+    function wv_is_all_int_keys(array $arr){
+        return count(array_filter(array_keys($arr), 'is_int')) === count($arr);
+    }
+}
 
 
 

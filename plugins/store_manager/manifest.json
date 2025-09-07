@@ -23,6 +23,7 @@
     "plugins/store_manager/theme/basic/pc/contract/form/biz_num.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/contract/form/biz_num.php",
     "plugins/store_manager/theme/basic/pc/contract/form/cont_pdt_type.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/contract/form/cont_pdt_type.php",
     "plugins/store_manager/theme/basic/pc/contract/form/mb_id.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/contract/form/mb_id.php",
+    "plugins/store_manager/theme/basic/pc/dayoffs/form.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/dayoffs/form.php",
     "plugins/store_manager/theme/basic/pc/location/form/address.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/location/form/address.php",
     "plugins/store_manager/theme/basic/pc/menu/form.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/menu/form.php",
     "plugins/store_manager/theme/basic/pc/store/form/category.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/category.php",
