@@ -818,7 +818,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                         wv_location_data: payload
                     }
                 })
-                    .done(function (res) { alert('저장완료'); })
+                    .done(function (res) { alert('저장완료');location.reload() })
                     .fail(function () { alert('통신 오류가 발생했습니다.'); })
                     .always(function () { $btn.data('busy', false); });
             });

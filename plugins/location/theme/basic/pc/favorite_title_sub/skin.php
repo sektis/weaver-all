@@ -15,9 +15,9 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         }
     </style>
 
-    <span class="hstack" style="gap:var(--wv-6)">
-         <img src="<?php echo WV_URL.'/img/icon_location.png'; ?>" class="w-[20px]" alt="">
-            <span class="location-name">&nbsp;</span>
+    <span class="hstack" style="gap:var(--wv-6);filter: brightness(0) saturate(100%) invert(62%) sepia(1%) saturate(1638%) hue-rotate(204deg) brightness(97%) contrast(93%);">
+         <img src="<?php echo WV_URL.'/img/icon_location.png'; ?>" class="w-[16px]" style="">
+            <span class="location-name fs-[16//-0.64/600/#97989C]">&nbsp;</span>
            <img src="<?php echo WV_URL.'/img/icon_arrow_down.png'; ?>" class="w-[16px]" alt="">
     </span>
 

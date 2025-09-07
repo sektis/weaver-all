@@ -147,6 +147,9 @@
   .w-\[54\.3px\] {
     width: var(--wv-54_3) !important;
   }
+  .w-\[54px\] {
+    width: var(--wv-54) !important;
+  }
   .w-\[63px\] {
     width: var(--wv-63) !important;
   }
@@ -284,6 +287,11 @@
     font-weight: 700 !important;
     color: #fff !important;
   }
+  .fs-\[11\/140\%\/\/500\/\] {
+    font-size: var(--wv-11) !important;
+    line-height: 140%px !important;
+    font-weight: 500 !important;
+  }
   .fs-\[30\/33\.15\/\/700\/\] {
     font-size: var(--wv-30) !important;
     line-height: var(--wv-33_15) !important;
@@ -323,6 +331,12 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0D171B !important;
+  }
+  .fs-\[16\/\/-0\.64\/600\/\#97989C\] {
+    font-size: var(--wv-16) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #97989C !important;
   }
   .fs-\[16\/\/-0\.64\/600\/\#CFCFCF\] {
     font-size: var(--wv-16) !important;

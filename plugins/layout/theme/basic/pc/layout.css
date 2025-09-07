@@ -9,6 +9,7 @@
     font-size: var(--wv-14);
     --wv-ini-width:360;
     --wv-ini-max:1.5;
+    /*--wv-ini-max:1;*/
     --wv-site-wrapper-width:var(--wv-360)
 }
 

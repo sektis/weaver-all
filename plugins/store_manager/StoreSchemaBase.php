@@ -155,6 +155,9 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
         $skin_id = wv_make_skin_id();
         $skin_selector = wv_make_skin_selector($skin_id);
+        $wv_skin_path = dirname($tpl);
+        $wv_skin_url = str_replace(G5_PATH, G5_URL, $wv_skin_path);
+
         ob_start();
         include $tpl;
         return ob_get_clean();
@@ -228,7 +231,8 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
         $skin_id = function_exists('wv_make_skin_id') ? wv_make_skin_id() : 'skin_'.uniqid();
         $skin_selector = function_exists('wv_make_skin_selector') ? wv_make_skin_selector($skin_id) : '.'.$skin_id;
-
+        $wv_skin_path = dirname($skin_path);
+        $wv_skin_url = str_replace(G5_PATH, G5_URL, $wv_skin_path);
         ob_start();
         include $skin_path;
         return ob_get_clean();
