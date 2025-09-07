@@ -934,7 +934,7 @@ class StoreManager extends Makeable{
 
                         if($is_new){
 
-                            if(empty_except_keys($arr,array('ord'))){
+                            if(wv_empty_except_keys($arr,array('ord'))){
                                 $combined = 'unset($data_pkey_logical_col'. wv_array_to_text($node,"['","']").');';
 
                                 @eval("$combined;");
@@ -2575,22 +2575,24 @@ class StoreManager extends Makeable{
 
     public function rsync_mapping($bo_table){
         global $g5;
-        return;
+return;
 
         $write_table = $g5['write_prefix'].$bo_table;
-        $sql = "select * from $write_table where wr_is_comment=0 and wr_id='7112' order by wr_id asc";
+        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id where wr_is_comment=0   order by wr_id asc";
         $result = sql_query($sql);
 
         while ($row = sql_fetch_array($result)){
-            $data =array();
+            $data =$row;
 
             $data['wr_id']=$row['wr_id'];
+            $data['wr_subject']=$row['wr_subject'];
+            $data['wr_content']=strip_tags($row['wr_content']);
 
             // store
             $data['store']['name']=$row['wr_subject'];
             $data['store']['category']=$this->parts['store']->get_category_index($row['ca_name']);
             $data['store']['tel']=$row['wr_tel'];
-            $data['store']['notice']=nl2br(strip_tags($row['wr_content']));
+            $data['store']['notice']=strip_tags($row['wr_content']);
             $images = get_file($bo_table,$row['wr_id']);
             foreach ($images as $k=>$v){
                 if(!$v['view'])continue;
@@ -2599,20 +2601,22 @@ class StoreManager extends Makeable{
                     'source'=>$v['source'],
                     'path'=>'https://dum2yo.com/data/'.$path_arr[1].'/'.$v['file'],
                     'type'=>$v['type'],
-                    'id'=>uniqid().'store',
                     'ord'=>$k
                 );
             }
 
+            //contract
+            $data['contract']['cont_pdt_type'] = 1;
+            $data['contract']['biz_num'] = wv_format_biznum($row['mb_3']);
+            $data['contract']['mb_id'] = $row['mb_id'];
+
             //location
 
-//            dd($arr);
-//            dd(wv()->location->coords($row['map_lat'],$row['map_lng']));
-            $data['location']['lat'] = $row['map_lat'];
-            $data['location']['lng'] = $row['map_lng'];
+            $data['location'] = wv()->location->coords($row['map_lat'],$row['map_lng']);
+
 
             //biz
-            $data['biz']['parking']=nl2br(strip_tags($row['wr_content']));
+            $data['biz']['parking']=get_text($row['wr_6']);
 
             $sql2 = "select * from $write_table where wr_is_comment=1 and wr_parent='{$row['wr_id']}' order by wr_id asc, wr_order asc";
 
@@ -2630,7 +2634,7 @@ class StoreManager extends Makeable{
             //menu
 
             wv()->store_manager->made()->set($data);
-            dd(1);
+
         }
 
     }

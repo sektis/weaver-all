@@ -1674,18 +1674,39 @@ if(!function_exists('wv_array_to_sql_set')){
     }
 
 }
-function empty_except_keys($arr, $exclude_keys = array()){
-    // 제외할 키 제거
-    $arr = array_diff_key($arr, array_flip($exclude_keys));
+if(!function_exists('wv_empty_except_keys')){
+    function wv_empty_except_keys($arr, $exclude_keys = array()){
+        // 제외할 키 제거
+        $arr = array_diff_key($arr, array_flip($exclude_keys));
 
-    // 의미있는 값만 남기기: ''와 null 제거 (0/'0'은 남김)
-    $arr = array_filter($arr, function($v){
-        return $v !== '' && $v !== null && !(is_array($v) && count($v) === 0);
-    });
+        // 의미있는 값만 남기기: ''와 null 제거 (0/'0'은 남김)
+        $arr = array_filter($arr, function($v){
+            return $v !== '' && $v !== null && !(is_array($v) && count($v) === 0);
+        });
 
-    // 남은 게 없으면 비었다고 판단
-    return count($arr) === 0;
+        // 남은 게 없으면 비었다고 판단
+        return count($arr) === 0;
+    }
 }
+
+
+if(!function_exists('wv_format_biznum')){
+    function wv_format_biznum($str)
+    {
+        // 숫자만 남기기
+        $num = preg_replace('/[^0-9]/', '', $str);
+
+        // 10자리(일반 사업자번호) 기준
+        if (strlen($num) == 10) {
+            return preg_replace('/(\d{3})(\d{2})(\d{5})/', '$1-$2-$3', $num);
+        }
+
+        // 길이가 안 맞으면 원본 리턴 (필요시 빈값 반환하도록 수정 가능)
+        return $str;
+    }
+}
+
+
 /**
  * 쇼핑몰 관련 함수
  */
@@ -3118,7 +3139,7 @@ if(!function_exists('wv_write_board')){
             if($w =='u' && $member['mb_id'] && $wr['mb_id'] === $member['mb_id']) {
                 ;
             } else if ($member['mb_level'] < $board['bo_write_level']) {
-                return ('글을 쓸 권한이 없습니다.');
+//                return ('글을 쓸 권한이 없습니다.');
             }
 
         } else if ($w == 'r') {
@@ -3208,8 +3229,8 @@ if(!function_exists('wv_write_board')){
                 $mb_id = '';
                 // 비회원의 경우 이름이 누락되는 경우가 있음
                 $wr_name = clean_xss_tags(trim($post['wr_name']));
-                if (!$wr_name)
-                    return ('이름은 필히 입력하셔야 합니다.');
+//                if (!$wr_name)
+//                    return ('이름은 필히 입력하셔야 합니다.');
                 $wr_password = get_encrypt_string($wr_password);
                 $wr_email = get_email_address(trim($post['wr_email']));
                 $wr_homepage = clean_xss_tags($wr_homepage);
@@ -3351,7 +3372,7 @@ if(!function_exists('wv_write_board')){
             } else {
                 $mb_id = "";
                 // 비회원의 경우 이름이 누락되는 경우가 있음
-                if (!trim($wr_name)) return("이름은 필히 입력하셔야 합니다.");
+//                if (!trim($wr_name)) return("이름은 필히 입력하셔야 합니다.");
                 $wr_name = clean_xss_tags(trim($post['wr_name']));
                 $wr_email = get_email_address(trim($post['wr_email']));
             }
