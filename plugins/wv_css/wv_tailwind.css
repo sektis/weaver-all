@@ -153,14 +153,8 @@
   .w-\[63px\] {
     width: var(--wv-63) !important;
   }
-  .w-\[191px\] {
-    width: var(--wv-191) !important;
-  }
   .w-\[279px\] {
     width: var(--wv-279) !important;
-  }
-  .w-\[350px\] {
-    width: var(--wv-350) !important;
   }
   .w-\[400px\] {
     width: var(--wv-400) !important;
@@ -254,6 +248,13 @@
     font-weight: 500 !important;
     color: #989898 !important;
   }
+  .fs-\[14\/20\/-0\.56\/600\/\#0d171b\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-20) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #0d171b !important;
+  }
   .fs-\[20\/130\%\/-0\.8\/700\/\#0D171B\] {
     font-size: var(--wv-20) !important;
     line-height: 130%px !important;
@@ -271,6 +272,13 @@
   .fs-\[24\/32\/-0\.96\/600\/\#0D171B\] {
     font-size: var(--wv-24) !important;
     line-height: var(--wv-32) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #0D171B !important;
+  }
+  .fs-\[26\/34\/-1\.04\/600\/\#0D171B\] {
+    font-size: var(--wv-26) !important;
+    line-height: var(--wv-34) !important;
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0D171B !important;
@@ -302,6 +310,12 @@
     line-height: var(--wv-11) !important;
     letter-spacing: -0.05em !important;
   }
+  .fs-\[12\/\/-0\.48\/500\/\#0D171B\] {
+    font-size: var(--wv-12) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #0D171B !important;
+  }
   .fs-\[12\/\/-0\.48\/500\/\#97989C\] {
     font-size: var(--wv-12) !important;
     letter-spacing: -0.04em !important;
@@ -331,6 +345,12 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0D171B !important;
+  }
+  .fs-\[14\/\/-0\.56\/700\/\#FFF\] {
+    font-size: var(--wv-14) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
+    color: #FFF !important;
   }
   .fs-\[16\/\/-0\.64\/600\/\#97989C\] {
     font-size: var(--wv-16) !important;
@@ -448,6 +468,13 @@
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter !important;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function)) !important;
     transition-duration: var(--tw-duration, var(--default-transition-duration)) !important;
+  }
+  .hover\:bg-\[\#0d171b\] {
+    &:hover {
+      @media (hover: hover) {
+        background-color: #0d171b !important;
+      }
+    }
   }
   .md\:mt-\[48px\] {
     @media (991.98px >= width) {

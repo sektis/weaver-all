@@ -14,7 +14,7 @@ $store_list = $store_result['list'];
 
 // Map 옵션 설정
 $map_options = array(
-    'height' => '#content-wrapper',
+    'height_wrapper' => '#content-wrapper',
     'clustering' => true,
     'map_id' => 'store-map-main'
 );
@@ -38,80 +38,131 @@ $map_options = array(
     <script>
         $(document).ready(function() {
 
-
             // Store 데이터 (PHP에서 전달)
             var storeData = <?php echo json_encode($store_list); ?>;
+
+            /**
+             * 🗺️ 지도 변경 이벤트 (통합)
+             * 지도 이동, 줌 변경시 모두 이 이벤트로 처리
+             */
             $(document).on('wv_location_map_changeed', function(event, data) {
 
                 var bounds = data.bounds;
-                // bounds.sw_lat, bounds.sw_lng, bounds.ne_lat, bounds.ne_lng
+                console.log('지도 변경됨:', bounds);
 
-                // TODO: Store Manager 매장 조회
-                console.log('지동change', bounds);
+                // Ajax로 매장 데이터 조회
+                fetchStoresByBounds(bounds);
             });
 
+            /**
+             * 📡 Ajax로 지도 영역 내 매장 조회
+             */
+            function fetchStoresByBounds(bounds) {
+                var ajaxUrl = '<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php';
 
+                $.ajax({
+                    url: ajaxUrl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'get_stores_by_bounds',
+                        sw_lat: bounds.sw_lat,
+                        sw_lng: bounds.sw_lng,
+                        ne_lat: bounds.ne_lat,
+                        ne_lng: bounds.ne_lng
+                    },
+                    success: function(response) {
+                        console.log('매장 조회 성공:', response);
+
+                        if (response.success && response.stores) {
+                            // 새로운 이벤트 발생: Map 스킨에서 마커 처리
+                            triggerStoreUpdateEvent(response.stores, bounds);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('매장 조회 실패:', error);
+                        console.error('응답:', xhr.responseText);
+                    }
+                });
+            }
 
             /**
-             * TODO: 매장 관련 헬퍼 함수들 (향후 구현)
+             * 🚀 매장 데이터 업데이트 이벤트 발생
              */
+            function triggerStoreUpdateEvent(stores, bounds) {
+                var eventData = {
+                    stores: stores,
+                    bounds: bounds,
+                    count: stores.length,
+                    timestamp: new Date().getTime()
+                };
 
-            // 매장 마커 생성
-            function createStoreMarkers(map, stores) {
-                console.log('TODO: 매장 마커 생성', stores.length + '개');
+                // Map 스킨으로 이벤트 전송
+                $(document).trigger('wv_location_place_updated', [eventData]);
 
-                // stores.forEach(function(store) {
-                //     if (store.lat && store.lng) {
-                //         var marker = new kakao.maps.Marker({
-                //             position: new kakao.maps.LatLng(store.lat, store.lng),
-                //             title: store.name
-                //         });
-                //
-                //         // 마커 클릭 이벤트
-                //         kakao.maps.event.addListener(marker, 'click', function() {
-                //             showStoreDetail(store);
-                //         });
-                //     }
+                console.log('매장 업데이트 이벤트 발생:', eventData.count + '개');
+            }
+
+            /**
+             * TODO: 지도 영역 기준 매장 필터링 함수
+             */
+            function filterStoresByBounds(bounds) {
+                // var filteredStores = storeData.filter(function(store) {
+                //     return store.lat >= bounds.sw_lat &&
+                //            store.lat <= bounds.ne_lat &&
+                //            store.lng >= bounds.sw_lng &&
+                //            store.lng <= bounds.ne_lng;
                 // });
+                // return filteredStores;
             }
 
-            // 지도 영역 내 매장 필터링
-            function filterStoresByBounds(stores, bounds) {
-                console.log('TODO: 매장 필터링', bounds);
+            /**
+             * TODO: 매장 마커 생성/업데이트 함수
+             */
+            function updateStoreMarkers(stores) {
+                // var mapInstance = window['wv_location_map_store-map-main'];
+                // if (!mapInstance) return;
 
-                // return stores.filter(function(store) {
-                //     return store.lat >= bounds.sw.lat && store.lat <= bounds.ne.lat &&
-                //            store.lng >= bounds.sw.lng && store.lng <= bounds.ne.lng;
+                // mapInstance.clearMarkers();
+
+                // var markers = stores.map(function(store) {
+                //     var marker = new kakao.maps.Marker({
+                //         position: new kakao.maps.LatLng(store.lat, store.lng),
+                //         title: store.name
+                //     });
+                //     return marker;
                 // });
 
-                return stores; // 임시로 전체 반환
+                // mapInstance.addMarkers(markers);
             }
 
-            // 매장 목록 표시
-            function displayStoreList(stores) {
-                console.log('TODO: 매장 목록 표시', stores.length + '개');
+            /**
+             * TODO: 매장 목록 UI 업데이트 함수
+             */
+            function updateStoreList(stores) {
+                // var $container = $('#store-list-container');
+                // var html = stores.map(function(store) {
+                //     return '<div class="store-item">' +
+                //            '<h5>' + store.name + '</h5>' +
+                //            '<p>' + store.address + '</p>' +
+                //            '</div>';
+                // }).join('');
+                // $container.html(html);
 
-                // var html = '';
-                // stores.forEach(function(store) {
-                //     html += '<div class="store-item">';
-                //     html += '<h5>' + store.name + '</h5>';
-                //     html += '<p>' + store.address + '</p>';
-                //     html += '</div>';
-                // });
-                // $('#store-list-container').html(html);
-                // $('#store-info-panel').show();
+                // $('#store-info-panel').toggle(stores.length > 0);
             }
 
-            // 매장 상세 정보 표시
-            function showStoreDetail(store) {
-                console.log('TODO: 매장 상세 정보 표시', store);
-
-                // 모달이나 사이드 패널에 매장 상세 정보 표시
-                // $('#store-detail-modal').modal('show');
-                // populateStoreDetail(store);
+            /**
+             * TODO: 초기 매장 데이터 로드
+             */
+            function initializeStores() {
+                // updateStoreMarkers(storeData);
+                // updateStoreList(storeData);
             }
 
-            console.log('✅ Page 0101 이벤트 리스너 등록 완료');
+            // 초기화
+            // initializeStores();
         });
     </script>
+
 </div>

@@ -88,15 +88,7 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                 };
 
                 // jQuery 이벤트
-
                 $(document).trigger('wv_location_map_changeed', [eventData]);
-
-
-                // // 네이티브 이벤트
-                // var customEvent = new CustomEvent('wv_location_map_changeed', {
-                //     detail: eventData
-                // });
-                // document.dispatchEvent(customEvent);
             }
 
             /**
@@ -111,104 +103,88 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                 showLoading(true);
 
                 try {
+                    // 현재 위치 가져오기
+                    if (typeof wv_get_current_location === 'function') {
+                        wv_get_current_location(function(result) {
+                            var lat = result && result.lat ? result.lat : 37.5665;
+                            var lng = result && result.lng ? result.lng : 126.9780;
+                            createMap(lat, lng);
+                        });
+                    } else {
+                        // location 플러그인 함수가 없으면 기본 위치 사용
+                        createMap(37.5665, 126.9780);
+                    }
+                } catch (error) {
+                    createMap(37.5665, 126.9780);
+                }
+            }
+
+            /**
+             * 지도 생성
+             */
+            function createMap(lat, lng) {
+                try {
                     updateMapHeight();
 
-                    var mapContainer = document.getElementById(mapId);
-                    if (!mapContainer) {
-                        return;
-                    }
-
-                    var mapOptions = {
-                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                    var container = document.getElementById(mapId);
+                    var options = {
+                        center: new kakao.maps.LatLng(lat, lng),
                         level: 8
                     };
 
-                    map = new kakao.maps.Map(mapContainer, mapOptions);
+                    map = new kakao.maps.Map(container, options);
 
-                    if (isClusterEnabled && window.kakao.maps.MarkerClusterer) {
+                    // 클러스터링 설정
+                    if (isClusterEnabled && typeof kakao.maps.MarkerClusterer !== 'undefined') {
                         clusterer = new kakao.maps.MarkerClusterer({
                             map: map,
                             averageCenter: true,
-                            minLevel: 6,
-                            styles: [{
-                                width: '40px', height: '40px',
-                                background: 'rgba(51, 204, 255, .8)',
-                                borderRadius: '20px',
-                                color: '#fff',
-                                textAlign: 'center',
-                                fontWeight: 'bold',
-                                lineHeight: '40px'
-                            }]
+                            minLevel: 6
                         });
                     }
 
-                    registerMapEvents();
-                    moveToCurrentLocationAuto();
+                    // 지도 이벤트 등록
+                    var moveTimeout, zoomTimeout;
+
+                    // 지도 이동 이벤트 (디바운싱)
+                    kakao.maps.event.addListener(map, 'center_changed', function() {
+                        clearTimeout(moveTimeout);
+                        moveTimeout = setTimeout(function() {
+                            triggerMapEvent();
+                        }, 300);
+                    });
+
+                    // 줌 변경 이벤트 (디바운싱)
+                    kakao.maps.event.addListener(map, 'zoom_changed', function() {
+                        clearTimeout(zoomTimeout);
+                        zoomTimeout = setTimeout(function() {
+                            triggerMapEvent();
+                        }, 300);
+                    });
+
                     showLoading(false);
+
+                    // 지도 로딩 완료 후 초기 이벤트 발생
+                    triggerMapEvent();
 
                 } catch (error) {
                     showLoading(false);
+                    alert('지도 로딩 중 오류가 발생했습니다: ' + error.message);
                 }
             }
 
             /**
-             * 지도 이벤트 등록
-             */
-            function registerMapEvents() {
-                var changeTimeout;
-
-                // 지도 변경시 debounce 적용 (500ms)
-                function handleMapChange() {
-                    clearTimeout(changeTimeout);
-                    changeTimeout = setTimeout(function() {
-                        triggerMapEvent();
-                    }, 500);
-                }
-
-                // 지도 이동시
-                kakao.maps.event.addListener(map, 'bounds_changed', handleMapChange);
-
-                // 줌 레벨 변경시
-                kakao.maps.event.addListener(map, 'zoom_changed', handleMapChange);
-
-                // 지도 로드 완료시 (최초 1회)
-                kakao.maps.event.addListener(map, 'tilesloaded', function() {
-                    // 최초 로드시에는 즉시 이벤트 발생
-                    setTimeout(function() {
-                        triggerMapEvent();
-                    }, 100);
-                });
-            }
-
-            /**
-             * 자동으로 현재 위치로 이동 (초기화시)
-             */
-            function moveToCurrentLocationAuto() {
-                if (typeof wv_get_current_location === 'function') {
-                    wv_get_current_location(function(result) {
-                        if (result && result.lat && result.lng) {
-                            var moveLatLng = new kakao.maps.LatLng(result.lat, result.lng);
-                            map.setCenter(moveLatLng);
-                            map.setLevel(6);
-                        }
-                    });
-                }
-            }
-
-            /**
-             * 수동으로 현재 위치로 이동 (버튼 클릭시)
+             * 현재 위치로 이동 (수동)
              */
             function moveToCurrentLocationManual() {
                 if (typeof wv_get_current_location === 'function') {
-                    showLoading(true);
                     wv_get_current_location(function(result) {
                         if (result && result.lat && result.lng) {
                             var moveLatLng = new kakao.maps.LatLng(result.lat, result.lng);
                             map.setCenter(moveLatLng);
                             map.setLevel(5);
-                            showLoading(false);
+                            triggerMapEvent();
                         } else {
-                            showLoading(false);
                             alert('현재 위치를 가져올 수 없습니다.');
                         }
                     });
@@ -293,32 +269,9 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                 var checkKakao = setInterval(function() {
                     if (window.kakao && window.kakao.maps) {
                         clearInterval(checkKakao);
-
-                        // 클러스터러 로드 대기 (필요시)
-                        if (isClusterEnabled) {
-                            if (window.kakao.maps.MarkerClusterer) {
-                                initKakaoMap();
-                            } else {
-                                // 클러스터러 로드
-                                var script = document.createElement('script');
-                                script.src = 'https://cdn.jsdelivr.net/npm/kakao-maps-clusterer@1.0.9/lib/clusterer.min.js';
-                                script.onload = initKakaoMap;
-                                document.head.appendChild(script);
-                            }
-                        } else {
-                            initKakaoMap();
-                        }
+                        initKakaoMap();
                     }
                 }, 100);
-
-                // 10초 후에도 로드되지 않으면 오류 표시
-                setTimeout(function() {
-                    if (!window.kakao || !window.kakao.maps) {
-                        clearInterval(checkKakao);
-                        showLoading(false);
-                        $skin.html('<div style="padding:20px;text-align:center;color:#999;">지도를 로드할 수 없습니다.</div>');
-                    }
-                }, 10000);
             }
         });
     </script>

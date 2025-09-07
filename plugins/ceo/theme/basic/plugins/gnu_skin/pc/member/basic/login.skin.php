@@ -31,7 +31,7 @@ $skin_selector = wv_make_skin_selector($skin_id);
                         <input type="hidden" name="url" value="<?php echo $login_url ?>">
                         <div>
                             <label for="login_id" class="fs-[12//-0.48/600/#0D171B]">아이디<strong class="sound_only"> 필수</strong></label>
-                            <input type="text" name="mb_id" id="login_id" required class="form-control border-0 border-bottom rounded-0 px-0 py-[8px] mt-[4px]" size="20" maxLength="20" placeholder="아이디 입력" autocomplete="new-password">
+                            <input type="text" name="mb_id" id="login_id" required class="form-control border-0 border-bottom rounded-0 px-0  " size="20" maxLength="20" placeholder="아이디 입력" autocomplete="new-password">
                         </div>
 
                         <div class="mt-[24px]">
