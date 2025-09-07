@@ -28,6 +28,8 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
     public function column_extend($row){
         $arr = array();
         $arr['category_text'] = $this->category_arr[$row['category']];
+        $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';
+        $arr['main_image'] =  $row['images'][0]['path'];
         return $arr;
     }
 

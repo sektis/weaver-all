@@ -1,4 +1,5 @@
 {
+    "plugins/store_manager/ajax.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/ajax.php",
     "plugins/store_manager/css/parts.css": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/css/parts.css",
     "plugins/store_manager/img/category_list/0.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/0.png",
     "plugins/store_manager/img/category_list/1.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/1.png",

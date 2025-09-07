@@ -16,7 +16,10 @@ $store_list = $store_result['list'];
 $map_options = array(
     'height_wrapper' => '#content-wrapper',
     'clustering' => true,
-    'map_id' => 'store-map-main'
+    'map_id' => 'store-map-main',
+    'initial_level' => 8,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
+    'min_level' => 4,       // 최소 줌 레벨 (최대 확대)
+    'max_level' => 12       // 최대 줌 레벨 (최대 축소)
 );
 ?>
 
@@ -74,9 +77,9 @@ $map_options = array(
                     success: function(response) {
                         console.log('매장 조회 성공:', response);
 
-                        if (response.success && response.stores) {
+                        if (response.result && response.content && response.content.stores) {
                             // 새로운 이벤트 발생: Map 스킨에서 마커 처리
-                            triggerStoreUpdateEvent(response.stores, bounds);
+                            triggerStoreUpdateEvent(response.content.stores, bounds, response.content);
                         }
                     },
                     error: function(xhr, status, error) {
@@ -89,20 +92,24 @@ $map_options = array(
             /**
              * 🚀 매장 데이터 업데이트 이벤트 발생
              */
-            function triggerStoreUpdateEvent(stores, bounds) {
+            /**
+             * 🚀 매장 데이터 업데이트 이벤트 발생
+             */
+            // 0101 스킨 수정
+            function triggerStoreUpdateEvent(stores, bounds, responseContent) {
                 var eventData = {
                     stores: stores,
                     bounds: bounds,
                     count: stores.length,
+                    category_icon_wrap: responseContent.category_icon_wrap,
+                    category_icon_wrap_on: responseContent.category_icon_wrap_on,
+                    store_info: responseContent.store_info, // 추가
                     timestamp: new Date().getTime()
                 };
 
-                // Map 스킨으로 이벤트 전송
                 $(document).trigger('wv_location_place_updated', [eventData]);
-
                 console.log('매장 업데이트 이벤트 발생:', eventData.count + '개');
             }
-
             /**
              * TODO: 지도 영역 기준 매장 필터링 함수
              */

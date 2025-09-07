@@ -5,6 +5,7 @@
  *
  * 카카오맵 + 클러스터링 기능
  * 현재위치부터 시작, wv_location_map_changeed 이벤트 발송
+ * category_icon 커스텀 마커 표시
  */
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
@@ -13,6 +14,9 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 $height_selector = isset($map_options['height_wrapper']) ? $map_options['height_wrapper'] : '#content-wrapper';
 $enable_clustering = isset($map_options['clustering']) ? $map_options['clustering'] : true;
 $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map-' . uniqid();
+$initial_level = isset($map_options['initial_level']) ? intval($map_options['initial_level']) : 8;
+$min_level = isset($map_options['min_level']) ? intval($map_options['min_level']) : 1;
+$max_level = isset($map_options['max_level']) ? intval($map_options['max_level']) : 14;
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-location-map-skin position-relative" style="<?php echo isset($data['margin_top'])?"margin-top:{$data['margin_top']};":""; ?>">
     <style>
@@ -23,6 +27,14 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
         <?php echo $skin_selector?> .current-location-btn i { font-size: 18px; color: #007bff; }
         <?php echo $skin_selector?> .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         <?php echo $skin_selector?> .loading-spinner { width: 32px; height: 32px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: wv-map-spin 1s linear infinite; }
+
+        /* 매장 정보 패널 스타일 */
+        <?php echo $skin_selector?> .store-info-panel {
+                                        transition: all 0.3s ease;
+                                        border-radius: 8px 8px 0 0;
+                                        box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+                                    }
+
         @keyframes wv-map-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @media (max-width: 991.98px) {
         <?php echo $skin_selector?> .current-location-btn { bottom: 15px; right: 15px; width: 40px; height: 40px; }
@@ -40,14 +52,26 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
         <i class="fa-solid fa-location-crosshairs"></i>
     </button>
 
+    <!-- 카카오맵 API 및 클러스터링 라이브러리 로드 -->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<?php echo $config['cf_kakao_js_apikey']?>&libraries=clusterer,services"></script>
+
     <!-- 카카오맵 컨테이너 -->
     <div id="<?php echo $map_id; ?>" class="kakao-map"></div>
+
+    <!-- 매장 정보 패널 -->
+    <div id="store-info-panel-<?php echo $map_id; ?>" class="store-info-panel" style="position:absolute;bottom:0;left:0;right:0;background:white;border-top:1px solid #ddd;padding:15px;display:none;z-index:1000;max-height:200px;overflow-y:auto;">
+        <div class="store-info-content"></div>
+        <button type="button" class="close-btn" style="position:absolute;top:10px;right:15px;border:none;background:none;font-size:18px;cursor:pointer;" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
 
     <script>
         $(document).ready(function(){
             var $skin = $("<?php echo $skin_selector?>");
             var mapId = '<?php echo $map_id; ?>';
             var heightSelector = '<?php echo $height_selector; ?>';
+            var initialLevel = <?php echo $initial_level; ?>;
+            var minLevel = <?php echo $min_level; ?>;
+            var maxLevel = <?php echo $max_level; ?>;
             var map, clusterer;
             var isClusterEnabled = <?php echo $enable_clustering ? 'true' : 'false'; ?>;
             var markers = [];
@@ -87,7 +111,6 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                     }
                 };
 
-                // jQuery 이벤트
                 $(document).trigger('wv_location_map_changeed', [eventData]);
             }
 
@@ -103,50 +126,57 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                 showLoading(true);
 
                 try {
-                    // 현재 위치 가져오기
                     if (typeof wv_get_current_location === 'function') {
                         wv_get_current_location(function(result) {
                             var lat = result && result.lat ? result.lat : 37.5665;
                             var lng = result && result.lng ? result.lng : 126.9780;
-                            createMap(lat, lng);
+                            createMap(lat, lng, initialLevel);
                         });
                     } else {
-                        // location 플러그인 함수가 없으면 기본 위치 사용
-                        createMap(37.5665, 126.9780);
+                        createMap(37.5665, 126.9780, initialLevel);
                     }
                 } catch (error) {
-                    createMap(37.5665, 126.9780);
+                    createMap(37.5665, 126.9780, initialLevel);
                 }
             }
 
             /**
              * 지도 생성
              */
-            function createMap(lat, lng) {
+            function createMap(lat, lng, level) {
+                level = level || initialLevel;
+
                 try {
                     updateMapHeight();
 
                     var container = document.getElementById(mapId);
                     var options = {
                         center: new kakao.maps.LatLng(lat, lng),
-                        level: 8
+                        level: level,
+                        minLevel: minLevel,
+                        maxLevel: maxLevel
                     };
 
                     map = new kakao.maps.Map(container, options);
 
                     // 클러스터링 설정
-                    if (isClusterEnabled && typeof kakao.maps.MarkerClusterer !== 'undefined') {
-                        clusterer = new kakao.maps.MarkerClusterer({
-                            map: map,
-                            averageCenter: true,
-                            minLevel: 6
-                        });
+                    if (isClusterEnabled) {
+                        if (typeof kakao.maps.MarkerClusterer !== 'undefined') {
+                            clusterer = new kakao.maps.MarkerClusterer({
+                                map: map,
+                                averageCenter: true,
+                                minLevel: Math.max(minLevel + 2, 6)
+                            });
+                            console.log('클러스터링 초기화 완료');
+                        } else {
+                            console.warn('MarkerClusterer가 로드되지 않았습니다.');
+                            isClusterEnabled = false;
+                        }
                     }
 
                     // 지도 이벤트 등록
                     var moveTimeout, zoomTimeout;
 
-                    // 지도 이동 이벤트 (디바운싱)
                     kakao.maps.event.addListener(map, 'center_changed', function() {
                         clearTimeout(moveTimeout);
                         moveTimeout = setTimeout(function() {
@@ -154,7 +184,6 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                         }, 300);
                     });
 
-                    // 줌 변경 이벤트 (디바운싱)
                     kakao.maps.event.addListener(map, 'zoom_changed', function() {
                         clearTimeout(zoomTimeout);
                         zoomTimeout = setTimeout(function() {
@@ -163,8 +192,6 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                     });
 
                     showLoading(false);
-
-                    // 지도 로딩 완료 후 초기 이벤트 발생
                     triggerMapEvent();
 
                 } catch (error) {
@@ -174,7 +201,7 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
             }
 
             /**
-             * 현재 위치로 이동 (수동)
+             * 현재 위치로 이동
              */
             function moveToCurrentLocationManual() {
                 if (typeof wv_get_current_location === 'function') {
@@ -182,7 +209,7 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                         if (result && result.lat && result.lng) {
                             var moveLatLng = new kakao.maps.LatLng(result.lat, result.lng);
                             map.setCenter(moveLatLng);
-                            map.setLevel(5);
+                            map.setLevel(Math.max(minLevel + 1, 5));
                             triggerMapEvent();
                         } else {
                             alert('현재 위치를 가져올 수 없습니다.');
@@ -206,43 +233,167 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
             }
 
             /**
+             * 매장 데이터 업데이트 이벤트 리스닝
+             */
+            $(document).on('wv_location_place_updated', function(event, data) {
+                console.log('매장 데이터 업데이트:', data);
+
+                if (data.stores && Array.isArray(data.stores)) {
+                    updateStoreMarkers(data.stores, data);
+                }
+            });
+
+            /**
+             * 커스텀 마커 이미지 생성
+             */
+            function createCustomMarkerImage(categoryIcon, isSelected) {
+                var size = new kakao.maps.Size(36, 36);
+                var option = { offset: new kakao.maps.Point(18, 36) };
+
+                if (categoryIcon) {
+                    // category_icon이 있으면 해당 이미지 사용
+                    return new kakao.maps.MarkerImage(categoryIcon, size, option);
+                } else {
+                    // category_icon이 없으면 기본 마커 사용
+                    var defaultIcon = isSelected ?
+                        'data:image/svg+xml;base64,' + btoa(getDefaultSelectedMarkerSvg()) :
+                        'data:image/svg+xml;base64,' + btoa(getDefaultMarkerSvg());
+                    return new kakao.maps.MarkerImage(defaultIcon, size, option);
+                }
+            }
+
+            /**
+             * 기본 마커 SVG
+             */
+            function getDefaultMarkerSvg() {
+                return '<svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="18" cy="18" r="16" fill="#ff6b6b" stroke="#fff" stroke-width="2"/>' +
+                    '<circle cx="18" cy="18" r="8" fill="#fff"/>' +
+                    '</svg>';
+            }
+
+            /**
+             * 선택된 마커 SVG
+             */
+            function getDefaultSelectedMarkerSvg() {
+                return '<svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="18" cy="18" r="16" fill="#007bff" stroke="#fff" stroke-width="2"/>' +
+                    '<circle cx="18" cy="18" r="8" fill="#fff"/>' +
+                    '</svg>';
+            }
+
+            /**
+             * 매장 마커 업데이트
+             */
+            function updateStoreMarkers(stores, response) {
+                if (!map) return;
+
+                console.log('updateStoreMarkers 호출:', stores.length, response);
+
+                // 기존 마커 제거
+                clearAllMarkers();
+
+                stores.forEach(function(store) {
+                    if (!store.lat || !store.lng) return;
+
+                    var position = new kakao.maps.LatLng(store.lat, store.lng);
+
+                    // 커스텀 마커 이미지 생성
+                    var markerImage = createCustomMarkerImage(store.category_icon, false);
+
+                    // 마커 생성
+                    var marker = new kakao.maps.Marker({
+                        position: position,
+                        title: store.name,
+                        image: markerImage
+                    });
+
+                    // 마커에 store 정보와 원본 이미지 저장
+                    marker.storeData = store;
+                    marker.originalImage = markerImage;
+                    marker.selectedImage = createCustomMarkerImage(store.category_icon, true);
+
+                    // 마커 클릭 이벤트
+                    kakao.maps.event.addListener(marker, 'click', function() {
+                        // 기존 선택 해제
+                        clearSelectedMarkers();
+
+                        // 현재 마커 선택 표시
+                        marker.isSelected = true;
+                        marker.setImage(marker.selectedImage);
+
+                        // 매장 정보 패널 표시
+                        showStoreInfoPanel(store, response);
+                    });
+
+                    // 클러스터링 적용 또는 개별 마커 표시
+                    if (isClusterEnabled && clusterer) {
+                        clusterer.addMarker(marker);
+                    } else {
+                        marker.setMap(map);
+                    }
+
+                    markers.push(marker);
+                });
+
+                console.log('마커 업데이트 완료:', markers.length + '개');
+            }
+
+            /**
+             * 선택된 마커 해제
+             */
+            function clearSelectedMarkers() {
+                markers.forEach(function(marker) {
+                    if (marker.isSelected) {
+                        marker.isSelected = false;
+                        marker.setImage(marker.originalImage);
+                    }
+                });
+            }
+
+            /**
+             * 모든 마커 제거
+             */
+            function clearAllMarkers() {
+                if (clusterer) {
+                    clusterer.clear();
+                }
+
+                markers.forEach(function(marker) {
+                    marker.setMap(null);
+                });
+
+                markers = [];
+            }
+
+            /**
+             * 매장 정보 패널 표시
+             */
+            function showStoreInfoPanel(store, response) {
+                var panelId = 'store-info-panel-' + mapId;
+                var panel = document.getElementById(panelId);
+                var content = panel.querySelector('.store-info-content');
+
+                if (response.store_info && response.store_info[store.wr_id]) {
+                    content.innerHTML = response.store_info[store.wr_id];
+                    panel.style.display = 'block';
+                } else {
+                    console.warn('매장 정보가 없습니다:', store.wr_id);
+                }
+            }
+
+            /**
              * 외부에서 호출 가능한 메서드들
              */
             window['wv_location_map_' + mapId] = {
                 getMap: function() { return map; },
                 getClusterer: function() { return clusterer; },
-                addMarkers: function(markerArray) {
-                    markers = markers.concat(markerArray);
-                    if (isClusterEnabled && clusterer) {
-                        clusterer.addMarkers(markerArray);
-                    } else {
-                        markerArray.forEach(function(marker) {
-                            marker.setMap(map);
-                        });
-                    }
-                },
-                clearMarkers: function() {
-                    if (clusterer) clusterer.clear();
-                    markers.forEach(function(marker) {
-                        marker.setMap(null);
-                    });
-                    markers = [];
-                },
+                clearMarkers: function() { clearAllMarkers(); },
                 moveToLocation: function(lat, lng, level) {
                     if (map) {
                         map.setCenter(new kakao.maps.LatLng(lat, lng));
                         if (level) map.setLevel(level);
                     }
-                },
-                getBounds: function() {
-                    if (!map) return null;
-                    var bounds = map.getBounds();
-                    return {
-                        sw_lat: bounds.getSouthWest().getLat(),
-                        sw_lng: bounds.getSouthWest().getLng(),
-                        ne_lat: bounds.getNorthEast().getLat(),
-                        ne_lng: bounds.getNorthEast().getLng()
-                    };
                 },
                 refresh: function() {
                     if (map) {
@@ -250,7 +401,26 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                         map.relayout();
                     }
                 },
-                updateHeight: updateMapHeight
+                // 특정 매장으로 이동하는 메서드 추가
+                moveToStore: function(storeId) {
+                    var targetMarker = markers.find(function(marker) {
+                        return marker.storeData && marker.storeData.wr_id == storeId;
+                    });
+
+                    if (targetMarker) {
+                        map.setCenter(targetMarker.getPosition());
+                        map.setLevel(Math.max(minLevel + 1, 5));
+
+                        // 마커 선택 효과
+                        clearSelectedMarkers();
+                        targetMarker.isSelected = true;
+                        targetMarker.setImage(targetMarker.selectedImage);
+
+                        // 매장 정보 패널 표시
+                        // showStoreInfoPanel 호출을 위해 response 데이터가 필요하므로
+                        // 이 부분은 필요에 따라 구현
+                    }
+                }
             };
 
             // 현재 위치 버튼 이벤트
@@ -265,7 +435,6 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
             if (window.kakao && window.kakao.maps) {
                 initKakaoMap();
             } else {
-                // 카카오맵 API 로드 대기
                 var checkKakao = setInterval(function() {
                     if (window.kakao && window.kakao.maps) {
                         clearInterval(checkKakao);
