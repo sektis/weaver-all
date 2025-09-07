@@ -1,4 +1,3 @@
-<?php
-$wv_text_1='fsdafdsa';
-?>
- sda
+<div class="wv-mx-fit" style="border-top: 1px solid #efefef">
+
+</div>

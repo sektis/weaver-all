@@ -31,7 +31,9 @@
                 </div>
             </div>
             <?php if($wv_page_id!='main'){ ?>
-                <div style="padding: var(--wv-6) 0 var(--wv-12);border-bottom: 1px solid #efefef"><?php echo wv()->location->display('favorite_title_sub') ?></div>
+                <a href="javascript:;"  class="hstack  " style="padding: var(--wv-6) 0 var(--wv-12);"  data-wv-ajax-url="<?php echo wv()->location->ajax_url().'?wv_location_action=region'; ?>" data-wv-ajax-type="offcanvas" data-wv-ajax-options="bottom,backdrop-static" data-wv-ajax-target="#site-wrapper">
+                    <?php echo wv()->location->display('favorite_title_sub') ?>
+                </a>
             <?php }  ?>
         </div>
 

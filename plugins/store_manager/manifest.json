@@ -1,5 +1,19 @@
 {
     "plugins/store_manager/css/parts.css": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/css/parts.css",
+    "plugins/store_manager/img/category_list/0.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/0.png",
+    "plugins/store_manager/img/category_list/1.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/1.png",
+    "plugins/store_manager/img/category_list/10.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/10.png",
+    "plugins/store_manager/img/category_list/11.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/11.png",
+    "plugins/store_manager/img/category_list/12.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/12.png",
+    "plugins/store_manager/img/category_list/2.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/2.png",
+    "plugins/store_manager/img/category_list/3.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/3.png",
+    "plugins/store_manager/img/category_list/4.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/4.png",
+    "plugins/store_manager/img/category_list/5.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/5.png",
+    "plugins/store_manager/img/category_list/6.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/6.png",
+    "plugins/store_manager/img/category_list/7.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/7.png",
+    "plugins/store_manager/img/category_list/8.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/8.png",
+    "plugins/store_manager/img/category_list/9.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/9.png",
+    "plugins/store_manager/img/category_list/99.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/category_list/99.png",
     "plugins/store_manager/img/x.png": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/img/x.png",
     "plugins/store_manager/js/parts.js": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/js/parts.js",
     "plugins/store_manager/parts/Basic.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Basic.php",
@@ -32,6 +46,7 @@
     "plugins/store_manager/theme/basic/pc/store/form/name.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/name.php",
     "plugins/store_manager/theme/basic/pc/store/form/notice.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/notice.php",
     "plugins/store_manager/theme/basic/pc/store/form/tel.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/tel.php",
+    "plugins/store_manager/theme/basic/pc/store/view/category_list.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/view/category_list.php",
     "plugins/store_manager/theme/basic/pc/tempdayoffs/form.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/tempdayoffs/form.php",
     "plugins/store_manager/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/_common.php"
 }

@@ -15,7 +15,7 @@
     .wv-ms-cover:not([class*=wv-ms-cover-]){width:calc(var(--wv-offset-left) + var(--wv-org-width))  ;}
     .wv-me-cover:not([class*=wv-me-cover-]){width:calc(100vw - var(--wv-offset-left))  ;}
     .wh-100{width: 100%;height: 100%;}
-    .mx-fit{margin-left: calc(calc(var(--wv-container-gutter-x) * .5) * -1)!important;margin-right: calc(calc(var(--wv-container-gutter-x) * .5) * -1) !important;}
+    .wv-mx-fit{margin-left: calc(calc(var(--wv-container-gutter-x) * .5) * -1)!important;margin-right: calc(calc(var(--wv-container-gutter-x) * .5) * -1) !important;}
     .wv-line-clamp{overflow: hidden;text-overflow: ellipsis;display: -webkit-box;-webkit-line-clamp: var(--wv-line-clamp-length,1);-webkit-box-orient: vertical;}
     .wv-skew{transform: skew(0.000001deg);}
     .wv-ls-before:before{content:"\00a0"; font-size: 0;}
