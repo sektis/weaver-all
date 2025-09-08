@@ -8,18 +8,16 @@
  */
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
-// Store Manager 매장 목록 가져오기
-$store_result = wv()->store_manager->made()->get_list();
-$store_list = $store_result['list'];
+
 
 // Map 옵션 설정
 $map_options = array(
     'height_wrapper' => '#content-wrapper',
     'clustering' => true,
     'map_id' => 'store-map-main',
-    'initial_level' => 8,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
+    'initial_level' => 6,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
     'min_level' => 4,       // 최소 줌 레벨 (최대 확대)
-    'max_level' => 12       // 최대 줌 레벨 (최대 축소)
+    'max_level' => 9       // 최대 줌 레벨 (최대 축소)
 );
 ?>
 

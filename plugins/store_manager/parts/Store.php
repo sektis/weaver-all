@@ -14,7 +14,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         'category' => "TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '카테고리'",
         'tel' => "VARCHAR(255) DEFAULT NULL",
         'notice' => "TEXT DEFAULT NULL",
-        'category_list'=>''
+        'list_each'=>''
     );
 
     protected $image_max_count=8;
@@ -29,7 +29,9 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         $arr = array();
         $arr['category_text'] = $this->category_arr[$row['category']];
         $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';
-        $arr['main_image'] =  $row['images'][0]['path'];
+        $first_image = reset($row['image']);
+        $arr['main_image'] =  $first_image['path'];
+        $arr['list_each'] =  'dasdas';
         return $arr;
     }
 

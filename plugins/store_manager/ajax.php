@@ -16,16 +16,19 @@ if($action == 'get_stores_by_bounds'){
     $manager = wv()->store_manager->made();
 
     // WHERE 조건 구성 (확장테이블 s의 물리키 사용)
-    $where_s = array(
-        "location_lat BETWEEN {$sw_lat} AND {$ne_lat}",
-        "location_lng BETWEEN {$sw_lng} AND {$ne_lng}"
-    );
 
     // get_list 옵션
     $options = array(
-        'where_s' => $where_s,
+        'where_location' => array('and' =>
+            array(
+                'lat' => "BETWEEN {$sw_lat} AND {$ne_lat}",
+                'lng' => "BETWEEN {$sw_lng} AND {$ne_lng}"
+            ),
+        ),
+        'select_store'=>array('list_each'=>''),
         'order_by' => 'w.wr_datetime DESC',
-        'rows' => 1000  // 최대 1000개까지
+        'rows' => 1000,  // 최대 1000개까지,
+        'with_list_part'=>true
     );
 
     $result = $manager->get_list($options);

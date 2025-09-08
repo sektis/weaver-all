@@ -14,11 +14,20 @@ class Menu extends StoreSchemaBase implements StoreSchemaInterface{
         'desc'=>'TEXT DEFAULT NULL',
         'is_main' => "TINYINT(1) NOT NULL DEFAULT 0",
         'use_eum' => "TINYINT(1) NOT NULL DEFAULT 0",
+        'test' => "",
     );
     protected $image_max_count=8;
+
     public function get_indexes(){
         return array(
             array()
         );
+    }
+
+    public function column_extend($row){
+        $arr = array();
+        $arr['test'] = 'sadasdsa';
+        dd($arr);
+        return $arr;
     }
 }
