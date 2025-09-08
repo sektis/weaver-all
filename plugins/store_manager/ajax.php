@@ -19,10 +19,15 @@ if($action == 'get_stores_by_bounds'){
 
     // get_list 옵션
     $options = array(
+        'where' =>    array(
+            " location_lat  <>'' ",
+            " location_lng <>'' "
+        ),
         'where_location' => array('and' =>
             array(
-                'lat' => "BETWEEN {$sw_lat} AND {$ne_lat}",
-                'lng' => "BETWEEN {$sw_lng} AND {$ne_lng}"
+                'lat' => "BETWEEN {$sw_lat} AND {$ne_lat} ",
+
+                'lng' => "BETWEEN {$sw_lng} AND {$ne_lng} "
             ),
         ),
         'select_store'=>array('list_each'=>''),
@@ -35,6 +40,7 @@ if($action == 'get_stores_by_bounds'){
 
     // 응답 데이터 정리
     $stores = array();
+
     if (isset($result['list']) && is_array($result['list'])) {
         foreach ($result['list'] as $item) {
             // location 파트에서 좌표 정보 추출 (일반 파트 - Array 접근)
@@ -75,14 +81,8 @@ if($action == 'get_stores_by_bounds'){
     wv_json_exit(array(
         'result' => true,
         'content' => array(
-            'count' => count($stores),
-            'stores' => $stores,
-            'bounds' => array(
-                'sw_lat' => $sw_lat,
-                'sw_lng' => $sw_lng,
-                'ne_lat' => $ne_lat,
-                'ne_lng' => $ne_lng
-            ),
+            'count' => $result['total_count'],
+            'lists' => $result['list'],
             'category_icon_wrap'=>wv()->store_manager->made()->plugin_url.'/img/category_list/small/category_icon_wrap.png',
             'category_icon_wrap_on'=>wv()->store_manager->made()->plugin_url.'/img/category_list/small/category_icon_wrap_on.png',
 

@@ -49,8 +49,6 @@ $map_options = array(
             $(document).on('wv_location_map_changeed', function(event, data) {
 
                 var bounds = data.bounds;
-                console.log('지도 변경됨:', bounds);
-
                 // Ajax로 매장 데이터 조회
                 fetchStoresByBounds(bounds);
             });
@@ -73,16 +71,13 @@ $map_options = array(
                         ne_lng: bounds.ne_lng
                     },
                     success: function(response) {
-                        console.log('매장 조회 성공:', response);
 
-                        if (response.result && response.content && response.content.stores) {
+                        if (response.result && response.content && response.content.lists) {
                             // 새로운 이벤트 발생: Map 스킨에서 마커 처리
-                            triggerStoreUpdateEvent(response.content.stores, bounds, response.content);
+                            triggerStoreUpdateEvent(response);
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('매장 조회 실패:', error);
-                        console.error('응답:', xhr.responseText);
                     }
                 });
             }
@@ -94,19 +89,19 @@ $map_options = array(
              * 🚀 매장 데이터 업데이트 이벤트 발생
              */
             // 0101 스킨 수정
-            function triggerStoreUpdateEvent(stores, bounds, responseContent) {
+            function triggerStoreUpdateEvent(responseContent) {
                 var eventData = {
-                    stores: stores,
-                    bounds: bounds,
-                    count: stores.length,
-                    category_icon_wrap: responseContent.category_icon_wrap,
-                    category_icon_wrap_on: responseContent.category_icon_wrap_on,
-                    store_info: responseContent.store_info, // 추가
+                    lists: responseContent.content.lists,
+
+                    count: responseContent.content.count,
+                    category_icon_wrap: responseContent.content.category_icon_wrap,
+                    category_icon_wrap_on: responseContent.content.category_icon_wrap_on,
+
                     timestamp: new Date().getTime()
                 };
 
                 $(document).trigger('wv_location_place_updated', [eventData]);
-                console.log('매장 업데이트 이벤트 발생:', eventData.count + '개');
+
             }
             /**
              * TODO: 지도 영역 기준 매장 필터링 함수
