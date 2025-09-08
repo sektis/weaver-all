@@ -15,7 +15,8 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         'tel' => "VARCHAR(255) DEFAULT NULL",
         'notice' => "TEXT DEFAULT NULL",
         'category_icon'=>'',
-        'list_each'=>''
+        'list_each'=>'',
+        'service'=>'',
     );
 
     protected $image_max_count=8;
@@ -26,13 +27,18 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         );
     }
 
-    public function column_extend($row){
+    public function column_extend($row,$all_row=array()){
         $arr = array();
         $arr['category_text'] = $this->category_arr[$row['category']];
         $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';
         $first_image = reset($row['image']);
         $arr['main_image'] =  $first_image['path'];
-        $arr['list_each'] =  'dasdas';
+        if(isset($row['list_each'])){
+            $row['wr_id'] = $all_row['wr_id'];
+            $arr['list_each'] =  $this->manager->store->render_part('list_each','view',array('row'=>$row));
+        }
+
+
         return $arr;
     }
 

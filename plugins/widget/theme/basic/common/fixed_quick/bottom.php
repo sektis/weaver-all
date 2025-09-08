@@ -2,7 +2,7 @@
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 ?>
 <style>
-    <?php echo $skin_selector?> .fq-bottom-wrap{position: fixed;pointer-events: auto; bottom: 0;width: inherit;background-color: transparent;}
+    <?php echo $skin_selector?> .fq-bottom-wrap{position: fixed;pointer-events: auto; bottom: 0;width: inherit;background-color: #fff;}
     <?php echo $skin_selector?> .bottom-menu{padding: var(--wv-6) 0;box-shadow: 0 calc(var(--wv-4) * -1) var(--wv-6) 0
     rgba(183, 183, 183, 0.25);}
 </style>

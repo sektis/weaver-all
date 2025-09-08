@@ -189,10 +189,12 @@ class StorePartProxy{
 
         // 가상 파생키 허용
         $virtual = $this->get_virtual_keys();
+        $row = $this->ensure_rows();
 
-        if (in_array($name, $virtual, true)) {
-            $row = $this->ensure_rows();
-            return isset($row[$name]) ? $row[$name] : null;
+        if (isset($row[$name])) {
+
+
+            return $row[$name];
         }
 
         // 일반 허용 컬럼만
@@ -202,7 +204,7 @@ class StorePartProxy{
         }
         if ($allowed && !in_array($name, $allowed, true)) return null;
 
-        $row = $this->ensure_rows();
+
         return isset($row[$name]) ? $row[$name] : null;
     }
 
@@ -360,13 +362,20 @@ class StorePartProxy{
 //        $this->virtual_keys = array_keys($virt);
 //    }
 
-    public function apply_value_maps(&$row)
+    public function apply_value_maps(&$row,$all_row=array())
     {
         if (is_object($this->part) && method_exists($this->part, 'column_extend')) {
-            $extended = $this->part->column_extend($row);
+            $extended = $this->part->column_extend($row,$all_row);
+
             if (is_array($extended)) {
                 foreach($extended as $key => $value) {
-                    $row[$key] = $value;
+                    if(isset($row[$this->part_key])){
+
+                        $row[$this->part_key][$key]=$value;
+                    }else{
+                        $row[$key] = $value;
+                    }
+
                 }
             }
         }

@@ -1,5 +1,6 @@
 <?php
 $this->make_array($row['image']);
+
  ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative d-flex-center flex-nowrap"    >
     <style>

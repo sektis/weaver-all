@@ -29,14 +29,15 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
         <?php echo $skin_selector?> .loading-spinner { width: 32px; height: 32px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: wv-map-spin 1s linear infinite; }
 
         /* 매장 정보 패널 스타일 */
-        <?php echo $skin_selector?> .store-info-panel {
-                                        transition: all 0.3s ease;
-                                        border-radius: 8px 8px 0 0;
-                                        box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-                                        display: none;
-                                    }
-        <?php echo $skin_selector?> .store-info-panel.active {
-                                        display: block;
+        <?php echo $skin_selector?> .store-info-panel {display: none;position:absolute; left:50%;bottom:var(--wv-17);z-index:1001;transform: translateX(-50%);}
+
+        <?php echo $skin_selector?> .store-info-panel.active {display: block;}
+        <?php echo $skin_selector?> .store-list-btn {transition: all 0.3s ease;width: var(--wv-119);height: var(--wv-33);border-radius: var(--wv-43);gap: var(--wv-4);display: inline-flex;
+                                        padding: var(--wv-8) var(--wv-18);
+                                        justify-content: center;
+                                        align-items: center;
+                                    font-size: var(--wv-12);font-weight: 500;background-color: #0d171b;color:#fff;
+                                        position:absolute; left:50%;bottom:var(--wv-17); ;border-top:1px solid #ddd; ;z-index:1000;transform: translateX(-50%);
                                     }
 
         @keyframes wv-map-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -63,10 +64,10 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
     <div id="<?php echo $map_id; ?>" class="kakao-map"></div>
 
     <!-- 매장 정보 패널 -->
-    <div id="store-info-panel-<?php echo $map_id; ?>" class="store-info-panel" style="position:absolute; left:50%;bottom:var(--wv-30);background:white;border-top:1px solid #ddd;padding:15px;z-index:9999;max-height:200px;overflow-y:auto;">
+    <div class="store-info-panel"  >
         <div class="store-info-content"></div>
-        <button type="button" class="store-info-panel-close" style="position:absolute;top:10px;right:15px;border:none;background:none;font-size:18px;cursor:pointer;"  >×</button>
     </div>
+    <a href="" class="store-list-btn"><i class="fa-solid fa-bars"></i><span>목록으로 보기</span></a>
 
     <script>
         $(document).ready(function(){
@@ -147,6 +148,9 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             /**
              * 지도 생성
              */
+            /**
+             * 지도 생성
+             */
             function createMap(lat, lng, level) {
                 level = level || initialLevel;
 
@@ -171,28 +175,27 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                                 averageCenter: true,
                                 minLevel: Math.max(minLevel + 2, 6)
                             });
+                            console.log('클러스터링 초기화 완료');
                         } else {
                             console.warn('MarkerClusterer가 로드되지 않았습니다.');
                             isClusterEnabled = false;
                         }
                     }
 
-                    // 지도 이벤트 등록
-                    var moveTimeout, zoomTimeout;
+                    // === 🔧 이벤트 중복 문제 해결 ===
+                    // 통합 timeout으로 중복 호출 방지
+                    var mapChangeTimeout;
 
-                    kakao.maps.event.addListener(map, 'center_changed', function() {
-                        clearTimeout(moveTimeout);
-                        moveTimeout = setTimeout(function() {
+                    function scheduleMapEvent() {
+                        clearTimeout(mapChangeTimeout);closeStoreInfoPanel()
+                        mapChangeTimeout = setTimeout(function() {
                             triggerMapEvent();
                         }, 300);
-                    });
+                    }
 
-                    kakao.maps.event.addListener(map, 'zoom_changed', function() {
-                        clearTimeout(zoomTimeout);
-                        zoomTimeout = setTimeout(function() {
-                            triggerMapEvent();
-                        }, 300);
-                    });
+                    // 두 이벤트 모두 동일한 함수 사용
+                    kakao.maps.event.addListener(map, 'center_changed', scheduleMapEvent);
+                    kakao.maps.event.addListener(map, 'zoom_changed', scheduleMapEvent);
 
                     showLoading(false);
                     triggerMapEvent();
@@ -202,7 +205,6 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                     alert('지도 로딩 중 오류가 발생했습니다: ' + error.message);
                 }
             }
-
             /**
              * 현재 위치로 이동
              */

@@ -29,7 +29,7 @@ class Contract extends StoreSchemaBase{
     protected function get_member_options($where='1',$selected='',$fields='mb_id,mb_name'){
         global $g5;
         $options = '';
-        $sql = " SELECT {$fields} from {$g5['member_table']} where {$where}";
+        $sql = " SELECT {$fields} from {$g5['member_table']} where {$where} order by mb_no asc";
 
         $result = sql_query($sql);
         while($row = sql_fetch_array($result)){

@@ -1788,7 +1788,6 @@ class StoreManager extends Makeable{
                                 @eval("$combined;");
                                 return false;
                             }
-                            $physical_col = $this->get_physical_col($pkey, $parent_key);
 
                             return false;
                         }
@@ -2228,7 +2227,7 @@ class StoreManager extends Makeable{
 
             // ✅ StorePartProxy 로직 재사용
             $proxy = new \weaver\store_manager\StorePartProxy($this, 0, $schema, array(), $pkey);
-            $proxy->apply_value_maps($row[$pkey]);
+            $proxy->apply_value_maps($row[$pkey],$row);
         }
     }
 

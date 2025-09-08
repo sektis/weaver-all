@@ -1,25 +1,18 @@
 <?php
-$page_title = '매장 관리';
+$page_title = '서비스 관리';
 $sfl_options = array(
     'mb_id'    => '아이디',
     'mb_name'  => '대표자이름',
 );
-$options = array(
-    'where' =>    array(
-        " location_lat  <>'' ",
-        " location_lng <>'' "
-    ),
 
-);
-$store_result = wv()->store_manager->made()->get_list($options);
+$store_result = wv()->store_manager->made()->get_list();
 
 $list = $store_result['list'];
-
 ?>
 
 <div class="wv-vstack">
     <div class="page-top-menu">
-        <a href="<?php echo wv_page_url('0201_c'); ?>" class="top-menu-btn"><i class="fa-solid fa-plus"></i> 신규등록</a>
+        <a href="<?php echo wv_page_url('0202_c'); ?>" class="top-menu-btn"><i class="fa-solid fa-plus"></i> 신규등록</a>
     </div>
 
     <div class="hstack justify-content-between">
@@ -77,27 +70,26 @@ $list = $store_result['list'];
                     <tbody class="text-center">
                     <?php
                     for ($i = 0; $i < count($list); $i++) {
-
+//                        dd($list);
                         ?>
                         <tr>
                             <td><?php echo $list[$i]['mb_id']; ?></td>
-                            <td><?php echo $list[$i]['jm_mb_name']; ?></td>
+                            <td><?php echo $list[$i]['mb_name']; ?></td>
                             <td class="text-start" >
                                 <div class="hstack align-items-center bo_tit" style="gap:.5em">
                                     <div class="hstack text-truncate" style="gap:1em" >
                                         <p class="text-truncate">
-                                            <?php echo $list[$i]['store']['name'] ?>
+                                            <?php echo $list[$i]['subject'] ?>
                                         </p>
                                     </div>
                                 </div>
                             </td>
-                            <td><?php echo $list[$i]['store']['category_text'] ?></td>
-                            <td><?php echo $list[$i]['location']['region_name_full'] ?></td>
-                            <td><?php echo $list[$i]['contract']['cont_pdt_type_text'] ?></td>
-
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td><?php echo $list[$i]['wr_datetime']; ?></td>
                             <td></td>
-                            <td><a href="<?php echo wv_page_url('0201_c','wr_id='.$list[$i]['wr_id']); ?>">수정</a></td>
+                            <td><a href="<?php echo wv_page_url('0202_c','wr_id='.$list[$i]['wr_id']); ?>">수정</a></td>
                         </tr>
                     <?php } ?>
                     </tbody>

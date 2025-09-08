@@ -39,6 +39,9 @@
   .mt-\[1em\] {
     margin-top: 1em !important;
   }
+  .mt-\[2px\] {
+    margin-top: var(--wv-2) !important;
+  }
   .mt-\[4px\] {
     margin-top: var(--wv-4) !important;
   }
@@ -117,6 +120,9 @@
   .h-\[54px\] {
     height: var(--wv-54) !important;
   }
+  .h-\[80px\] {
+    height: var(--wv-80) !important;
+  }
   .w-\[9px\] {
     width: var(--wv-9) !important;
   }
@@ -153,8 +159,14 @@
   .w-\[63px\] {
     width: var(--wv-63) !important;
   }
+  .w-\[80px\] {
+    width: var(--wv-80) !important;
+  }
   .w-\[279px\] {
     width: var(--wv-279) !important;
+  }
+  .w-\[328px\] {
+    width: var(--wv-328) !important;
   }
   .w-\[400px\] {
     width: var(--wv-400) !important;
@@ -346,6 +358,12 @@
     font-weight: 600 !important;
     color: #0D171B !important;
   }
+  .fs-\[14\/\/-0\.56\/700\/\#0D171B\] {
+    font-size: var(--wv-14) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
+    color: #0D171B !important;
+  }
   .fs-\[14\/\/-0\.56\/700\/\#FFF\] {
     font-size: var(--wv-14) !important;
     letter-spacing: -0.04em !important;
@@ -386,6 +404,12 @@
     font-size: var(--wv-18) !important;
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
+    color: #0D171B !important;
+  }
+  .fs-\[18\/\/-0\.72\/700\/\#0D171B\] {
+    font-size: var(--wv-18) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
     color: #0D171B !important;
   }
   .fs-\[11\/\/\/600\/\#97989c\] {
