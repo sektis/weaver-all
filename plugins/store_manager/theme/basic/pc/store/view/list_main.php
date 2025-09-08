@@ -28,10 +28,6 @@ $store = $this->manager->get($row['wr_id']);
         </div>
 
 
-        <div class="mt-[8px]" style="border-bottom: 1px solid #efefef"></div>
-        <div>
-            <?php echo $row['cont_pdt_type']; ?>
-        </div>
 
 
 

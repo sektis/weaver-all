@@ -27,6 +27,7 @@ body{
     color:#000;
     line-height: normal;
     overflow-x: clip!important;
+    overflow-y :hidden!important;
 }
 
 
@@ -76,7 +77,6 @@ input::placeholder,textarea::placeholder{color:var(--wv-placeholer-color,revert-
     width: 100%;
     max-width: inherit;
     z-index: 1040;
-    padding-bottom: var(--wv-8);
 }
 #header-wrapper,#footer-wrapper{
     flex: 0 0 auto;
@@ -88,12 +88,21 @@ input::placeholder,textarea::placeholder{color:var(--wv-placeholer-color,revert-
 }
 #header-menu{
     background-color: #fff;
-    padding: var(--wv-7) 0;
+
 }
 #footer-wrapper{
 }
 input::placeholder {color: #cfcfcf;font-size: inherit;font-style: normal;font-weight: inherit;line-height: inherit;letter-spacing:  calc(var(--wv-0_56) * -1);}
-
+.wv-offcanvas-title{
+    color: #0d171b;
+    text-align: center;
+    font-size: var(--wv-14);
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: calc(var(--wv-0_56) * -1);
+}
+.wv-offcanvas-header{padding: var(--wv-27) 0 var(--wv-7)}
+.wv-offcanvas-body{padding: var(--wv-30) 0}
 @media (max-width: 1919.98px) {
 
 }

@@ -3,6 +3,9 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 
 if(wv_is_ajax() ){
+    global $skin_id,$skin_selector;
+    $skin_id = wv_make_skin_id();
+    $skin_selector = wv_make_skin_selector($skin_id);
     add_event('alert','wv_assets_plugin_weaver_ajax',0,4);
 
     global $no_layout;

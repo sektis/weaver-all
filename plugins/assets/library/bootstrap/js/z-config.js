@@ -120,6 +120,7 @@ $(document).ready(function () {
         // 새로운 인스턴스 ID 저장
         $el.attr('data-wv-ajax-instance', id);
 
+        ajaxData['no_layout']=1;
 
         // 실행
         if (type === 'modal') {

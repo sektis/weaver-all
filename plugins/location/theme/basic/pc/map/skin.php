@@ -20,7 +20,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-location-map-skin position-relative" style="<?php echo isset($data['margin_top'])?"margin-top:{$data['margin_top']};":""; ?>">
     <style>
-        <?php echo $skin_selector?> { width: 100%; position: relative; border-radius: var(--wv-8); overflow: hidden; border: 1px solid #EFEFEF; }
+        <?php echo $skin_selector?> { width: 100%; position: relative;    }
         <?php echo $skin_selector?> .kakao-map { width: 100%; height: 100%; }
         <?php echo $skin_selector?> .current-location-btn { position: absolute; bottom: 20px; right: 20px; z-index: 1000; width: 44px; height: 44px; background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: var(--wv-6); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); backdrop-filter: blur(4px); transition: all 0.2s; }
         <?php echo $skin_selector?> .current-location-btn:hover { background: #f8f9fa; transform: scale(1.05); }
@@ -104,6 +104,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                 if (!map) return;
 
                 var bounds = map.getBounds();
+                var center = map.getCenter();
 
                 var eventData = {
                     mapId: mapId,
@@ -113,6 +114,10 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                         sw_lng: bounds.getSouthWest().getLng(),
                         ne_lat: bounds.getNorthEast().getLat(),
                         ne_lng: bounds.getNorthEast().getLng()
+                    },
+                    center: {
+                        lat: center.getLat(),
+                        lng: center.getLng(),
                     }
                 };
 

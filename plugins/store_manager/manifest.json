@@ -66,6 +66,7 @@
     "plugins/store_manager/theme/basic/pc/store/form/tel.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/tel.php",
     "plugins/store_manager/theme/basic/pc/store/view/category_list.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/view/category_list.php",
     "plugins/store_manager/theme/basic/pc/store/view/list_each.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/view/list_each.php",
+    "plugins/store_manager/theme/basic/pc/store/view/list_main.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/view/list_main.php",
     "plugins/store_manager/theme/basic/pc/tempdayoffs/form.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/tempdayoffs/form.php",
     "plugins/store_manager/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/_common.php"
 }

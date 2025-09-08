@@ -2,7 +2,11 @@
     <div>
         <img src="<?php echo $wv_page_skin_url; ?>/img/main/1.png" class="w-full" alt="">
     </div>
-
+    <?php
+    $data = array(
+    );
+    echo wv_widget('content/map',$data);
+    ?>
 
     <?php
     $skin_data = array(
@@ -18,7 +22,16 @@
     ?>
     <div class="vstack" style="background-color: #efefef;padding:var(--wv-5) 0;row-gap: var(--wv-1)">
     <?php
-    echo wv_widget('content/our_town_store')
+    $data = array(
+            'text1'=>'우리동네 인기 가게'
+    );
+    echo wv_widget('content/our_town_store',$data);
+    ?>
+    <?php
+    $data = array(
+        'text1'=>'우리동네 신규 가게'
+    );
+    echo wv_widget('content/our_town_store',$data);
     ?>
     </div>
 </div>

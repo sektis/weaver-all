@@ -18,6 +18,12 @@ foreach ($saved_favo_towns as $k=> $v){
     );
 }
 
+$distance_options = wv_make_current_location_distance_options(  wv()->location->get('current'));
+
+
+
+$options = array_merge($options, $distance_options);
+
 $result = wv()->store_manager->made('sub01_01')->get_list($options);
 $list = $result['list'];
 ?>
@@ -61,7 +67,7 @@ $list = $result['list'];
 
         <div class="container">
             <div class="hstack justify-content-between">
-            <p class="fs-[18//-0.72/700/#0D171B]">우리동네 인기 가게</p>
+            <p class="fs-[18//-0.72/700/#0D171B]"><?php echo $data['text1']; ?></p>
                 <a class="fs-[12//-0.48/600/#97989C]">더보기 <i class="fa-solid fa-chevron-right fs-09em"></i></a>
             </div>
         </div>
@@ -77,17 +83,6 @@ $list = $result['list'];
             </div>
         </div>
 
-        <div class="position-absolute top-50 start-50 container translate-middle  user-select-none pe-none" style="z-index:1;">
-            <div class="d-flex justify-content-between">
-                <div class="swiper-button-prev"><i class="fa-solid fa-chevron-left"></i></div>
-                <div class="swiper-button-next"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
-        </div>
-
-
-        <div class="position-absolute start-50 translate-middle-x bottom-0 w-100" style="z-index:1111">
-            <div class="swiper-pagination position-relative top-0"></div>
-        </div>
 
     </div>
 
@@ -107,6 +102,7 @@ $list = $result['list'];
                 watchSlidesProgress: true,
                 grabCursor:true,
                 loop:true,
+                slidesOffsetBefore:$skin.find('.container').css('padding-left').replace('px',''),
                 // slidesOffsetBefore:100,
                 // autoplay: {
                 //     delay: 3000,
@@ -120,16 +116,7 @@ $list = $result['list'];
                 // },
                 // centeredSlides:true,
                 // centeredSlidesBounds:true,
-                navigation: {
-                    nextEl: "<?php echo $skin_selector?> .swiper-button-next",
-                    prevEl: "<?php echo $skin_selector?> .swiper-button-prev",
-                },
-                pagination: {
-                    el: "<?php echo $skin_selector?> .swiper-pagination",
-                    clickable:true,
-                    // dynamicBullets: true,
-                    // type: "progressbar",
-                },
+
                 on: {
                     afterInit:function (swiper) {
                         latest_slide_index = swiper.realIndex;
@@ -168,7 +155,7 @@ $list = $result['list'];
                 }
             );
 
-            observer.observe(swiperElement);
+            // observer.observe(swiperElement);
 
             function slide_first_ready(swiper){
                 var $slide = $(swiper.slides[swiper.activeIndex]);

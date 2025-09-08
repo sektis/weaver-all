@@ -90,6 +90,9 @@
   .mt-\[59px\] {
     margin-top: var(--wv-59) !important;
   }
+  .mt-\[90px\] {
+    margin-top: var(--wv-90) !important;
+  }
   .mt-\[128px\] {
     margin-top: var(--wv-128) !important;
   }
@@ -361,6 +364,12 @@
     font-weight: 600 !important;
     color: #97989C !important;
   }
+  .fs-\[12\/\/-0\.48\/600\/\#CFCFCF\] {
+    font-size: var(--wv-12) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #CFCFCF !important;
+  }
   .fs-\[14\/\/-0\.56\/500\/\#97989C\] {
     font-size: var(--wv-14) !important;
     letter-spacing: -0.04em !important;
@@ -384,6 +393,12 @@
     letter-spacing: -0.04em !important;
     font-weight: 700 !important;
     color: #FFF !important;
+  }
+  .fs-\[16\/\/-0\.64\/600\/\#0D171B\] {
+    font-size: var(--wv-16) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #0D171B !important;
   }
   .fs-\[16\/\/-0\.64\/600\/\#97989C\] {
     font-size: var(--wv-16) !important;

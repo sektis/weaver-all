@@ -47,7 +47,7 @@ $skin_selector = wv_make_skin_selector($skin_id);
                                 자동 로그인하기
                             </label>
                         </div>
-                        <a href="<?php echo G5_BBS_URL ?>/password_lost.php" class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
+                        <a   data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,backdrop-static" data-wv-ajax-target="#site-wrapper"  class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
                     </div>
                 </div>
 
@@ -60,8 +60,10 @@ $skin_selector = wv_make_skin_selector($skin_id);
                     <p class="fs-[12//-0.48/500/#97989C]">아이디 / 비밀번호를 잃어버리신 경우, 고객센터로 문의바랍니다.</p>
                 </div>
 
-                <div class="text-center mt-[128px]">
-                    <img src="<?php echo WV_URL; ?>/img/logo1.png" class="w-[54.3px]" alt="">
+                <div class="hstack mt-[90px]" style="gap:var(--wv-20)">
+                    <div class="col" style="height: 1px;background-color: #efefef;width: 100%"></div>
+                    <p class="fs-[12//-0.48/600/#CFCFCF]">덤이요가 처음이신가요?</p>
+                    <div class="col" style="height: 1px;background-color: #efefef;width: 100%"></div>
                 </div>
 
 

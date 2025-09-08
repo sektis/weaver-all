@@ -35,6 +35,10 @@ if($action == 'get_stores_by_bounds'){
         'rows' => 1000,  // 최대 1000개까지,
         'with_list_part'=>true
     );
+    if($curr_coords){
+        $distance_options = wv_make_current_location_distance_options($curr_coords);
+        $options = array_merge($options, $distance_options);
+    }
 
     $result = $manager->get_list($options);
 
