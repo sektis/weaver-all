@@ -38,6 +38,8 @@
     "plugins/store_manager/parts/Dayoffs.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Dayoffs.php",
     "plugins/store_manager/parts/Location.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Location.php",
     "plugins/store_manager/parts/Menu.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Menu.php",
+    "plugins/store_manager/parts/Plan.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Plan.php",
+    "plugins/store_manager/parts/Service.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Service.php",
     "plugins/store_manager/parts/Store.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Store.php",
     "plugins/store_manager/parts/Tempdayoffs.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/parts/Tempdayoffs.php",
     "plugins/store_manager/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/plugin.php",
@@ -63,6 +65,7 @@
     "plugins/store_manager/theme/basic/pc/store/form/notice.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/notice.php",
     "plugins/store_manager/theme/basic/pc/store/form/tel.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/form/tel.php",
     "plugins/store_manager/theme/basic/pc/store/view/category_list.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/view/category_list.php",
+    "plugins/store_manager/theme/basic/pc/store/view/list_each.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/store/view/list_each.php",
     "plugins/store_manager/theme/basic/pc/tempdayoffs/form.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/theme/basic/pc/tempdayoffs/form.php",
     "plugins/store_manager/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/store_manager/_common.php"
 }

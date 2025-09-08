@@ -57,7 +57,7 @@ $map_options = array(
              * 📡 Ajax로 지도 영역 내 매장 조회
              */
             function fetchStoresByBounds(bounds) {
-                var ajaxUrl = '<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php';
+                var ajaxUrl = '<?php echo wv()->store_manager->made('sub01_01')->plugin_url?>/ajax.php';
 
                 $.ajax({
                     url: ajaxUrl,

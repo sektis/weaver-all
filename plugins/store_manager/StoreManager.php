@@ -3088,7 +3088,7 @@ return;
             }
             //menu
 
-            wv()->store_manager->made()->set($data);
+            wv()->store_manager->made('sub01_01')->set($data);
 
         }
 

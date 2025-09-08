@@ -5,7 +5,7 @@ $sfl_options = array(
     'mb_name'  => '대표자이름',
 );
 
-$store_result = wv()->store_manager->made()->get_list();
+$store_result = wv()->store_manager->made('sub01_01')->get_list();
 
 $list = $store_result['list'];
 ?>

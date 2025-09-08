@@ -11,7 +11,7 @@ $options = array(
     ),
 
 );
-$store_result = wv()->store_manager->made()->get_list($options);
+$store_result = wv()->store_manager->made('sub01_01')->get_list($options);
 
 $list = $store_result['list'];
 

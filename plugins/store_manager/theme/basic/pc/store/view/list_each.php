@@ -13,7 +13,7 @@ $store = $this->manager->get($row['wr_id']);
         @media (max-width: 991.98px) {}
     </style>
 
-    <div class="position-relative col col-lg-auto w-[328px]   wv-ps-col" style="padding: var(--wv-12) var(--wv-10);border-radius: var(--wv-4);box-shadow: 0 0 var(--wv-4) 0 rgba(67, 67, 67, 0.25);background-color: #fff;overflow:hidden;">
+    <div class="position-relative col col-lg-auto w-[328px]    " style="padding: var(--wv-12) var(--wv-10);border-radius: var(--wv-4);box-shadow: 0 0 var(--wv-4) 0 rgba(67, 67, 67, 0.25);background-color: #fff;overflow:hidden;">
 
         <div >
             <div class="row" style="--bs-gutter-x: var(--wv-12)">

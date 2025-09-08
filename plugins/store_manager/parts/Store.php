@@ -17,6 +17,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         'category_icon'=>'',
         'list_each'=>'',
         'service'=>'',
+        'list_main'=>'',
     );
 
     protected $image_max_count=8;
@@ -36,6 +37,10 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         if(isset($row['list_each'])){
             $row['wr_id'] = $all_row['wr_id'];
             $arr['list_each'] =  $this->manager->store->render_part('list_each','view',array('row'=>$row));
+        }
+        if(isset($row['list_main'])){
+            $row['wr_id'] = $all_row['wr_id'];
+            $arr['list_main'] =  $this->manager->store->render_part('list_main','view',array('row'=>$row));
         }
 
 
