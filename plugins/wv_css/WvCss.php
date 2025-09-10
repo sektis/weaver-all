@@ -6,6 +6,7 @@ class WvCss extends Plugin{
     public function __construct() {
         add_event('tail_sub',array($this,'add_event_tail_sub'),0);
         add_replace('html_process_buffer',array($this,'body_add_class'),0,1);
+
     }
 
     public function add_event_tail_sub(){

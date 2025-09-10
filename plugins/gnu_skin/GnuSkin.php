@@ -16,7 +16,7 @@ class GnuSkin extends Plugin {
     protected function __construct() {
 
         set_error_handler(array($this, 'gnu_skin_include_handler'));
-        add_replace('wv_hook_act_code_index_replace',array($this,'admin_get_skin_func_replace'),-1,1);
+//        add_replace('wv_hook_act_code_index_replace',array($this,'admin_get_skin_func_replace'),-1,1);
         add_replace('wv_hook_act_code_index_replace',array($this,'skin_file_parse'),-1,3);
         $this->skin_config_check();
 

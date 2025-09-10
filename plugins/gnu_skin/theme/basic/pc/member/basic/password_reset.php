@@ -1,7 +1,7 @@
 <?php
 include_once '_common.php';
 ?>
-<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative h-100 flex-nowrap"  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
+<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative h-100 flex-nowrap bg-white"  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
     <style>
         <?php echo $skin_selector?> {}
 
@@ -41,15 +41,15 @@ include_once '_common.php';
                    <div class="mt-[40px] vstack" style="row-gap: var(--wv-30)">
                        <div class=""  >
                            <label for="login_id" class="fs-[12//-0.48/600/#0D171B]">휴대폰 번호<strong class="sound_only"> 필수</strong></label>
-                           <input type="text" name="mb_hp" id="mb_hp" required class="mt-[12px] form-control fs-[16//-0.64/600/#0D171B] border-0 border-bottom " style="padding: 0 0 var(--wv-6)" size="20" maxLength="20" placeholder="휴대폰 번호 입력" autocomplete="new-password">
+                           <input type="text" name="mb_id" id="mb_id" required class="mt-[12px] form-control fs-[16//-0.64/600/#0D171B] border-0 border-bottom " style="padding: 0 0 var(--wv-6)" size="20" maxlength="20" placeholder="휴대폰 번호 입력" autocomplete="new-password">
                        </div>
 
                        <div class=""  >
                            <label for="login_pw" class="fs-[12//-0.48/600/#0D171B]">생년월일<strong class="sound_only"> 필수</strong></label>
-                           <input type="text" name="mb_birth" id="mb_birth" required class="mt-[12px] form-control fs-[16//-0.64/600/#0D171B] border-0 border-bottom wv-only-number " style="padding: 0 0 var(--wv-6)" size="20" maxLength="8" minlength="8" placeholder="생년월일 8자리 입력" autocomplete="new-password">
+                           <input type="text" name="mb_birth" id="mb_birth" required class="mt-[12px] form-control fs-[16//-0.64/600/#0D171B] border-0 border-bottom wv-only-number " style="padding: 0 0 var(--wv-6)"  maxlength="8"   placeholder="생년월일 8자리 입력" autocomplete="new-password">
                        </div>
                        <div class="mt-auto">
-                           <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] next-btn transition hover:bg-[#0d171b]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">다음</button>
+                           <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] submit-btn transition hover:bg-[#0d171b]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">다음</button>
                        </div>
                    </div>
 
@@ -66,31 +66,34 @@ include_once '_common.php';
 
             var $skin = $("<?php echo $skin_selector?>");
 
-            var $id = $("#mb_hp", $skin);
-            var $pw = $("#mb_birth", $skin);
-            var $btn = $(".next-btn", $skin);
+
+            var $skin = $("<?php echo $skin_selector?>");
+
+            var $input1 = $("#mb_id", $skin);
+            var $input2 = $("#mb_birth", $skin);
+            var $btn = $(".submit-btn", $skin);
+
+            $input1.on("keyup input", toggleLoginActive);
+            $input2.on("keyup input", toggleLoginActive);
+
 
             function toggleLoginActive() {
-                if ($id.val().length > 0 && $pw.val().length > 0) {
+                if ($input1.val().length > 0 && $input2.val().length > 0) {
                     $btn.addClass("active");
                 } else {
                     $btn.removeClass("active");
                 }
             }
 
-            $id.on("keyup input", toggleLoginActive);
-            $pw.on("keyup input", toggleLoginActive);
+            $("form",$skin).ajaxForm({
 
-
-            $($skin).on('submit','form',function (e) {
-                e.preventDefault()
-                var $this = $(this);
-                $this.ajaxSubmit({
                     success:function (data){
-                        $skin.html(data)
+                        $skin.replaceWith(data)
                     }
-                })
+
             })
+
+
         })
 
     </script>

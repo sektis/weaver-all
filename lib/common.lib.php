@@ -3382,29 +3382,18 @@ if(!function_exists('wv_write_board')){
             $sql_ip = '';
             if (!$is_admin)
                 $sql_ip = " , wr_ip = '{$_SERVER['REMOTE_ADDR']}' ";
+            $set_field_array = array('ca_name','wr_option','wr_subject','wr_content','wr_seo_title','wr_link1','wr_link2','mb_id','wr_name','wr_name','wr_email','wr_homepage',
+                'wr_1','wr_2','wr_3','wr_4','wr_5','wr_6','wr_7','wr_8','wr_9','wr_10');
 
+            $set_arr=array();
+            foreach ($set_field_array as $field){
+                if(isset($post[$field])){
+                    $set_arr[] = " {$field} = '".$field."' ";
+                }
+            }
+            $sql_sql=implode(',', $set_arr);
             $sql = " update {$write_table}
-                set ca_name = '{$ca_name}',
-                     wr_option = '{$wr_option}',
-                     wr_subject = '{$wr_subject}',
-                     wr_content = '{$wr_content}',
-                     wr_seo_title = '$wr_seo_title',
-                     wr_link1 = '{$wr_link1}',
-                     wr_link2 = '{$wr_link2}',
-                     mb_id = '{$mb_id}',
-                     wr_name = '{$wr_name}',
-                     wr_email = '{$wr_email}',
-                     wr_homepage = '{$wr_homepage}',
-                     wr_1 = '{$wr_1}',
-                     wr_2 = '{$wr_2}',
-                     wr_3 = '{$wr_3}',
-                     wr_4 = '{$wr_4}',
-                     wr_5 = '{$wr_5}',
-                     wr_6 = '{$wr_6}',
-                     wr_7 = '{$wr_7}',
-                     wr_8 = '{$wr_8}',
-                     wr_9 = '{$wr_9}',
-                     wr_10= '{$wr_10}'
+                set {$sql_sql}
                      {$sql_ip}
                      {$sql_password}
                      {$extend_data_sql}

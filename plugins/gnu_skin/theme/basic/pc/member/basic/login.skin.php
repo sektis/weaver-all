@@ -2,6 +2,29 @@
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 $skin_id = wv_make_skin_id();
 $skin_selector = wv_make_skin_selector($skin_id);
+add_javascript('<script src="'.G5_JS_URL.'/certify.js?v='.G5_JS_VER.'"></script>', 0);
+set_session("wv_cert_type",    '');
+set_session("wv_cert_no",      '');
+set_session("wv_cert_hash",    '');
+set_session("wv_cert_adult",   '');
+set_session("wv_cert_birth",   '');
+set_session("wv_cert_sex",     '');
+set_session('wv_cert_dupinfo', '');
+switch($config['cf_cert_hp']) {
+    case 'kcb':
+        $cert_url = G5_OKNAME_URL.'/hpcert1.php';
+        $cert_type = 'kcb-hp';
+        break;
+    case 'kcp':
+        $cert_url = G5_KCPCERT_URL.'/kcpcert_form.php';
+        $cert_type = 'kcp-hp';
+        break;
+    case 'lg':
+        $cert_url = G5_LGXPAY_URL.'/AuthOnlyReq.php';
+        $cert_type = 'lg-hp';
+        break;
+
+}
 ?>
 <div id="<?php echo $skin_id?>" class="position-relative d-flex-center flex-nowrap"  style="" >
     <style>
@@ -20,7 +43,11 @@ $skin_selector = wv_make_skin_selector($skin_id);
 
     <div class="position-relative col col-lg-auto w-full md:w-full vstack justify-content-center" style="min-height: 100dvh">
         <div class="container">
-            <form name="flogin" action="<?php echo $login_action_url ?>" onsubmit="return flogin_submit(this);" method="post" class="fs-[16//-0.64/600/#CFCFCF]" >
+            <form name="fregisterform" action="<?php echo $login_action_url ?>" onsubmit="return flogin_submit(this);" method="post" class="fs-[16//-0.64/600/#CFCFCF]" >
+                <input type="hidden" name="cert_type" value="">
+                <input type="hidden" name="cert_no" value="">
+                <input type="hidden" name="mb_hp" value="">
+                <input type="hidden" name="mb_name" value="">
                 <div style="padding: 0 var(--wv-8)">
                     <p class="fs-[26/34/-1.04/600/#0D171B] text-center ">
                         <span class="text-[#FF5F5A]">덤이요</span>에 오신 걸 <br>
@@ -47,7 +74,7 @@ $skin_selector = wv_make_skin_selector($skin_id);
                                 자동 로그인하기
                             </label>
                         </div>
-                        <a   data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,backdrop-static" data-wv-ajax-target="#site-wrapper"  class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
+                        <a href="javascript:;"  data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,backdrop-static" data-wv-ajax-target="#site-wrapper"  class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
                     </div>
                 </div>
 
@@ -64,6 +91,10 @@ $skin_selector = wv_make_skin_selector($skin_id);
                     <div class="col" style="height: 1px;background-color: #efefef;width: 100%"></div>
                     <p class="fs-[12//-0.48/600/#CFCFCF]">덤이요가 처음이신가요?</p>
                     <div class="col" style="height: 1px;background-color: #efefef;width: 100%"></div>
+                </div>
+                <div>
+
+                    <a href="javascript:;" id="win_hp_cert" class="wv-flex-box h-[54px] fs-[14//-0.56/600/#0D171B] w-full border mt-[10px]">본인인증으로 가입하기</a>
                 </div>
 
 
@@ -150,6 +181,14 @@ $skin_selector = wv_make_skin_selector($skin_id);
             var $pw = $("#login_pw", $skin);
             var $btn = $(".login-btn", $skin);
 
+            var ajax_data = {
+                agree:1,
+                agree2:1,
+                no_layout:true,
+                pre_cert_no:$("input[name=cert_no]",$skin).val(),
+            }
+            wv_ajax_offcanvas('<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_step1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
+
             function toggleLoginActive() {
                 if ($id.val().length > 0 && $pw.val().length > 0) {
                     $btn.addClass("active");
@@ -167,7 +206,70 @@ $skin_selector = wv_make_skin_selector($skin_id);
                     this.checked = confirm("자동로그인을 사용하시면 다음부터 회원아이디와 비밀번호를 입력하실 필요가 없습니다.\n\n공공장소에서는 개인정보가 유출될 수 있으니 사용을 자제하여 주십시오.\n\n자동로그인을 사용하시겠습니까?");
                 }
             });
+
+            if (typeof window.certify_win_open === 'function') {
+                const originalCertify = window.certify_win_open;
+
+                window.certify_win_open = function(type, url, event) {
+                    originalCertify.call(this, type, url, event);
+
+                    // 팝업 감지 시작
+                    setTimeout(() => {
+                        watchCertifyPopup(type);
+                    }, 300);
+                };
+            }
+
+            var params = "";
+            var pageTypeParam = "pageType=register";
+            $("#win_hp_cert").click(function() {
+                if(!cert_confirm()) return false;
+                params = "?" + pageTypeParam;
+
+
+                certify_win_open("<?php echo $cert_type; ?>", "<?php echo $cert_url; ?>"+params);
+                return;
+            });
+
+            function watchCertifyPopup(type) {
+                const windowName = type === 'kcb-ipin' ? 'kcbPop' : 'auth_popup';
+                const popup = window.open('', windowName);
+
+                if (popup && !popup.closed) {
+                    const checkInterval = setInterval(() => {
+                        if (popup.closed) {
+                            clearInterval(checkInterval);
+                            onCertifyComplete(type);
+                        }
+                    }, 1000);
+                }
+            }
+
+            function onCertifyComplete(type) {
+                wv_ajax_offcanvas(g5_bbs_url+'/register_stpe1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
+                return false;
+                // 인증 완료 후 서버에서 상태 확인
+                if(!$("input[name=cert_no]",$skin).val()){
+
+                    return false;
+                }
+
+
+                $.post("<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/login_cert.php",function () {
+
+                    var ajax_data = {
+                        agree:1,
+                        agree2:1,
+                        no_layout:true,
+                        pre_cert_no:$("input[name=cert_no]",$skin).val(),
+                    }
+                    wv_ajax_offcanvas(g5_bbs_url+'/register_stpe1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
+                })
+
+
+            }
         })
+
 
 
         function flogin_submit(f)

@@ -295,7 +295,59 @@ $(document).ready(function () {
         }
         return false;
     })
+
+    $("body").loaded('.wv-password-toggle',function () {
+
+        const $input = $(this);
+
+        // 이미 초기화된 경우 스킵
+        if ($input.hasClass('wv-password-toggle-initialized')) {
+            return;
+        }
+
+        // 초기화 마크
+        $input.addClass('wv-password-toggle-initialized');
+
+        // input을 wrapper로 감싸기
+        const $wrapper = $('<div class="wv-password-wrapper"></div>');
+        $input.wrap($wrapper);
+
+        // 토글 아이콘 생성 및 추가
+        const $toggleIcon = $('<i class="wv-password-toggle-icon fa-solid fa-eye-slash"></i>');
+        $input.after($toggleIcon);
+
+        $toggleIcon.click(function () {
+            const $icon = $(this);console.log(1)
+            const $input = $icon.siblings('input.wv-password-toggle');
+
+            if ($input.length === 0) return;
+
+            const isPassword = $input.attr('type') === 'password';
+
+            if (isPassword) {
+                // 비밀번호 보이기
+                $input.attr('type', 'text');
+                $icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            } else {
+                // 비밀번호 숨기기
+                $input.attr('type', 'password');
+                $icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            }
+
+            // 포커스 유지 및 커서 끝으로 이동
+            $input.focus();
+            const input = $input[0];
+            const length = input.value.length;
+            input.setSelectionRange(length, length);
+        })
+
+    })
+
+
 })
+
+
+
 
 $(".smarteditor2 iframe").ready( function() {
 

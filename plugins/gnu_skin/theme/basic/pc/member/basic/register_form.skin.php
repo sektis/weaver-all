@@ -5,6 +5,24 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 add_javascript('<script src="'.G5_JS_URL.'/jquery.register_form.js"></script>', 0);
 if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipin'] || $config['cf_cert_hp']))
     add_javascript('<script src="'.G5_JS_URL.'/certify.js?v='.G5_JS_VER.'"></script>', 0);
+if($w==''){
+    if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
+        alert('본인 인증 후 가입가능합니다.'.$pre_cert_no.'//'.get_session('wv_cert_no'));
+    }
+    $member['mb_certify']=$pre_cert_type;
+    $member['mb_hp']=$pre_cert_hp;
+    $member['mb_name']=$pre_cert_name;
+
+    set_session("ss_cert_type",    get_session("wv_cert_type"));
+    set_session("ss_cert_no",      get_session("wv_md5_cert_no"));
+    set_session("ss_cert_hash",    get_session("wv_hash_data"));
+    set_session("ss_cert_adult",   get_session("wv_adult"));
+    set_session("ss_cert_birth",   get_session("wv_birth_day"));
+    set_session("ss_cert_sex",     (get_session("wv_sex_code")=="01"?"M":"F"));
+    set_session('ss_cert_dupinfo', get_session("wv_mb_dupinfo"));
+
+}
+
 ?>
 
 <!-- 회원정보 입력/수정 시작 { -->
@@ -16,7 +34,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
         #fregisterform .col-form-label{width: 100vw;padding-top: var(--wv-md-3, revert-layer);padding-bottom: var(--wv-md-3, revert-layer)}
     }
 </style>
-<div class="register w-[800px] mx-auto md:w-full"  >
+<div class="register   mx-auto md:w-full"  >
 
 
 
@@ -31,7 +49,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
         <input type="hidden" name="w" value="<?php echo $w ?>">
         <input type="hidden" name="url" value="<?php echo $urlencode ?>">
         <input type="hidden" name="cert_type" value="<?php echo $member['mb_certify']; ?>">
-        <input type="hidden" name="cert_no" value="">
+        <input type="hidden" name="cert_no" value="<?php echo $pre_cert_no;?>">
         <?php if (isset($member['mb_sex'])) {  ?><input type="hidden" name="mb_sex" value="<?php echo $member['mb_sex'] ?>"><?php }  ?>
         <?php if (isset($member['mb_nick_date']) && $member['mb_nick_date'] > date("Y-m-d", G5_SERVER_TIME - ($config['cf_nick_modify'] * 86400))) { // 닉네임수정일이 지나지 않았다면  ?>
             <input type="hidden" name="mb_nick_default" value="<?php echo get_text($member['mb_nick']) ?>">
@@ -130,7 +148,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
                     <input type="hidden" name="mb_nick_default" value="<?php echo isset($member['mb_nick'])?get_text($member['mb_nick']):''; ?>">
                     <input type="text" name="mb_nick" value="<?php echo isset($member['mb_nick'])?get_text($member['mb_nick']):''; ?>" id="reg_mb_nick" required class="form-control  nospace required" size="10" maxlength="20" placeholder="닉네임">
                     <label for="reg_mb_nick" class="floatingInput">닉네임</label>
-                    <button type="button" class="btn position-absolute end-0 bottom-0  " data-bs-container="body"   data-bs-toggle="popover" data-bs-placement="left" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="공백없이 한글,영문,숫자만 입력 가능 (한글2자, 영문4자 이상) <br> 닉네임을 바꾸시면 앞으로 <?php echo (int)$config['cf_nick_modify'] ?>일 이내에는 변경 할 수 없습니다.">
+                    <button type="button" class="btn position-absolute end-0 bottom-0  " data-bs-container="body"   data-bs-toggle="popover" tabindex="-1" data-bs-placement="left" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="공백없이 한글,영문,숫자만 입력 가능 (한글2자, 영문4자 이상) <br> 닉네임을 바꾸시면 앞으로 <?php echo (int)$config['cf_nick_modify'] ?>일 이내에는 변경 할 수 없습니다.">
                         <i class="fa-regular fa-circle-question"></i>
                     </button>
                 </div>
@@ -146,7 +164,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
                     ?>
 
 
-                    <button type="button" class="btn position-absolute end-0 bottom-0  " data-bs-container="body"   data-bs-toggle="popover" data-bs-placement="left" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="<?php echo $email_tooltip?>">
+                    <button type="button" class="btn position-absolute end-0 bottom-0  " data-bs-container="body"   data-bs-toggle="popover" tabindex="-1" data-bs-placement="left" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="<?php echo $email_tooltip?>">
                         <i class="fa-regular fa-circle-question"></i>
                     </button>
                 <?php }  ?>
@@ -241,7 +259,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
                         <div class="col-auto">
                             <div class="position-relative">
                                 <input type="file" name="mb_icon" id="" class="form-control">
-                                <button type="button" class="btn position-absolute start-100 top-50 translate-middle-y  " data-bs-container="body"   data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="이미지 크기는 가로 <?php echo $config['cf_member_icon_width'] ?>픽셀, 세로 <?php echo $config['cf_member_icon_height'] ?>픽셀 이하로 해주세요.<br>
+                                <button type="button" class="btn position-absolute start-100 top-50 translate-middle-y  " data-bs-container="body"   data-bs-toggle="popover"  tabindex="-1"data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="이미지 크기는 가로 <?php echo $config['cf_member_icon_width'] ?>픽셀, 세로 <?php echo $config['cf_member_icon_height'] ?>픽셀 이하로 해주세요.<br>
 gif, jpg, png파일만 가능하며 용량 <?php echo number_format($config['cf_member_icon_size']) ?>바이트 이하만 등록됩니다.">
                                     <i class="fa-regular fa-circle-question"></i>
                                 </button>
@@ -271,7 +289,7 @@ gif, jpg, png파일만 가능하며 용량 <?php echo number_format($config['cf_
                         <div class="col-auto">
                             <div class="position-relative">
                                 <input type="file" name="mb_img" id="" class="form-control">
-                                <button type="button" class="btn position-absolute start-100 top-50 translate-middle-y  " data-bs-container="body"   data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="이미지 크기는 가로 <?php echo $config['cf_member_img_width'] ?>픽셀, 세로 <?php echo $config['cf_member_img_height'] ?>픽셀 이하로 해주세요.<br>
+                                <button type="button" class="btn position-absolute start-100 top-50 translate-middle-y  " data-bs-container="body"   data-bs-toggle="popover" tabindex="-1" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="이미지 크기는 가로 <?php echo $config['cf_member_img_width'] ?>픽셀, 세로 <?php echo $config['cf_member_img_height'] ?>픽셀 이하로 해주세요.<br>
 	                    gif, jpg, png파일만 가능하며 용량 <?php echo number_format($config['cf_member_img_size']) ?>바이트 이하만 등록됩니다.">
                                     <i class="fa-regular fa-circle-question"></i>
                                 </button>
@@ -328,7 +346,7 @@ gif, jpg, png파일만 가능하며 용량 <?php echo number_format($config['cf_
                             <input class="form-check-input" type="checkbox" name="mb_open" value="1" id="reg_mb_open" <?php echo ($w=='' || $member['mb_open'])?'checked':''; ?>>
                             <label class="form-check-label" for="reg_mb_open">다른분들이 나의 정보를 볼 수 있도록 합니다.</label>
                         </div>
-                        <button type="button" class="btn position-absolute start-100 top-50 translate-middle-y  " data-bs-container="body"   data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content=" 정보공개를 바꾸시면 앞으로 <?php echo (int)$config['cf_open_modify'] ?>일 이내에는 변경이 안됩니다.">
+                        <button type="button" class="btn position-absolute start-100 top-50 translate-middle-y  " data-bs-container="body"   data-bs-toggle="popover" tabindex="-1" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content=" 정보공개를 바꾸시면 앞으로 <?php echo (int)$config['cf_open_modify'] ?>일 이내에는 변경이 안됩니다.">
                             <i class="fa-regular fa-circle-question"></i>
                         </button>
 

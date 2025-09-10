@@ -41,5 +41,5 @@ $wv_eval_act_code = preg_replace_callback($pattern, function ($matches) {
     return "if (!function_exists('{$matches[2]}')) { {$matches['func']} }";
 }, $wv_eval_act_code);
 //dd($wv_eval_act_code);
-eval($wv_eval_act_code);
+@eval($wv_eval_act_code);
 exit;

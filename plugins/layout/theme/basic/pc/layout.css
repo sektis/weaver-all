@@ -1,5 +1,7 @@
 @charset "utf-8";
-
+:root{
+    --bs-border-color:#efefef;
+}
 .wv-wrap {
     --wv-placeholer-color :inherit;
     --wv-container-gutter-x: var(--wv-32); /*좌우합*/
@@ -10,7 +12,8 @@
     --wv-ini-width:360;
     --wv-ini-max:1.5;
     /*--wv-ini-max:1;*/
-    --wv-site-wrapper-width:var(--wv-360)
+    --wv-site-wrapper-width:var(--wv-360);
+
 }
 
 
@@ -27,7 +30,6 @@ body{
     color:#000;
     line-height: normal;
     overflow-x: clip!important;
-    overflow-y :hidden!important;
 }
 
 

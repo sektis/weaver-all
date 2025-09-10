@@ -1,6 +1,17 @@
 $(document).ready(function () {
-    $("#header-wrapper").hcSticky( {
-        stickTo: '#site-wrapper',
-    });
+
+
+   setTimeout(function () {
+       var Sticky = new hcSticky('#header-wrapper', {
+           stickTo: '#site-wrapper',
+           onStart:function () {
+               $("body").addClass('scroll-on')
+           },
+           onStop:function () {
+               $("body").removeClass('scroll-on')
+           }
+       });
+   },500)
+
 
 })

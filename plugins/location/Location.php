@@ -21,7 +21,7 @@ class Location extends Plugin {
             $this->error('카카오 js api key를 등록하세요.',2);
         }
         if(!wv_is_ajax()){
-            add_javascript('<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey='.$config['cf_kakao_js_apikey'].'&libraries=services"></script>');
+            add_javascript('<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=f1d7df6827c9cbc8a39c19ac0baac410&libraries=services"></script>');
             add_javascript('<script src="'.wv_path_replace_url(dirname(__FILE__)).'/js/func.js"></script>');
         }
 

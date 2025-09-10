@@ -85,13 +85,13 @@ $(document).ready(function () {
 
         // ID는 명시적으로 지정되거나, 자동 생성됨 (트리거 고유 기준)
         let id = $el.data('wv-ajax-id');
-        const wrId = $el.data('wv-ajax-wr-id') || '';
+
 
         if (!id) {
             // 트리거 자체를 기반으로 고유 ID 생성
-            const triggerKey = url + wrId;
+            const triggerKey = url;
             id = (type === 'modal' ? 'wv-modal-' : 'wv-offcanvas-') +
-                btoa(triggerKey).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
+                btoa(triggerKey).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)+$el.index();
         }
 
         const selector = {
@@ -114,7 +114,6 @@ $(document).ready(function () {
         const prevInstanceId = $el.data('wv-ajax-instance');
         if (prevInstanceId && $(`#${prevInstanceId}`).length) {
             return;
-            $(`#${prevInstanceId}`).remove();
         }
 
         // 새로운 인스턴스 ID 저장
@@ -145,10 +144,6 @@ $(document).ready(function () {
 
 
 
-function makeStableId(url, wrId, prefix) {
-    const base = url + (wrId || '');
-    return prefix + btoa(base).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
-}
 
 
 function wv_ajax_modal(url,options=[],selector={},ajax_data={}){
@@ -168,28 +163,33 @@ function wv_ajax_modal(url,options=[],selector={},ajax_data={}){
         }
     });
 
+    const modalEl = $(`
+                <div id="${modal_id}" class="modal wv-modal fade ${modal_class}"   >
+                    <div class="modal-dialog ${dialog_class}">
+                        <div class="modal-content"></div>
+                    </div>
+                </div>
+            `);
+
+    $modal_target.append(modalEl);
+
+    const modal = new bootstrap.Modal(modalEl[0],modal_options);
+    modal.show();
+
+    $(modalEl).on("hidden.bs.modal", function () {
+        modalEl.remove();
+    });
 
     $.ajax({
         url: url,
         method: "POST",
         data:ajax_data,
         success: function (html) {
-            const modalEl = $(`
-                <div id="${modal_id}" class="modal wv-modal fade ${modal_class}"   >
-                    <div class="modal-dialog ${dialog_class}">
-                        <div class="modal-content">${html}</div>
-                    </div>
-                </div>
-            `);
-
-            $modal_target.append(modalEl);
-
-            const modal = new bootstrap.Modal(modalEl[0],modal_options);
-            modal.show();
-
-            $(modalEl).on("hidden.bs.modal", function () {
-                modalEl.remove();
-            });
+            $(".modal-content",modalEl).html(html)
+        },
+        error:function () {
+            modal.hide();
+            modalEl.remove();
         }
     });
 }
@@ -206,32 +206,39 @@ function wv_ajax_offcanvas(url, options = [], selector = {}, ajax_data = {}) {
     const backdrop = options.includes('backdrop-static') ? 'static' : (options.includes('backdrop') ? true : false);
     const scroll = options.includes('scroll') ? true : false;
 
+    const offcanvasEl = $(`
+                <div id="${offcanvas_id}" class="offcanvas wv-offcanvas bg-white ${placement} ${offcanvas_class}" tabindex="-1">
+                
+                    <div class="offcanvas-body">
+                         
+                    </div>
+                </div>
+            `);
+
+    $offcanvas_target.append(offcanvasEl);
+
+    const offcanvas = new bootstrap.Offcanvas(offcanvasEl[0], {
+        backdrop: backdrop,
+        scroll: scroll
+    });
+    offcanvas.show();
+
+
+    $(offcanvasEl).on("hidden.bs.offcanvas", function () {
+        offcanvasEl.remove();
+    });
+
     $.ajax({
         url: url,
         method: 'POST',
         data: ajax_data,
         success: function (html) {
-            const offcanvasEl = $(`
-                <div id="${offcanvas_id}" class="offcanvas wv-offcanvas ${placement} ${offcanvas_class}" tabindex="-1">
-                
-                    <div class="offcanvas-body">
-                        ${html}
-                    </div>
-                </div>
-            `);
 
-            $offcanvas_target.append(offcanvasEl);
-
-            const offcanvas = new bootstrap.Offcanvas(offcanvasEl[0], {
-                backdrop: backdrop,
-                scroll: scroll
-            });
-
-            offcanvas.show();
-
-            $(offcanvasEl).on("hidden.bs.offcanvas", function () {
-                offcanvasEl.remove();
-            });
+            $(".offcanvas-body",offcanvasEl).html(html)
+        },
+        error:function () {
+            offcanvas.hide();
+            offcanvasEl.remove();
         }
     });
 }

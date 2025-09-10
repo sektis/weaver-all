@@ -1076,7 +1076,7 @@ class StoreManager extends Makeable{
 
 
     /** 단건 조회 → Store 객체 (write + ext row 동시 보유) */
-    public function get($wr_id){
+    public function get($wr_id=''){
         $wr_id = (int)$wr_id;
 
         // write/ext 먼저 로드
