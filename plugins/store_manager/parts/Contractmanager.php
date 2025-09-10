@@ -3,13 +3,13 @@ namespace weaver\store_manager\parts;
 use weaver\store_manager\StoreSchemaBase;
 use weaver\store_manager\StoreSchemaInterface;
 
-class Contract extends StoreSchemaBase{
+class Contractmanager extends StoreSchemaBase{
 
     protected $cont_pdt_type_arr = array(1=>'매장',2=>'포장');
     protected $columns = array(
-        'mb_id' => "",
-        'cont_pdt_type' => "TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1=매장,2=포장'",
-        'biz_num' => "char(10) NOT NULL DEFAULT '' COMMENT '사업자등록번호'",
+
+        'manager_id' => " VARCHAR(255) not null",
+        'manager_id_form'=>''
 
     );
 

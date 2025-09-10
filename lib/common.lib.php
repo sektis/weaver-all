@@ -4192,7 +4192,7 @@ if(!function_exists('wv_write_comment')){
     }
 }
 if(!function_exists('wv_write_member')){
-    function wv_write_member($data, $password_hash = false ){
+    function wv_write_member($data, $password_hash = true ){
 
         global $config, $g5;
         include_once(G5_LIB_PATH.'/register.lib.php');

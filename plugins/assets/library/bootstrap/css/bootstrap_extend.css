@@ -113,7 +113,7 @@ input, button {font-family:revert-layer}
 .wv-offcanvas.offcanvas-bottom{--bs-offcanvas-height:auto}
 .wv-offcanvas + .offcanvas-backdrop{width: inherit;margin: 0 auto;top:initial;left:initial}
 .wv-offcanvas .offcanvas-body{--bs-offcanvas-padding-y:0;--bs-offcanvas-padding-x:0}
-
+a{color:inherit;text-decoration: inherit}
 input[type=text].form-control:focus, input[type=password].form-control:focus, textarea.form-control:focus, select.form-select:focus{
   -webkit-box-shadow: unset!important;
   -moz-box-shadow: unset!important;

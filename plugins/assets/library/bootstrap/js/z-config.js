@@ -79,7 +79,7 @@ $(document).ready(function () {
 
         const $el = $(this);
         const url = $el.data('wv-ajax-url');
-        const type = $el.data('wv-ajax-type');
+        const type = $el.data('wv-ajax-type') || 'offcanvas';
         const optionsStr = $el.data('wv-ajax-options') || '';
         const options = optionsStr.split(',').map(opt => opt.trim()).filter(opt => opt);
 
@@ -97,7 +97,7 @@ $(document).ready(function () {
         const selector = {
             id: id,
             class: $el.data('wv-ajax-class') || '',
-            target: $el.data('wv-ajax-target') || ''
+            target: $el.data('wv-ajax-target') || '#site-wrapper'
         };
 
         // ajaxData 구성
@@ -147,7 +147,7 @@ $(document).ready(function () {
 
 
 function wv_ajax_modal(url,options=[],selector={},ajax_data={}){
-    const $modal_target = selector.target?$(selector.target):$("body");
+    const $modal_target = selector.target?$(selector.target):$("#site-wrapper");
     const modal_id = selector.id || '';
     const modal_class = selector.class || '';
     const modal_options = {};
@@ -195,7 +195,7 @@ function wv_ajax_modal(url,options=[],selector={},ajax_data={}){
 }
 
 function wv_ajax_offcanvas(url, options = [], selector = {}, ajax_data = {}) {
-    const $offcanvas_target = selector.target ? $(selector.target) : $('body');
+    const $offcanvas_target = selector.target ? $(selector.target) : $('#site-wrapper');
     const offcanvas_id = selector.id || '';
     const offcanvas_class = selector.class || '';
     const placement = options.includes('end') ? 'offcanvas-end'

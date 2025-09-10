@@ -7,6 +7,8 @@ class Theme extends Plugin {
         add_event('write_update_before',array($this,'counsel_write_update_before'),0,4);
         add_event('write_update_after',array($this,'counsel_write_update_after'),0,5);
         add_replace('wv_hook_board_list_i',array($this,'counsel_list_name_mask'),0,2);
+        add_replace('register_member_chk_captcha',array($this,'register_member_chk_captcha'),0);
+        add_event('register_form_update_after',array($this,'register_form_update_after'),0);
 
     }
 
@@ -49,6 +51,14 @@ class Theme extends Plugin {
             $set_sql = implode(',',$set_array);
             sql_query("update {$write_table} set {$set_sql} where wr_id='{$wr_id}'",1);
         }
+    }
+
+    public function register_member_chk_captcha(){
+        return false;
+    }
+    public function register_form_update_after(){
+
+        goto_url(wv_path_replace_url(wv()->gnu_skin->plugin_theme_path).'/member/basic/register_step4.php');
     }
 
 

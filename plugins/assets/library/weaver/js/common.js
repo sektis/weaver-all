@@ -251,6 +251,51 @@ $(document).ready(function () {
         $(this).toggleClass("is-active");
     });
 
+// 전체 체크박스 클릭 이벤트 (패턴: .wv-check-{suffix})
+    $(document).on('click', '[class*="wv-check-"]:not([class*="wv-check-"][class*="-list"])', function () {
+        var $this = $(this);
+        var $form = $this.closest('form');
+        var all_checked = $this.is(":checked");
+
+        // 클래스명에서 suffix 추출
+        var className = $this.attr('class');
+        var matches = className.match(/wv-check-([^-\s]+)(?:\s|$)/);
+
+        if (matches && matches[1]) {
+            var suffix = matches[1];
+            var listClass = '.wv-check-' + suffix + '-list';
+
+            // 해당 패턴의 개별 체크박스들 체크/해제
+            $(listClass, $form).each(function (i, e) {
+                $(e).attr('checked', all_checked);
+            });
+        }
+    });
+
+// 개별 체크박스 클릭 이벤트 (패턴: .wv-check-{suffix}-list)
+    $(document).on('click', '[class*="wv-check-"][class*="-list"]', function () {
+        var $this = $(this);
+        var $form = $this.closest('form');
+
+        // 클래스명에서 suffix 추출
+        var className = $this.attr('class');
+        var matches = className.match(/wv-check-([^-\s]+)-list/);
+
+        if (matches && matches[1]) {
+            var suffix = matches[1];
+            var allCheckClass = '.wv-check-' + suffix;
+            var listClass = '.wv-check-' + suffix + '-list';
+            var $all_check = $(allCheckClass, $form);
+
+            // 전체 개수와 체크된 개수 비교
+            var total_count = $(listClass, $form).length;
+            var checked_count = $(listClass + ':checked', $form).length;
+
+            // 모든 개별 체크박스가 체크되어 있을 때만 전체 체크박스 체크
+            var all_check_change = (total_count > 0 && total_count === checked_count) ? true : false;
+            $all_check.attr('checked', all_check_change);
+        }
+    });
 
     $(document).on('input','.form-floating textarea',function () {
         var $this = $(this);

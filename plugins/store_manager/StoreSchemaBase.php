@@ -164,6 +164,8 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
     }
 
 
+
+
     public function is_list_part(){
         return $this->list_part ? true : false;
     }

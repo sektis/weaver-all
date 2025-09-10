@@ -14,10 +14,12 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         'category' => "TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '카테고리'",
         'tel' => "VARCHAR(255) DEFAULT NULL",
         'notice' => "TEXT DEFAULT NULL",
+        'mb_id' => "",
         'category_icon'=>'',
         'list_each'=>'',
         'service'=>'',
         'list_main'=>'',
+
     );
 
     protected $image_max_count=8;

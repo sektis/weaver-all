@@ -4,7 +4,7 @@ $(document).ready(function () {
         var $form = $this.closest('form');
         var all_checked = $this.is(":checked");
 
-        $("[name='chk[]']").each(function (i,e) {
+        $("[name='chk[]']",$form).each(function (i,e) {
             console.log(e)
             $(e).attr('checked',all_checked)
         })

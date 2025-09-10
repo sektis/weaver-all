@@ -37,6 +37,7 @@ class Plugin extends Weaver{
         self::$plugins_props->set($plugin_name,'plugin_theme_url',$this->get_theme_url('basic'));
         self::$plugins_props->set($plugin_name,'plugin_theme_dir_once','');
         self::$plugins_props->set($plugin_name,'plugin_theme_dir','basic');
+        $this->theme_injection();
     }
 
 
@@ -81,7 +82,11 @@ class Plugin extends Weaver{
     protected function make_skin($skin='basic',$data='',$option=''){
 
         global $g5,$member,$is_member,$config;
-
+        $org_theme='';
+        if($data['theme_dir']){
+            $org_theme = $this->plugin_theme_dir;
+            $this->set_theme_dir($data['theme_dir']);
+        }
         $wv_skin_path = $this->get_theme_path($this->plugin_theme_dir_once).'/'.$skin;
         $wv_skin_url = str_replace(G5_PATH, G5_URL, $wv_skin_path);
         $this->plugin_theme_dir_once='';
@@ -96,16 +101,47 @@ class Plugin extends Weaver{
         $skin_class = 'wv-'.$this->plugin_name.'-'.str_replace('/','-',$skin_id);
 
         ob_start();
+//        dd($file);
         include $file;
         $content = ob_get_contents();
         ob_end_clean();
-
+        if($org_theme){
+            $this->set_theme_dir($org_theme);
+        }
         return $content;
     }
 
-    protected function theme_injection($set_theme_dir=false){
-        $other_plugins_path = dirname($this->plugin_theme_path).'/plugins';
+    protected function get_jnjection_themes($only_name=false){
+        $theme_path = $this->plugin_theme_path;
+        if(in_array(basename($theme_path),array('pc','mobile'))){
+            $theme_path = dirname($theme_path);
+        }
+        $other_plugins_path = $theme_path.'/plugins';
         $other_plugins_themes = glob($other_plugins_path.'/*', GLOB_ONLYDIR);
+        if($only_name){
+            $other_plugins_themes = array_map('basename',$other_plugins_themes);
+
+        }
+
+
+        return $other_plugins_themes;
+//        foreach ($other_plugins_themes as $path){
+//            $other_plugin_name = basename($path);
+//            if(!wv_plugin_exists($other_plugin_name)){
+//              continue;
+//            };
+//
+//            wv_add_symlink($path,wv($other_plugin_name)->plugin_path.'/theme/'.$this->plugin_name);
+//            if($set_theme_dir){
+//                wv($other_plugin_name)->set_theme_dir($this->plugin_name);
+//            }
+//
+//        }
+    }
+
+    protected function theme_injection(){
+
+        $other_plugins_themes = $this->get_jnjection_themes();
 
         foreach ($other_plugins_themes as $path){
             $other_plugin_name = basename($path);
@@ -114,9 +150,21 @@ class Plugin extends Weaver{
             };
 
             wv_add_symlink($path,wv($other_plugin_name)->plugin_path.'/theme/'.$this->plugin_name);
-            if($set_theme_dir){
-                wv($other_plugin_name)->set_theme_dir($this->plugin_name);
-            }
+
+        }
+    }
+
+    protected function theme_injection_use($plugin=''){
+
+        $other_plugins_themes = $this->get_jnjection_themes(1);
+//        dd(array_map('basename',$other_plugins_themes));
+        if($plugin and isset($other_plugins_themes[$plugin])){
+            wv($plugin)->set_theme_dir($this->plugin_name);
+            return;
+        }
+        foreach ($other_plugins_themes as $other_plugin_name){
+
+            wv($other_plugin_name)->set_theme_dir($this->plugin_name);
 
         }
     }

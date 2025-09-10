@@ -775,6 +775,12 @@ class StoreManager extends Makeable{
         // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
         $existing_wr_id = isset($data['wr_id']) ? (int)$data['wr_id'] : 0;
 
+        if($data['mb_id'] and !get_member($data['mb_id'])){
+            $member_make = wv_write_member($data);
+            if($member_make!==true){
+                alert('회원생성실패');
+            }
+        }
         if ($existing_wr_id <= 0) {
             if (!isset($data['wr_subject']) || !strlen(trim($data['wr_subject']))) {
                 $data['wr_subject'] = '/';
@@ -787,6 +793,7 @@ class StoreManager extends Makeable{
             $data['extend_data']['mb_id']=$data['mb_id'];
             $this->create_post_stub_and_get_wr_id($data);
         }
+
         $wr_id = $existing_wr_id;
 
         $prev_ext_row   = $existing_wr_id > 0 ? $this->fetch_store_row($existing_wr_id) : array();
@@ -1107,6 +1114,7 @@ class StoreManager extends Makeable{
     public function get_parts(){
         return $this->parts; // bind_schema에서 채운 parts 배열
     }
+
 
     /** 삭제 */
     public function delete($wr_id){

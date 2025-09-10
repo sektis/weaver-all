@@ -11,9 +11,10 @@ class Ceo extends Plugin {
 
          wv_dir_var_pre_check('ceo');
          if($wv_dir_var==$this->dir_var){
+             $this->theme_injection_use();
              wv_must_login();
              wv_never_register();
-             $this->theme_injection(1);
+
 
              add_event('wv_hook_eval_action_before',array($this,'wv_hook_eval_action_before'));
 

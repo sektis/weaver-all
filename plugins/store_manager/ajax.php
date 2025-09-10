@@ -95,5 +95,26 @@ if($action == 'get_stores_by_bounds'){
     ));
 }
 
+if($action=='render_part'){
+    if(!$type){
+        $type='form';
+    }
+
+    ob_start();
+    echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part(explode(',',$fields),'form');
+    $render_content = ob_get_clean();
+    $skin_data = array(
+        'theme_dir'=>'store_manager',
+        'render_content' => $render_content,
+        'made'=>$made
+    );
+    echo wv_widget('store_manager_form', $skin_data);
+    exit;
+}
+if($action=='update'){
+    $wr_id = wv()->store_manager->made($made)->set($_POST);
+    exit;
+}
+
 // 잘못된 action
 alert('잘못된 요청입니다.');

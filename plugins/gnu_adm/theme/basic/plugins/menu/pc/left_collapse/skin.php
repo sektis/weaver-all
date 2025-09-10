@@ -111,7 +111,7 @@ if(!function_exists('wv_collapse_menu_icon')){
 
     </style>
     <?php
-    echo wv_collapse_menu(function ($depth,$content,$curr_id) {
+    echo wv_collapse_menu_icon(function ($depth,$content,$curr_id) {
         if($depth>3){
             return false;
         }

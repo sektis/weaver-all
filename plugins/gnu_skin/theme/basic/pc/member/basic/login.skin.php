@@ -29,7 +29,7 @@ switch($config['cf_cert_hp']) {
 <div id="<?php echo $skin_id?>" class="position-relative d-flex-center flex-nowrap"  style="" >
     <style>
         <?php echo $skin_selector?> {}
-        <?php echo $skin_selector?> .login-btn.active{background-color:#000!important;}
+        <?php echo $skin_selector?> .submit-btn.active{background-color:#000!important;}
 
 
         @media (min-width: 992px) {
@@ -58,12 +58,12 @@ switch($config['cf_cert_hp']) {
                         <input type="hidden" name="url" value="<?php echo $login_url ?>">
                         <div>
                             <label for="login_id" class="fs-[12//-0.48/600/#0D171B]">아이디<strong class="sound_only"> 필수</strong></label>
-                            <input type="text" name="mb_id" id="login_id" required class="form-control fs-[14/20/-0.56/600/#0d171b]  border-bottom    mt-[6px]  " style="padding: var(--wv-17) var(--wv-16)" size="20" maxLength="20" placeholder="휴대폰 번호 입력" autocomplete="new-password">
+                            <input type="text" name="mb_id" id="login_id" required class="form-control fs-[14/20/-0.56/600/#0d171b]  border-bottom    mt-[6px]  " style="padding: var(--wv-17) var(--wv-16)"   maxLength="20" placeholder="휴대폰 번호 입력" autocomplete="new-password">
                         </div>
 
                         <div class="mt-[24px]">
                             <label for="login_pw" class="fs-[12//-0.48/600/#0D171B]">비밀번호<strong class="sound_only"> 필수</strong></label>
-                            <input type="password" name="mb_password" id="login_pw" required class="form-control fs-[14/20/-0.56/600/#0d171b]  border-bottom mt-[6px]  " style="padding: var(--wv-17) var(--wv-16)" size="20" maxLength="20" placeholder="영문/숫자 조합 6~16자리" autocomplete="new-password">
+                            <input type="password" name="mb_password" id="login_pw" required class="form-control fs-[14/20/-0.56/600/#0d171b]  border-bottom mt-[6px]  " style="padding: var(--wv-17) var(--wv-16)"   maxLength="20" placeholder="영문/숫자 조합 6~16자리" autocomplete="new-password">
                         </div>
                     </div>
 
@@ -79,7 +79,7 @@ switch($config['cf_cert_hp']) {
                 </div>
 
                 <div class="mt-[40px]">
-                    <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] login-btn transition hover:bg-[#0d171b]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">로그인하기</button>
+                    <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] submit-btn transition hover:bg-[#0d171b]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">로그인하기</button>
                 </div>
 
                 <div class="hstack justify-content-center mt-[16px]">
@@ -179,15 +179,7 @@ switch($config['cf_cert_hp']) {
 
             var $id = $("#login_id", $skin);
             var $pw = $("#login_pw", $skin);
-            var $btn = $(".login-btn", $skin);
-
-            var ajax_data = {
-                agree:1,
-                agree2:1,
-                no_layout:true,
-                pre_cert_no:$("input[name=cert_no]",$skin).val(),
-            }
-            wv_ajax_offcanvas('<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_step1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
+            var $btn = $(".submit-btn", $skin);
 
             function toggleLoginActive() {
                 if ($id.val().length > 0 && $pw.val().length > 0) {
@@ -225,8 +217,6 @@ switch($config['cf_cert_hp']) {
             $("#win_hp_cert").click(function() {
                 if(!cert_confirm()) return false;
                 params = "?" + pageTypeParam;
-
-
                 certify_win_open("<?php echo $cert_type; ?>", "<?php echo $cert_url; ?>"+params);
                 return;
             });
@@ -245,9 +235,15 @@ switch($config['cf_cert_hp']) {
                 }
             }
 
+            //var ajax_data = {
+            //    agree:1,
+            //    agree2:1,
+            //    no_layout:true,
+            //    pre_cert_no:321321,
+            //}
+            //wv_ajax_offcanvas('<?php //echo wv_path_replace_url(dirname(__FILE__)) ?>///register_step4.php',['end','backdrop-static'],{},ajax_data)
             function onCertifyComplete(type) {
-                wv_ajax_offcanvas(g5_bbs_url+'/register_stpe1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
-                return false;
+// return false;
                 // 인증 완료 후 서버에서 상태 확인
                 if(!$("input[name=cert_no]",$skin).val()){
 
@@ -255,7 +251,7 @@ switch($config['cf_cert_hp']) {
                 }
 
 
-                $.post("<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/login_cert.php",function () {
+                $.post("<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/login_cert.php",{mb_name:$("input[name=mb_name]",$skin).val(),mb_hp:$("input[name=mb_hp]",$skin).val()},function () {
 
                     var ajax_data = {
                         agree:1,
@@ -263,7 +259,7 @@ switch($config['cf_cert_hp']) {
                         no_layout:true,
                         pre_cert_no:$("input[name=cert_no]",$skin).val(),
                     }
-                    wv_ajax_offcanvas(g5_bbs_url+'/register_stpe1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
+                    wv_ajax_offcanvas('<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_step1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
                 })
 
 

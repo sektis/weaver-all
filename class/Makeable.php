@@ -74,4 +74,10 @@ class Makeable extends Plugin{
         return $instance;
     }
 
+    public function made_all(){
+
+
+        return $this->get_instance();
+    }
+
 }

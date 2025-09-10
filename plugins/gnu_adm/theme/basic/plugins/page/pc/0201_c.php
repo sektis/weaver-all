@@ -56,7 +56,7 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
             <div class="wv-vstack">
 
 
-                 <?php echo $store->contract->render_all('form');; ?>
+<!--                 --><?php //echo $store->contract->render_all('form');; ?>
 
 
                 <div class="mx-fit">
