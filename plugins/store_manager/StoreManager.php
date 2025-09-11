@@ -31,6 +31,17 @@ class StoreManager extends Makeable{
     protected $colmap = array(); // ['location' => ['lat'=>'location_lat', ...], ...]
 
     protected $list_db_runtime = null; // ['enabled'=>bool,'part'=>string,'wr_id'=>int,'schema'=>object]
+    /** @var array Store 객체 캐시 */
+    protected $store_cache = array();
+
+    /** @var array write_row 캐시 */
+    protected $write_cache = array();
+
+    /** @var array ext_row 캐시 */
+    protected $ext_cache = array();
+
+    /** @var array list_part 캐시 */
+    protected $list_cache = array();
 
     /**
      * ($id, $bo_table, array $schema_parts) 시그니처
@@ -768,6 +779,7 @@ class StoreManager extends Makeable{
      * @return int wr_id
      */
     public function set($data = array()){
+        global $member;
         $table = $this->get_ext_table_name();
         if (!is_array($data)) $data = array();
 
@@ -775,12 +787,30 @@ class StoreManager extends Makeable{
         // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
         $existing_wr_id = isset($data['wr_id']) ? (int)$data['wr_id'] : 0;
 
-        if($data['mb_id'] and !get_member($data['mb_id'])){
-            $member_make = wv_write_member($data);
-            if($member_make!==true){
-                alert('회원생성실패');
+        if($data['mb_id']){
+            $mb= get_member($data['mb_id']);
+
+            if(!$mb['mb_id']){
+                if(!$data['mb_nick']){
+                    $data['mb_nick']=$data['mb_id']. date('YmdHis');
+                    $data['mw']='u';
+                }
+
+
+
             }
+            $mb_id = wv_write_member($data);
+            if($mb_id!==true){
+                alert($mb_id);
+            }
+            $mb= get_member($data['mb_id']);
+            $data['extend_data']['mb_id']=$mb['mb_id'];
+            $data['extend_data']['wr_name']=$mb['mb_name'];
+            $data['extend_data']['wr_password']=$mb['mb_password'];
         }
+
+
+
         if ($existing_wr_id <= 0) {
             if (!isset($data['wr_subject']) || !strlen(trim($data['wr_subject']))) {
                 $data['wr_subject'] = '/';
@@ -790,7 +820,8 @@ class StoreManager extends Makeable{
             $existing_wr_id = $wr_id;
         }else{
             $data['w']='u';
-            $data['extend_data']['mb_id']=$data['mb_id'];
+
+
             $this->create_post_stub_and_get_wr_id($data);
         }
 
@@ -1076,7 +1107,7 @@ class StoreManager extends Makeable{
         }
 
         // === 목록 파트 저장 ===
-
+        $this->clear_cache($wr_id);
 
         return $wr_id;
     }
@@ -1086,9 +1117,15 @@ class StoreManager extends Makeable{
     public function get($wr_id=''){
         $wr_id = (int)$wr_id;
 
+        // ✅ 캐시에서 먼저 확인
+        if (isset($this->store_cache[$wr_id])) {
+            return $this->store_cache[$wr_id];
+        }
+
+
         // write/ext 먼저 로드
-        $write_row = $this->fetch_write_row($wr_id);
-        $ext_row   = $this->fetch_store_row($wr_id);
+        $write_row = $this->fetch_write_row_cached($wr_id);
+        $ext_row   = $this->fetch_store_row_cached($wr_id);
         if (!isset($write_row['wr_id'])) $write_row['wr_id'] = $wr_id;
         if (!isset($ext_row['wr_id']))   $ext_row['wr_id']   = $wr_id;
 
@@ -1096,10 +1133,11 @@ class StoreManager extends Makeable{
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         // 목록 파트 데이터 미리 모으기
-        $ap = $this->fetch_list_part_rows_for_wr_ids(array($wr_id));
+        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
 
         // ✅ 모든 파트(일반 + 목록) 프록시로 감싸기
         foreach ($this->parts as $pkey => $schema) {
+            $schema->set_store($store);
             $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $ext_row, $pkey);
             if ($this->is_list_part_schema($schema)) {
 
@@ -1107,6 +1145,7 @@ class StoreManager extends Makeable{
             }
             $store->$pkey = $proxy;
         }
+        $this->store_cache[$wr_id] = $store;
 
         return $store;
     }
@@ -1122,6 +1161,8 @@ class StoreManager extends Makeable{
         $wr_id = (int)$wr_id;
         $sql = "DELETE FROM `{$table}` WHERE wr_id = {$wr_id}";
         sql_query($sql, true);
+        $this->clear_cache($wr_id);
+
         return true;
     }
 
@@ -2670,6 +2711,145 @@ return;
 
         }
 
+    }
+    ///////////////캐싱적용
+    /** 캐싱이 적용된 write_row 조회 */
+    protected function fetch_write_row_cached($wr_id) {
+        $wr_id = (int)$wr_id;
+
+        if (isset($this->write_cache[$wr_id])) {
+            return $this->write_cache[$wr_id];
+        }
+
+        $row = $this->fetch_write_row($wr_id);
+        $this->write_cache[$wr_id] = $row;
+
+        return $row;
+    }
+
+    /** 캐싱이 적용된 ext_row 조회 */
+    protected function fetch_store_row_cached($wr_id) {
+        $wr_id = (int)$wr_id;
+
+        if (isset($this->ext_cache[$wr_id])) {
+            return $this->ext_cache[$wr_id];
+        }
+
+        $row = $this->fetch_store_row($wr_id);
+        $this->ext_cache[$wr_id] = $row;
+
+        return $row;
+    }
+
+    /** 캐싱이 적용된 list_part 조회 */
+    protected function fetch_list_part_rows_for_wr_ids_cached($wr_ids) {
+        if (!is_array($wr_ids)) $wr_ids = array($wr_ids);
+
+        $cached_data = array();
+        $uncached_ids = array();
+
+        // 캐시된 데이터와 미캐시 ID 분리
+        foreach ($wr_ids as $wr_id) {
+            $wr_id = (int)$wr_id;
+            if (isset($this->list_cache[$wr_id])) {
+                $cached_data[$wr_id] = $this->list_cache[$wr_id];
+            } else {
+                $uncached_ids[] = $wr_id;
+            }
+        }
+
+        // 미캐시 데이터 조회
+        if (count($uncached_ids)) {
+            $new_data = $this->fetch_list_part_rows_for_wr_ids($uncached_ids);
+
+            // 캐시에 저장
+            foreach ($uncached_ids as $wr_id) {
+                $this->list_cache[$wr_id] = array();
+                foreach ($this->parts as $pkey => $schema) {
+                    if ($this->is_list_part_schema($schema)) {
+                        $this->list_cache[$wr_id][$pkey] = isset($new_data[$pkey][$wr_id]) ? $new_data[$pkey][$wr_id] : array();
+                    }
+                }
+            }
+
+            // 결과 병합
+            foreach ($new_data as $pkey => $wr_data) {
+                foreach ($wr_data as $wr_id => $list_data) {
+                    if (!isset($cached_data[$wr_id])) $cached_data[$wr_id] = array();
+                    $cached_data[$wr_id][$pkey] = $list_data;
+                }
+            }
+        }
+
+        // 기존 포맷으로 변환
+        $result = array();
+        foreach ($cached_data as $wr_id => $wr_data) {
+            foreach ($wr_data as $pkey => $list_data) {
+                $result[$pkey][$wr_id] = $list_data;
+            }
+        }
+
+        return $result;
+    }
+
+    /** 캐시 클리어 메서드들 */
+    public function clear_cache($wr_id = null) {
+        if ($wr_id !== null) {
+            $wr_id = (int)$wr_id;
+            unset($this->store_cache[$wr_id]);
+            unset($this->write_cache[$wr_id]);
+            unset($this->ext_cache[$wr_id]);
+            unset($this->list_cache[$wr_id]);
+        } else {
+            $this->store_cache = array();
+            $this->write_cache = array();
+            $this->ext_cache = array();
+            $this->list_cache = array();
+        }
+    }
+
+    public function clear_store_cache($wr_id) {
+        $wr_id = (int)$wr_id;
+        unset($this->store_cache[$wr_id]);
+    }
+
+    public function clear_write_cache($wr_id) {
+        $wr_id = (int)$wr_id;
+        unset($this->write_cache[$wr_id]);
+    }
+
+    public function clear_ext_cache($wr_id) {
+        $wr_id = (int)$wr_id;
+        unset($this->ext_cache[$wr_id]);
+    }
+
+    public function clear_list_cache($wr_id) {
+        $wr_id = (int)$wr_id;
+        unset($this->list_cache[$wr_id]);
+    }
+
+
+
+    /** 캐시 상태 확인 (디버깅용) */
+    public function get_cache_info() {
+        return array(
+            'store_cache_count' => count($this->store_cache),
+            'write_cache_count' => count($this->write_cache),
+            'ext_cache_count' => count($this->ext_cache),
+            'list_cache_count' => count($this->list_cache),
+            'cached_wr_ids' => array_keys($this->store_cache)
+        );
+    }
+
+    /** 메모리 사용량이 많을 때 캐시 제한 */
+    protected function limit_cache_size($max_items = 100) {
+        if (count($this->store_cache) > $max_items) {
+            // LRU 방식으로 오래된 캐시부터 제거
+            $this->store_cache = array_slice($this->store_cache, -$max_items, null, true);
+            $this->write_cache = array_slice($this->write_cache, -$max_items, null, true);
+            $this->ext_cache = array_slice($this->ext_cache, -$max_items, null, true);
+            $this->list_cache = array_slice($this->list_cache, -$max_items, null, true);
+        }
     }
 }
 

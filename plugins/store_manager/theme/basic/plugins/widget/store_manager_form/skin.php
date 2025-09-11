@@ -7,6 +7,7 @@ global $g5;
         <?php echo $skin_selector?> {}
         <?php echo $skin_selector?> .wv-offcanvas-header{padding: var(--wv-27) 0 var(--wv-7);font-size: var(--wv-18);font-weight: 700;}
         <?php echo $skin_selector?> .wv-offcanvas-body{padding: var(--wv-30) 0}
+        <?php echo $skin_selector?> .submit-btn.active{background-color:#000!important;color:#fff!important;}
         @media (min-width: 992px) {
 
         }
@@ -16,12 +17,12 @@ global $g5;
         }
     </style>
 
-    <div class="position-relative col col-lg-auto w-full md:w-full h-100 " style="">
+    <div class="position-relative col col-lg-auto  md:w-full h-100 " style="">
         <div class="container h-100">
-            <form name="flogin" action='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.ph' method="post" class="h-100" enctype="multipart/form-data">
+            <form name="flogin" action='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
-                <input type="hidden" name="made" value="<?php echo $made; ?>">
-
+                <input type="hidden" name="made" value="<?php echo $data['made']; ?>">
+                <?php echo $data['store']->basic->render_all('form');; ?>
                 <?php echo $data['render_content']; ?>
 
 
@@ -34,6 +35,17 @@ global $g5;
 
             var $skin = $("<?php echo $skin_selector?>");
 
+
+
+
+
+            $("form", $skin).ajaxForm({ 
+                success: function (data) {
+                    alert('완료');
+                    $skin.closest('.offcanvas').offcanvas('hide')
+                }
+
+            })
         })
     </script>
 </div>

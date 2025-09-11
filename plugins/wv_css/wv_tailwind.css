@@ -279,6 +279,9 @@
   .py-\[26px\] {
     padding-block: var(--wv-26) !important;
   }
+  .pt-\[16px\] {
+    padding-top: var(--wv-16) !important;
+  }
   .fs-\[12\/13\.26\/-0\.02em\/400\/\#797979\] {
     font-size: var(--wv-12) !important;
     line-height: var(--wv-13_26) !important;

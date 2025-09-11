@@ -29,6 +29,8 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
     /** @var array 인덱스 정의 (name/type/cols[]) */
     protected $indexes = array();
 
+    protected $store = '';
+
     /** @var array 업서트 허용 컬럼(논리명). 비어있으면 $columns 기준 자동 */
     protected $allowed = array();
 
@@ -38,6 +40,12 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         $this->part_key          = (string)$part_key;
         $this->plugin_theme_path = (string)$plugin_theme_path;
     }
+
+    /** 반드시 $columns 그대로 반환 */
+    public function set_store($obj){
+        $this->store= $obj;
+    }
+
 
     /** 반드시 $columns 그대로 반환 */
     public function get_columns(){

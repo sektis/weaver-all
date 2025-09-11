@@ -53,7 +53,7 @@ $list = $store_result['list'];
             <div class="wv-data-list mx-fit mt-[16px]">
                 <table class="table wv-table border-top border-bottom align-middle">
                     <caption class="visually-hidden"><?php echo $board['bo_subject'] ?> 목록</caption>
-                    <thead class="view-pc">
+                    <thead>
                     <tr class="text-center">
                         <th scope="col" >아이디</th>
                         <th scope="col" >대표자 이름</th>

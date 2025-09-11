@@ -341,8 +341,11 @@ $(document).ready(function () {
         return false;
     })
 
-    $("body").loaded('.wv-password-toggle',function () {
-
+    /**
+     * wv-password-toggle 클래스 기반 비밀번호 토글 기능
+     * loaded() 함수 사용, form-floating 환경 완벽 지원
+     */
+    $("body").loaded('.wv-password-toggle', function() {
         const $input = $(this);
 
         // 이미 초기화된 경우 스킵
@@ -353,41 +356,88 @@ $(document).ready(function () {
         // 초기화 마크
         $input.addClass('wv-password-toggle-initialized');
 
-        // input을 wrapper로 감싸기
-        const $wrapper = $('<div class="wv-password-wrapper"></div>');
-        $input.wrap($wrapper);
+        // form-floating 환경 체크
+        const $formFloating = $input.closest('.form-floating');
+        const isFormFloating = $formFloating.length > 0;
 
-        // 토글 아이콘 생성 및 추가
-        const $toggleIcon = $('<i class="wv-password-toggle-icon fa-solid fa-eye-slash"></i>');
-        $input.after($toggleIcon);
+        let $toggleIcon;
 
-        $toggleIcon.click(function () {
-            const $icon = $(this);console.log(1)
-            const $input = $icon.siblings('input.wv-password-toggle');
+        if (isFormFloating) {
+            // form-floating 환경에서는 wrapper 없이 직접 form-floating에 추가
+            $formFloating.addClass('wv-password-wrapper-floating');
+            $toggleIcon = $('<i class="wv-password-toggle-icon fa-solid fa-eye-slash"></i>');
+            $formFloating.append($toggleIcon);
+        } else {
+            // 일반 환경에서는 wrapper 사용
+            const $wrapper = $('<div class="wv-password-wrapper"></div>');
+            $input.wrap($wrapper);
+            $toggleIcon = $('<i class="wv-password-toggle-icon fa-solid fa-eye-slash"></i>');
+            $input.after($toggleIcon);
+        }
 
-            if ($input.length === 0) return;
+        // 토글 아이콘 클릭 이벤트
+        $toggleIcon.click(function() {
+            const $icon = $(this);
 
-            const isPassword = $input.attr('type') === 'password';
+            // form-floating 환경에서는 형제가 아닌 부모 안에서 찾기
+            const $targetInput = isFormFloating
+                ? $icon.parent().find('input.wv-password-toggle')
+                : $icon.siblings('input.wv-password-toggle');
+
+            if ($targetInput.length === 0) return;
+
+            const isPassword = $targetInput.attr('type') === 'password';
 
             if (isPassword) {
                 // 비밀번호 보이기
-                $input.attr('type', 'text');
+                $targetInput.attr('type', 'text');
                 $icon.removeClass('fa-eye-slash').addClass('fa-eye');
             } else {
                 // 비밀번호 숨기기
-                $input.attr('type', 'password');
+                $targetInput.attr('type', 'password');
                 $icon.removeClass('fa-eye').addClass('fa-eye-slash');
             }
 
             // 포커스 유지 및 커서 끝으로 이동
-            $input.focus();
-            const input = $input[0];
+            $targetInput.focus();
+            const input = $targetInput[0];
             const length = input.value.length;
             input.setSelectionRange(length, length);
-        })
+        });
+    });
+    $(document).loaded('.wv-form-check', function() {
+        const $skin = $(this);
+        var $btn = $("[type=submit]", $skin);
+        var $requiredFields = $("input[required], textarea[required], select[required]", $skin);
+        var isCheckingScheduled = false;
 
-    })
+        function isFieldValid(field) {
+            var type = field.type;
+            var value = field.value;
 
+            // checkbox, radio는 checked 확인
+            if (type === 'checkbox' || type === 'radio') {
+                return field.checked;
+            }
+
+            // 나머지는 값 확인
+            return value && value.trim() !== '' && value !== '0';
+        }
+
+        function scheduleCheck() {
+            if (isCheckingScheduled) return;
+
+            isCheckingScheduled = true;
+            requestAnimationFrame(function() {
+                var allValid = Array.prototype.every.call($requiredFields, isFieldValid);
+                $btn.toggleClass("active", allValid);
+                isCheckingScheduled = false;
+            });
+        }
+
+        $requiredFields.on("input change", scheduleCheck);
+        scheduleCheck();
+    });
 
 })
 

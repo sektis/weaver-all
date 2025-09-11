@@ -48,7 +48,7 @@ $q_mb_email = sql_escape_string($mb_email);
 
 // 닉네임 생성(없으면 mb_id_YYYYMMDDHHIISS)
 if($mb_nick === ''){
-    $mb_nick = $mb_id . '_' . date('YmdHis');
+    $mb_nick = $mb_id   . date('YmdHis');
 }
 $q_mb_nick = sql_escape_string($mb_nick);
 

@@ -3255,6 +3255,9 @@ if(!function_exists('wv_write_board')){
             $wr_ip = $post['wr_ip']?$post['wr_ip']:$_SERVER['REMOTE_ADDR'];
 
 
+            if (!sql_query(" SELECT wr_seo_title from {$write_table} limit 1 ", false)) {
+                sql_query(" ALTER TABLE {$write_table} ADD `wr_seo_title` varchar(255) NOT NULL DEFAULT '' ");
+            }
 
             $sql = " insert into $write_table
                 set wr_num = '$wr_num',
@@ -4196,7 +4199,8 @@ if(!function_exists('wv_write_member')){
 
         global $config, $g5;
         include_once(G5_LIB_PATH.'/register.lib.php');
-        $w='';
+
+        $w              = isset($data['mw']) ? trim($data['mw']) : '';
         $mb_id          = isset($data['mb_id']) ? trim($data['mb_id']) : '';
         $mb_password    = isset($data['mb_password']) ? trim($data['mb_password']) : '';
         $mb_name        = isset($data['mb_name']) ? trim($data['mb_name']) : '';
@@ -4232,6 +4236,7 @@ if(!function_exists('wv_write_member')){
         $mb_9           = isset($data['mb_9'])             ? trim($data['mb_9'])           : "";
         $mb_10          = isset($data['mb_10'])            ? trim($data['mb_10'])          : "";
 
+        // XSS 및 유효성 처리
         $mb_name        = clean_xss_tags($mb_name);
         $mb_email       = get_email_address($mb_email);
         $mb_homepage    = clean_xss_tags($mb_homepage);
@@ -4243,153 +4248,215 @@ if(!function_exists('wv_write_member')){
         $mb_addr3       = clean_xss_tags($mb_addr3);
         $mb_addr_jibeon = preg_match("/^(N|R)$/", $mb_addr_jibeon) ? $mb_addr_jibeon : '';
 
+        // ✅ 회원정보 수정 모드 체크
+        $is_update = ($w === 'u');
 
-        if ($msg = empty_mb_id($mb_id))         return $msg;; // alert($msg, $url, $error, $post);
-        if ($msg = valid_mb_id($mb_id))         return $msg;;
-        if ($msg = count_mb_id($mb_id))         return $msg;;
+        // ✅ 수정 모드일 때 기존 회원 존재 여부 확인
+        if ($is_update) {
+            if (!$mb_id) {
+                return '수정할 회원ID가 필요합니다.';
+            }
 
-        // 이름, 닉네임에 utf-8 이외의 문자가 포함됐다면 오류
-        // 서버환경에 따라 정상적으로 체크되지 않을 수 있음.
-        $tmp_mb_name = iconv('UTF-8', 'UTF-8//IGNORE', $mb_name);
-        if($tmp_mb_name != $mb_name) {
-            return('이름을 올바르게 입력해 주십시오.');
+            $existing_member = get_member($mb_id);
+            if (!$existing_member['mb_id']) {
+                return '존재하지 않는 회원입니다.';
+            }
+        } else {
+            // 신규 가입 시에만 체크
+            if ($msg = empty_mb_id($mb_id))         return $msg;
+            if ($msg = valid_mb_id($mb_id))         return $msg;
+            if ($msg = count_mb_id($mb_id))         return $msg;
+            if ($msg = exist_mb_id($mb_id))         return $msg;
         }
-        $tmp_mb_nick = iconv('UTF-8', 'UTF-8//IGNORE', $mb_nick);
-        if($tmp_mb_nick != $mb_nick) {
-            return('닉네임을 올바르게 입력해 주십시오.');
+
+        // 이름, 닉네임 UTF-8 체크 (값이 있을 때만)
+        if ($mb_name) {
+            $tmp_mb_name = iconv('UTF-8', 'UTF-8//IGNORE', $mb_name);
+            if($tmp_mb_name != $mb_name) {
+                return('이름을 올바르게 입력해 주십시오.');
+            }
         }
 
-        // 비밀번호를 체크하는 상태의 기본값은 true이며, 비밀번호를 체크하지 않으려면 hook 을 통해 false 값으로 바꿔야 합니다.
+        if ($mb_nick) {
+            $tmp_mb_nick = iconv('UTF-8', 'UTF-8//IGNORE', $mb_nick);
+            if($tmp_mb_nick != $mb_nick) {
+                return('닉네임을 올바르게 입력해 주십시오.');
+            }
+        }
+
+        // 비밀번호 체크
         $is_check_password = run_replace('register_member_password_check', true, $mb_id, $mb_nick, $mb_email, $w);
 
-        if ($is_check_password){
-            if ($w == '' && !$mb_password)
+        if ($is_check_password && !$is_update) {
+            if (!$mb_password) {
                 return('비밀번호가 넘어오지 않았습니다.');
+            }
         }
 
-        if ($msg = empty_mb_name($mb_name))       return $msg;
-        if ($msg = empty_mb_nick($mb_nick))     return $msg;;
-        if ($msg = empty_mb_email($mb_email))   return $msg;;
-        if ($msg = reserve_mb_id($mb_id))       return $msg;;
-        if ($msg = reserve_mb_nick($mb_nick))   return $msg;;
-        // 이름에 한글명 체크를 하지 않는다.
-        //if ($msg = valid_mb_name($mb_name))     return $msg;;
-        if ($msg = valid_mb_nick($mb_nick))     return $msg;;
-        if ($msg = valid_mb_email($mb_email))   return $msg;;
-        if ($msg = prohibit_mb_email($mb_email))return $msg;;
+        // 유효성 검사 (값이 있을 때만)
+        if ($mb_name && ($msg = empty_mb_name($mb_name)))       return $msg;
+        if ($mb_nick && ($msg = empty_mb_nick($mb_nick)))       return $msg;
+        if ($mb_email && ($msg = empty_mb_email($mb_email)))    return $msg;
+        if ($mb_id && ($msg = reserve_mb_id($mb_id)))           return $msg;
+        if ($mb_nick && ($msg = reserve_mb_nick($mb_nick)))     return $msg;
+        if ($mb_nick && ($msg = valid_mb_nick($mb_nick)))       return $msg;
+        if ($mb_email && ($msg = valid_mb_email($mb_email)))    return $msg;
+        if ($mb_email && ($msg = prohibit_mb_email($mb_email))) return $msg;
 
-        // 휴대폰 필수입력일 경우 휴대폰번호 유효성 체크
+        // 휴대폰 유효성 체크
         if (($config['cf_use_hp'] || $config['cf_cert_hp'] || $config['cf_cert_simple']) && $config['cf_req_hp']) {
-            if ($msg = valid_mb_hp($mb_hp))     return $msg;;
+            if ($mb_hp && ($msg = valid_mb_hp($mb_hp))) return $msg;
         }
 
+        // 추천인 체크
+        if ($config['cf_use_recommend'] && $mb_recommend) {
+            if (!exist_mb_id($mb_recommend))
+                return("추천인이 존재하지 않습니다.");
 
-        if ($msg = exist_mb_id($mb_id))     return $msg;
+            if (strtolower($mb_id) == strtolower($mb_recommend)) {
+                return ('본인을 추천할 수 없습니다.');
+            }
+        }
 
-
-
-        // 본인확인 체크
-        if($config['cf_cert_use'] && $config['cf_cert_req']) {
+        // 본인확인 체크 (신규 가입시에만)
+        if (!$is_update && $config['cf_cert_use'] && $config['cf_cert_req']) {
             $post_cert_no = isset($_POST['cert_no']) ? trim($_POST['cert_no']) : '';
             if($post_cert_no !== get_session('ss_cert_no') || ! get_session('ss_cert_no'))
                 return("회원가입을 위해서는 본인확인을 해주셔야 합니다.");
         }
 
-        if ($config['cf_use_recommend'] && $mb_recommend) {
-            if (!exist_mb_id($mb_recommend))
-                return("추천인이 존재하지 않습니다.");
-        }
-
-        if (strtolower($mb_id) == strtolower($mb_recommend)) {
-            return ('본인을 추천할 수 없습니다.');
-        }
-
         run_event('register_form_update_valid', $w, $mb_id, $mb_nick, $mb_email);
 
-        if ($msg = exist_mb_nick($mb_nick, $mb_id))     return $msg;;
-        if ($msg = exist_mb_email($mb_email, $mb_id))   return $msg;;
+        // 중복 체크 (수정시에는 자기 자신 제외)
+        if ($mb_nick && ($msg = exist_mb_nick($mb_nick, $mb_id))) return $msg;
+        if ($mb_email && ($msg = exist_mb_email($mb_email, $mb_id))) return $msg;
 
-
-
-
-        if($password_hash){
+        // 비밀번호 암호화
+        if ($mb_password && $password_hash) {
             $mb_password = get_encrypt_string($mb_password);
         }
 
-
-
-        $sql_certify = '';
-        $sql_certify .= " , mb_hp = '{$mb_hp}' ";
-        $sql_certify .= " , mb_certify = '' ";
-        $sql_certify .= " , mb_adult = 0 ";
-        $sql_certify .= " , mb_birth = '' ";
-        $sql_certify .= " , mb_sex = '{$mb_sex}' ";
-
+        // ✅ 확장 데이터 처리
         $extend_data_sql = '';
         $extend_data_arr = array();
-        if(isset($post['extend_data'])){
-            if(!is_array($post['extend_data']))return('확장데이터는 배열형태여야 합니다.');
-            foreach ($post['extend_data'] as $key => $val){
-                $extend_data_arr[] = " {$key} = '$val' ";
+        if (isset($data['extend_data']) && is_array($data['extend_data'])) {
+            foreach ($data['extend_data'] as $key => $val) {
+                $extend_data_arr[] = " {$key} = '" . sql_escape_string($val) . "' ";
             }
         }
 
-        if(isset($post['wv_old_id']) and $post['wv_old_id']){
-            $extend_data_arr[] = " wv_old_id = '{$post['wv_old_id']}' ";
+        if (isset($data['wv_old_id']) && $data['wv_old_id']) {
+            $extend_data_arr[] = " wv_old_id = '" . sql_escape_string($data['wv_old_id']) . "' ";
         }
 
-        if(count($extend_data_arr)){
-            $extend_data_sql = ' , '.implode(' , ',$extend_data_arr);
+        if (count($extend_data_arr)) {
+            $extend_data_sql = ' , ' . implode(' , ', $extend_data_arr);
         }
 
-        $sql = " insert into {$g5['member_table']}
-                set mb_id = '{$mb_id}',
-                     mb_password = '".$mb_password."',
-                     mb_name = '{$mb_name}',
-                     mb_nick = '{$mb_nick}',
-                     mb_nick_date = '".G5_TIME_YMD."',
-                     mb_email = '{$mb_email}',
-                     mb_homepage = '{$mb_homepage}',
-                     mb_tel = '{$mb_tel}',
-                     mb_zip1 = '{$mb_zip1}',
-                     mb_zip2 = '{$mb_zip2}',
-                     mb_addr1 = '{$mb_addr1}',
-                     mb_addr2 = '{$mb_addr2}',
-                     mb_addr3 = '{$mb_addr3}',
-                     mb_addr_jibeon = '{$mb_addr_jibeon}',
-                     mb_signature = '{$mb_signature}',
-                     mb_profile = '{$mb_profile}',
-                     mb_today_login = '".G5_TIME_YMDHIS."',
-                     mb_datetime = '".$mb_datetime."', 
-                     mb_level = '{$mb_level}', 
-                     mb_recommend = '{$mb_recommend}', 
-                     mb_mailling = '{$mb_mailling}',
-                     mb_sms = '{$mb_sms}',
-                     mb_open = '{$mb_open}',
-                     mb_open_date = '".G5_TIME_YMD."',
-                     mb_1 = '{$mb_1}',
-                     mb_2 = '{$mb_2}',
-                     mb_3 = '{$mb_3}',
-                     mb_4 = '{$mb_4}',
-                     mb_5 = '{$mb_5}',
-                     mb_6 = '{$mb_6}',
-                     mb_7 = '{$mb_7}',
-                     mb_8 = '{$mb_8}',
-                     mb_9 = '{$mb_9}',
-                     mb_10 = '{$mb_10}'
-                     {$sql_certify} {$extend_data_sql} ";
+        // ✅ SQL 생성 - 수정/등록 분기
+        if ($is_update) {
+            // UPDATE SQL - 넘어온 데이터만 업데이트
+            $update_fields = array();
 
-        // 이메일 인증을 사용하지 않는다면 이메일 인증시간을 바로 넣는다
-        if (!$config['cf_use_email_certify'])
-            $sql .= " , mb_email_certify = '".G5_TIME_YMDHIS."' ";
+            // 기본 필드들 체크 (값이 있을 때만 추가)
+            if (isset($data['mb_password']) && $mb_password) $update_fields[] = "mb_password = '{$mb_password}'";
+            if (isset($data['mb_name'])) $update_fields[] = "mb_name = '{$mb_name}'";
+            if (isset($data['mb_nick'])) $update_fields[] = "mb_nick = '{$mb_nick}', mb_nick_date = '" . G5_TIME_YMD . "'";
+            if (isset($data['mb_email'])) $update_fields[] = "mb_email = '{$mb_email}'";
+            if (isset($data['mb_homepage'])) $update_fields[] = "mb_homepage = '{$mb_homepage}'";
+            if (isset($data['mb_tel'])) $update_fields[] = "mb_tel = '{$mb_tel}'";
+            if (isset($data['mb_hp'])) $update_fields[] = "mb_hp = '{$mb_hp}'";
+            if (isset($data['mb_zip'])) {
+                $update_fields[] = "mb_zip1 = '{$mb_zip1}', mb_zip2 = '{$mb_zip2}'";
+            }
+            if (isset($data['mb_addr1'])) $update_fields[] = "mb_addr1 = '{$mb_addr1}'";
+            if (isset($data['mb_addr2'])) $update_fields[] = "mb_addr2 = '{$mb_addr2}'";
+            if (isset($data['mb_addr3'])) $update_fields[] = "mb_addr3 = '{$mb_addr3}'";
+            if (isset($data['mb_addr_jibeon'])) $update_fields[] = "mb_addr_jibeon = '{$mb_addr_jibeon}'";
+            if (isset($data['mb_signature'])) $update_fields[] = "mb_signature = '{$mb_signature}'";
+            if (isset($data['mb_profile'])) $update_fields[] = "mb_profile = '{$mb_profile}'";
+            if (isset($data['mb_level'])) $update_fields[] = "mb_level = '{$mb_level}'";
+            if (isset($data['mb_mailling'])) $update_fields[] = "mb_mailling = '{$mb_mailling}'";
+            if (isset($data['mb_sms'])) $update_fields[] = "mb_sms = '{$mb_sms}'";
+            if (isset($data['mb_open'])) $update_fields[] = "mb_open = '{$mb_open}', mb_open_date = '" . G5_TIME_YMD . "'";
+            if (isset($data['mb_sex'])) $update_fields[] = "mb_sex = '{$mb_sex}'";
+            if (isset($data['mb_birth'])) $update_fields[] = "mb_birth = '{$mb_birth}'";
+
+            // mb_1 ~ mb_10 필드들
+            for ($i = 1; $i <= 10; $i++) {
+                if (isset($data["mb_{$i}"])) {
+                    $mb_val = ${"mb_{$i}"};
+                    $update_fields[] = "mb_{$i} = '{$mb_val}'";
+                }
+            }
+
+            if (empty($update_fields) && empty($extend_data_arr)) {
+                return '수정할 데이터가 없습니다.';
+            }
+
+            $sql = "UPDATE {$g5['member_table']} SET " . implode(', ', $update_fields);
+            if ($extend_data_sql) {
+                $sql .= $extend_data_sql;
+            }
+            $sql .= " WHERE mb_id = '{$mb_id}'";
+
+        } else {
+            // INSERT SQL - 기존 로직
+            $sql_certify = '';
+            $sql_certify .= " , mb_hp = '{$mb_hp}' ";
+            $sql_certify .= " , mb_certify = '' ";
+            $sql_certify .= " , mb_adult = 0 ";
+            $sql_certify .= " , mb_birth = '{$mb_birth}' ";
+            $sql_certify .= " , mb_sex = '{$mb_sex}' ";
+
+            $sql = " INSERT INTO {$g5['member_table']}
+                    SET mb_id = '{$mb_id}',
+                         mb_password = '{$mb_password}',
+                         mb_name = '{$mb_name}',
+                         mb_nick = '{$mb_nick}',
+                         mb_nick_date = '" . G5_TIME_YMD . "',
+                         mb_email = '{$mb_email}',
+                         mb_homepage = '{$mb_homepage}',
+                         mb_tel = '{$mb_tel}',
+                         mb_zip1 = '{$mb_zip1}',
+                         mb_zip2 = '{$mb_zip2}',
+                         mb_addr1 = '{$mb_addr1}',
+                         mb_addr2 = '{$mb_addr2}',
+                         mb_addr3 = '{$mb_addr3}',
+                         mb_addr_jibeon = '{$mb_addr_jibeon}',
+                         mb_signature = '{$mb_signature}',
+                         mb_profile = '{$mb_profile}',
+                         mb_today_login = '" . G5_TIME_YMDHIS . "',
+                         mb_datetime = '{$mb_datetime}', 
+                         mb_level = '{$mb_level}', 
+                         mb_recommend = '{$mb_recommend}', 
+                         mb_mailling = '{$mb_mailling}',
+                         mb_sms = '{$mb_sms}',
+                         mb_open = '{$mb_open}',
+                         mb_open_date = '" . G5_TIME_YMD . "',
+                         mb_1 = '{$mb_1}',
+                         mb_2 = '{$mb_2}',
+                         mb_3 = '{$mb_3}',
+                         mb_4 = '{$mb_4}',
+                         mb_5 = '{$mb_5}',
+                         mb_6 = '{$mb_6}',
+                         mb_7 = '{$mb_7}',
+                         mb_8 = '{$mb_8}',
+                         mb_9 = '{$mb_9}',
+                         mb_10 = '{$mb_10}'
+                         {$sql_certify} {$extend_data_sql} ";
+
+            // 이메일 인증을 사용하지 않는다면 이메일 인증시간을 바로 넣는다
+            if (!$config['cf_use_email_certify'])
+                $sql .= " , mb_email_certify = '" . G5_TIME_YMDHIS . "' ";
+        }
+
         $result = sql_query($sql, 1);
-        if($result == false){
-            return 'insert 실패';
+        if ($result == false) {
+            return $is_update ? '회원정보 수정 실패' : '회원가입 실패';
         }
 
-        return true;
-
-
+        return $mb_id;
     }
 }
 

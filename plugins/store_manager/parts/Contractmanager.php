@@ -8,7 +8,7 @@ class Contractmanager extends StoreSchemaBase{
     protected $cont_pdt_type_arr = array(1=>'매장',2=>'포장');
     protected $columns = array(
 
-        'manager_id' => " VARCHAR(255) not null",
+        'mb_id' => "",
         'manager_id_form'=>''
 
     );

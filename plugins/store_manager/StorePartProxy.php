@@ -279,7 +279,8 @@ class StorePartProxy{
 
         // 일반 파트: 모든 허용 컬럼 배열로 render_part 호출
 
-        $allowed = (array)array_keys($this->part->get_columns());
+        $allowed = (array)$this->part->get_allowed_columns();
+
 
 
         if (!count($allowed)) return '';
