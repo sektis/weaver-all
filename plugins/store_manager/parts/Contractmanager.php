@@ -38,4 +38,17 @@ class Contractmanager extends StoreSchemaBase{
 
         return $options;
     }
+
+    public function before_set($data,  $wr_id, $part_key, $manager) {
+        // 좌표 유효성 검사
+
+       if(!$wr_id){
+           $write_table= $this->manager->get_write_table_name();
+           $row = sql_fetch("select mb_id from $write_table where mb_id='{$data['mb_id']}'");
+           if($row['mb_id']){
+               alert('이미 등록된 아이디입니다.');
+           }
+       }
+
+    }
 }

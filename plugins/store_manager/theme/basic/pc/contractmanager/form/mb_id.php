@@ -1,9 +1,16 @@
+<?php
+global $g5;
+if($row['mb_id']){
+    $mb = get_member($row['mb_id']);
+    $row = array_merge($row,$mb);
+}
+?>
 <input type="hidden" name="mb_level" value="8">
 <div class="form-floating position-relative mb-3">
     <input type="text" name="mb_id" id="mb_id"
            value="<?php echo get_text($row['mb_id']); ?>"
            class="form-control"
-        <?php echo $w=='u' ? 'readonly' : 'required'; ?>
+        <?php echo $row['mb_id'] ? 'readonly' : 'required'; ?>
            maxlength="20" placeholder="아이디" autocomplete="new-password">
     <label for="mb_id" class="floatingInput">아이디</label>
 </div>
@@ -12,9 +19,9 @@
 <div class="form-floating position-relative mb-3">
     <input type="password" name="mb_password" id="mb_password"
            class="form-control wv-password-toggle"
-        <?php echo $w=='u' ? '' : 'required'; ?>
+        <?php echo $row['mb_id'] ? '' : 'required'; ?>
            placeholder="비밀번호" autocomplete="new-password">
-    <label for="mb_password" class="floatingInput"><?php echo $is_update ? '비밀번호(변경 시 입력)' : '비밀번호'; ?></label>
+    <label for="mb_password" class="floatingInput"><?php echo $row['mb_id'] ? '비밀번호(변경 시 입력)' : '비밀번호'; ?></label>
 </div>
 
 

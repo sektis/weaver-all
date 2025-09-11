@@ -4453,10 +4453,10 @@ if(!function_exists('wv_write_member')){
 
         $result = sql_query($sql, 1);
         if ($result == false) {
-            return $is_update ? '회원정보 수정 실패' : '회원가입 실패';
+            return $data['mw'] ? '회원정보 수정 실패' : '회원가입 실패';
         }
 
-        return $mb_id;
+        return true;
     }
 }
 

@@ -13,7 +13,7 @@ $page_title = '계약 및 상품 설정';
         <div class="hstack justify-content-between">
             <p class="fs-[18/25/-0.72/600/#0D171B] ff-Pretendard">계약 담당자 관리</p>
             <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=wv_cont_manager&action=render_part&part=contractmanager&fields=manager_id_form'
-               data-wv-ajax-options="end,backdrop-static" data-wv-ajax-class="w-[436px]"><i class="fa-solid fa-plus"></i> 추가하기</a>
+               data-wv-ajax-options="end,backdrop" data-wv-ajax-class="w-[436px]"><i class="fa-solid fa-plus"></i> 추가하기</a>
         </div>
         <div style="background-color: #efefef;height: 1px" class="wv-mx-fit mt-[16px]"></div>
        <div class="pt-[16px]">
@@ -34,7 +34,7 @@ $page_title = '계약 및 상품 설정';
                        <td><?php echo $list[$i]['mb_id']; ?></td>
                        <td><?php echo $list[$i]['jm_mb_name']; ?></td>
                        <td><a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=wv_cont_manager&action=render_part&part=contractmanager&fields=manager_id_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
-                              data-wv-ajax-options="end,backdrop-static" data-wv-ajax-class="w-[436px]">수정</a></td>
+                              data-wv-ajax-options="end,backdrop" data-wv-ajax-class="w-[436px]">수정</a></td>
                    </tr>
                <?php } ?>
                </tbody>

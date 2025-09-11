@@ -786,27 +786,25 @@ class StoreManager extends Makeable{
 
         // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
         $existing_wr_id = isset($data['wr_id']) ? (int)$data['wr_id'] : 0;
-
+        $this->execute_before_set_hooks($data, $existing_wr_id);
         if($data['mb_id']){
             $mb= get_member($data['mb_id']);
 
             if(!$mb['mb_id']){
                 if(!$data['mb_nick']){
                     $data['mb_nick']=$data['mb_id']. date('YmdHis');
-                    $data['mw']='u';
                 }
-
-
-
+            }else{
+                $data['mw']='u';
             }
-            $mb_id = wv_write_member($data);
-            if($mb_id!==true){
-                alert($mb_id);
+            $result = wv_write_member($data);
+            if($result!==true){
+                alert($result);
             }
             $mb= get_member($data['mb_id']);
-            $data['extend_data']['mb_id']=$mb['mb_id'];
-            $data['extend_data']['wr_name']=$mb['mb_name'];
-            $data['extend_data']['wr_password']=$mb['mb_password'];
+            $data['mb_id']=$mb['mb_id'];
+            $data['wr_name']=$mb['mb_name'];
+            $data['wr_password']=$mb['mb_password'];
         }
 
 
@@ -1105,12 +1103,79 @@ class StoreManager extends Makeable{
 
             sql_query($sql, true);
         }
-
+        $this->execute_after_set_hooks($data, $is_update, $wr_id);
         // === 목록 파트 저장 ===
         $this->clear_cache($wr_id);
 
         return $wr_id;
     }
+
+    protected function execute_before_set_hooks($data, $existing_wr_id) {
+        if (!is_array($this->parts) || !count($this->parts)) {
+            return;
+        }
+
+        foreach ($this->parts as $part_key => $schema) {
+            if (!is_object($schema) || !method_exists($schema, 'before_set')) {
+                continue;
+            }
+
+            try {
+                // before_set(데이터, 수정여부, wr_id, 파트키, 매니저)
+                $schema->before_set($data, $existing_wr_id, $part_key, $this);
+
+                // 로그 (선택사항)
+                if (function_exists('write_log')) {
+                    write_log("StoreManager: {$part_key} before_set executed", G5_DATA_PATH . '/log/store_hooks.log');
+                }
+
+            } catch (\Exception $e) {
+                // 에러 처리
+                $error_msg = "StoreManager before_set error in {$part_key}: " . $e->getMessage();
+                if (function_exists('write_log')) {
+                    write_log($error_msg, G5_DATA_PATH . '/log/store_errors.log');
+                }
+
+                // 필요시 에러로 중단
+                if (method_exists($schema, 'is_before_set_critical') && $schema->is_before_set_critical()) {
+                    $this->error($error_msg);
+                }
+            }
+        }
+    }
+
+    /**
+     * After Set 훅 실행
+     */
+    protected function execute_after_set_hooks($data,$wr_id) {
+        if (!is_array($this->parts) || !count($this->parts)) {
+            return;
+        }
+
+        foreach ($this->parts as $part_key => $schema) {
+            if (!is_object($schema) || !method_exists($schema, 'after_set')) {
+                continue;
+            }
+
+            try {
+                // after_set(데이터, 수정여부, wr_id, 파트키, 매니저)
+                $schema->after_set($data, $wr_id, $part_key, $this);
+
+                // 로그 (선택사항)
+                if (function_exists('write_log')) {
+                    write_log("StoreManager: {$part_key} after_set executed", G5_DATA_PATH . '/log/store_hooks.log');
+                }
+
+            } catch (\Exception $e) {
+                // 에러 처리 (after_set은 보통 중단하지 않음)
+                $error_msg = "StoreManager after_set error in {$part_key}: " . $e->getMessage();
+                if (function_exists('write_log')) {
+                    write_log($error_msg, G5_DATA_PATH . '/log/store_errors.log');
+                }
+            }
+        }
+    }
+
 
 
     /** 단건 조회 → Store 객체 (write + ext row 동시 보유) */
