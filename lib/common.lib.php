@@ -135,81 +135,6 @@ if(!function_exists('dd')){
         die();
     }
 }
-if(!function_exists('wv_abort')){
-    function wv_abort($code = NULL,$text='',$url='') {
-        header("Content-Type: text/html; charset=UTF-8");
-        if ($code !== NULL) {
-
-            if($text==''){
-                switch ($code) {
-                    case 100: $text = 'Continue'; break;
-                    case 101: $text = 'Switching Protocols'; break;
-                    case 200: $text = 'OK'; break;
-                    case 201: $text = 'Created'; break;
-                    case 202: $text = 'Accepted'; break;
-                    case 203: $text = 'Non-Authoritative Information'; break;
-                    case 204: $text = 'No Content'; break;
-                    case 205: $text = 'Reset Content'; break;
-                    case 206: $text = 'Partial Content'; break;
-                    case 300: $text = 'Multiple Choices'; break;
-                    case 301: $text = 'Moved Permanently'; break;
-                    case 302: $text = 'Moved Temporarily'; break;
-                    case 303: $text = 'See Other'; break;
-                    case 304: $text = 'Not Modified'; break;
-                    case 305: $text = 'Use Proxy'; break;
-                    case 400: $text = 'Bad Request'; break;
-                    case 401: $text = 'Unauthorized'; break;
-                    case 402: $text = 'Payment Required'; break;
-                    case 403: $text = 'Forbidden'; break;
-                    case 404: $text = 'Not Found'; break;
-                    case 405: $text = 'Method Not Allowed'; break;
-                    case 406: $text = 'Not Acceptable'; break;
-                    case 407: $text = 'Proxy Authentication Required'; break;
-                    case 408: $text = 'Request Time-out'; break;
-                    case 409: $text = 'Conflict'; break;
-                    case 410: $text = 'Gone'; break;
-                    case 411: $text = 'Length Required'; break;
-                    case 412: $text = 'Precondition Failed'; break;
-                    case 413: $text = 'Request Entity Too Large'; break;
-                    case 414: $text = 'Request-URI Too Large'; break;
-                    case 415: $text = 'Unsupported Media Type'; break;
-                    case 500: $text = 'Internal Server Error'; break;
-                    case 501: $text = 'Not Implemented'; break;
-                    case 502: $text = 'Bad Gateway'; break;
-                    case 503: $text = 'Service Unavailable'; break;
-                    case 504: $text = 'Gateway Time-out'; break;
-                    case 505: $text = 'HTTP Version not supported'; break;
-                    default:
-                        exit('Unknown http status code "' . htmlentities($code) . '"');
-                        break;
-                }
-            }
-
-
-            if($url){
-                $code = 302;
-                $text.= '@@@'.$url;
-            }
-
-            $text = (string) $text;
-
-            $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-
-            header($protocol . ' ' . $code . ' ' .  base64_encode($text));
-
-            $GLOBALS['http_response_code'] = $code;
-
-        } else {
-
-            $code = (isset($GLOBALS['http_response_code']) ? $GLOBALS['http_response_code'] : 200);
-
-        }
-        ob_end_clean();
-        die($text);
-
-    }
-
-}
 if(!function_exists('wv_array_recursive_diff')){
     function wv_array_recursive_diff($array1, $array2,$ignore_text=array(),$array1_value_empty=false) {
         $difference=array();
@@ -297,6 +222,86 @@ if(!function_exists('wv_add_qstr')){
         }
     }
 }
+if(!function_exists('wv_abort')){
+    function wv_abort($code = NULL,$text='',$url='') {
+        header("Content-Type: text/html; charset=UTF-8");
+        if ($code !== NULL) {
+
+            if($text==''){
+                switch ($code) {
+                    case 100: $text = 'Continue'; break;
+                    case 101: $text = 'Switching Protocols'; break;
+                    case 200: $text = 'OK'; break;
+                    case 201: $text = 'Created'; break;
+                    case 202: $text = 'Accepted'; break;
+                    case 203: $text = 'Non-Authoritative Information'; break;
+                    case 204: $text = 'No Content'; break;
+                    case 205: $text = 'Reset Content'; break;
+                    case 206: $text = 'Partial Content'; break;
+                    case 300: $text = 'Multiple Choices'; break;
+                    case 301: $text = 'Moved Permanently'; break;
+                    case 302: $text = 'Moved Temporarily'; break;
+                    case 303: $text = 'See Other'; break;
+                    case 304: $text = 'Not Modified'; break;
+                    case 305: $text = 'Use Proxy'; break;
+                    case 400: $text = 'Bad Request'; break;
+                    case 401: $text = 'Unauthorized'; break;
+                    case 402: $text = 'Payment Required'; break;
+                    case 403: $text = 'Forbidden'; break;
+                    case 404: $text = 'Not Found'; break;
+                    case 405: $text = 'Method Not Allowed'; break;
+                    case 406: $text = 'Not Acceptable'; break;
+                    case 407: $text = 'Proxy Authentication Required'; break;
+                    case 408: $text = 'Request Time-out'; break;
+                    case 409: $text = 'Conflict'; break;
+                    case 410: $text = 'Gone'; break;
+                    case 411: $text = 'Length Required'; break;
+                    case 412: $text = 'Precondition Failed'; break;
+                    case 413: $text = 'Request Entity Too Large'; break;
+                    case 414: $text = 'Request-URI Too Large'; break;
+                    case 415: $text = 'Unsupported Media Type'; break;
+                    case 500: $text = 'Internal Server Error'; break;
+                    case 501: $text = 'Not Implemented'; break;
+                    case 502: $text = 'Bad Gateway'; break;
+                    case 503: $text = 'Service Unavailable'; break;
+                    case 504: $text = 'Gateway Time-out'; break;
+                    case 505: $text = 'HTTP Version not supported'; break;
+                    default:
+                        exit('Unknown http status code "' . htmlentities($code) . '"');
+                        break;
+                }
+            }
+
+
+            if($url){
+                $code = 302;
+                $text.= '@@@'.$url;
+            }
+
+            if(is_array($text)){
+                $text= json_encode($text);
+            }
+            $text = (string) $text;
+
+
+
+            $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
+
+            header($protocol . ' ' . $code . ' ' .  base64_encode($text));
+
+            $GLOBALS['http_response_code'] = $code;
+
+        } else {
+
+            $code = (isset($GLOBALS['http_response_code']) ? $GLOBALS['http_response_code'] : 200);
+
+        }
+        ob_end_clean();
+        die($text);
+
+    }
+
+}
 if(!function_exists('wv_json_exit')){
     function wv_json_exit($arr,$result=false)
     {
@@ -305,6 +310,9 @@ if(!function_exists('wv_json_exit')){
         }
         if(!isset($arr['result'])){
             $arr['result']=true;
+        }
+        if(isset($arr['confirm'])){
+            wv_abort(400,$arr);
         }
 
         echo json_encode($arr);
@@ -329,7 +337,44 @@ if(!function_exists('wv_path_replace_url')){
 }
 if(!function_exists('wv_is_base64_encoded')){
     function wv_is_base64_encoded($data){
-        return base64_encode(base64_decode($data, true)) === $data;
+        // 기본 체크
+        if (!is_string($data) || empty($data)) {
+            return false;
+        }
+
+        // ✅ 숫자만 있으면 false
+        if (preg_match('/^[0-9]+$/', $data)) {
+            return false;
+        }
+
+        // ✅ 너무 짧으면 false (최소 8자리)
+        if (strlen($data) < 8) {
+            return false;
+        }
+
+        // ✅ 영문자만 있고 8자 미만이면 false (일반 단어)
+        if (strlen($data) < 12 && preg_match('/^[a-zA-Z]+$/', $data)) {
+            return false;
+        }
+
+        // base64 문법 체크
+        if (!preg_match('/^[A-Za-z0-9+\/]*={0,2}$/', $data)) {
+            return false;
+        }
+
+        // 길이 체크 (4의 배수)
+        if (strlen($data) % 4 !== 0) {
+            return false;
+        }
+
+        // 디코딩 테스트
+        $decoded = base64_decode($data, true);
+        if ($decoded === false) {
+            return false;
+        }
+
+        // 재인코딩 일치 체크
+        return base64_encode($decoded) === $data;
     }
 }
 if(!function_exists('wv_is_serialized')){
@@ -3391,7 +3436,7 @@ if(!function_exists('wv_write_board')){
             $set_arr=array();
             foreach ($set_field_array as $field){
                 if(isset($post[$field])){
-                    $set_arr[] = " {$field} = '".$field."' ";
+                    $set_arr[] = " {$field} = '".$post[$field]."' ";
                 }
             }
             $sql_sql=implode(',', $set_arr);

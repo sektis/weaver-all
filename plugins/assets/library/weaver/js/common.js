@@ -1,4 +1,6 @@
-
+function isset(val) {
+    return typeof val !== "undefined" && val !== null;
+}
 function wv_rand_name() {
     let text = "";
     let first = "김이박최정강조윤장임한오서신권황안송류전홍고문양손배조백허유남심노정하곽성차주우구신임나전민유진지엄채원천방공강현함변염양변여추노도소신석선설마주연방위표명기반왕모장남탁국여진구";

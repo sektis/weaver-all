@@ -5,7 +5,7 @@ if($row['mb_id']){
     $row = array_merge($row,$mb);
 }
 ?>
-<input type="hidden" name="mb_level" value="8">
+
 <div class="form-floating position-relative mb-3">
     <input type="text" name="mb_id" id="mb_id"
            value="<?php echo get_text($row['mb_id']); ?>"

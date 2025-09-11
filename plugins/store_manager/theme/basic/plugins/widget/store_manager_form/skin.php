@@ -39,10 +39,13 @@ global $g5;
 
 
 
-            $("form", $skin).ajaxForm({ 
+            $("form", $skin).ajaxForm({
+                dataType:'json',
                 success: function (data) {
+
                     alert('완료');
                     $skin.closest('.offcanvas').offcanvas('hide')
+                    location.reload()
                 }
 
             })

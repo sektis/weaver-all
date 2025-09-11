@@ -101,7 +101,7 @@ if($action=='render_part'){
     }
     $store = wv()->store_manager->made($made)->get($wr_id);
     ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),'form');
+    echo $store->{$part}->render_part(explode(',',$fields),'form',array('member_type'=>'manager'));
     $render_content = ob_get_clean();
     $skin_data = array(
         'store'=>$store,

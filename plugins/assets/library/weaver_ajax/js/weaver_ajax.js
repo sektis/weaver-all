@@ -4,7 +4,66 @@ $(function(){
         var msg,url;
         var code = jqxhr.status;
         var title_nodes = $($.parseHTML(jqxhr.responseText)).filter('title').text();
+        var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+        var hangulregex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
 
+
+        if(isset(jqxhr.responseJSON) && isset(jqxhr.responseJSON.confirm)){
+            if(confirm(jqxhr.responseJSON.confirm)){
+
+                var original_data;
+
+                if(typeof settings.data == 'object'){
+                    // FormData인 경우
+                    original_data = new FormData();
+                    for (var pair of settings.data.entries()) {
+                        original_data.append(pair[0], pair[1]);
+                    }
+                    // confirm_data 추가
+                    if(jqxhr.responseJSON.confirm_data){
+                        for(var key in jqxhr.responseJSON.confirm_data){
+                            console.log(key,jqxhr.responseJSON.confirm_data[key])
+                            original_data.append(key, jqxhr.responseJSON.confirm_data[key]);
+                        }
+                    }
+                } else if(typeof settings.data == 'string'){
+                    // 문자열 데이터인 경우
+                    original_data = settings.data;
+                    if(jqxhr.responseJSON.confirm_data){
+                        var confirm_params = new URLSearchParams();
+                        for(var key in jqxhr.responseJSON.confirm_data){
+                            confirm_params.append(key, jqxhr.responseJSON.confirm_data[key]);
+                        }
+                        original_data += '&' + confirm_params.toString();
+                    }
+                } else {
+                    // data가 없는 경우
+                    if(jqxhr.responseJSON.confirm_data){
+                        original_data = new FormData();
+                        for(var key in jqxhr.responseJSON.confirm_data){
+                            original_data.append(key, jqxhr.responseJSON.confirm_data[key]);
+                        }
+                    }
+                }
+
+                // 원래 Ajax 요청을 다시 실행
+                $.ajax({
+                    url: settings.url,
+                    type: settings.type || 'GET',
+                    data: original_data,
+                    processData: settings.processData,
+                    contentType: settings.contentType,
+                    cache: false,
+                    dataType: settings.dataType,
+                    headers: settings.headers,
+
+                    success: settings.success,
+                    error: settings.error,
+                    complete: settings.complete
+                });
+            }
+            return true;
+        }
 
 
         if(!title_nodes){
@@ -17,8 +76,7 @@ $(function(){
 
         title_nodes = title_nodes.replace(code+' ','').replace(/(<([^>]+)>)/ig,"");
 
-        var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-        var hangulregex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+
 
         if(base64regex.test(title_nodes) && hangulregex.test(title_nodes)){
             title_nodes = Base64.decode(title_nodes);

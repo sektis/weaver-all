@@ -15,7 +15,8 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
     </div>
 
     <div class="wv-offcanvas-body col vstack">
-        <?php echo $this->store->contractmanager->render_part('mb_id','form'); ?>
+        <input type="hidden" name="member[is_manager]" value="1">
+        <?php echo $this->store->member->render_part('mb_id','form'); ?>
     </div>
 
     <div class="mt-auto mb-[50px]">
