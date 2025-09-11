@@ -3,13 +3,16 @@ namespace weaver\store_manager\parts;
 use weaver\store_manager\StoreSchemaBase;
 use weaver\store_manager\StoreSchemaInterface;
 
-class Contractmanager extends StoreSchemaBase{
+class Member extends StoreSchemaBase{
 
     protected $cont_pdt_type_arr = array(1=>'매장',2=>'포장');
     protected $columns = array(
 
+        'is_admin'=>"TINYINT(1) NOT NULL DEFAULT 0",
+        'is_manager'=>"TINYINT(1) NOT NULL DEFAULT 0",
+        'is_ceo'=>"TINYINT(1) NOT NULL DEFAULT 0",
         'mb_id' => "",
-        'manager_id_form'=>''
+        'mb_id_form'=>''
 
     );
 
@@ -39,16 +42,19 @@ class Contractmanager extends StoreSchemaBase{
         return $options;
     }
 
-    public function before_set($data,  $wr_id, $part_key, $manager) {
+    public function before_set(&$data,  $wr_id,$pkey,$manager ) {
         // 좌표 유효성 검사
+        global $config;
+        if($config['cf_admin']==$data['mb_id']){
+            alert('최고관리자 정보변경금지');
+        }
+        $write_row = $manager->fetch_write_row($wr_id);
+        if($wr_id and ($data['mb_id']!=$write_row['mb_id'])){
+            alert('id는 변경할 수 없습니다.');
+        }
 
-       if(!$wr_id){
-           $write_table= $this->manager->get_write_table_name();
-           $row = sql_fetch("select mb_id from $write_table where mb_id='{$data['mb_id']}'");
-           if($row['mb_id']){
-               alert('이미 등록된 아이디입니다.');
-           }
-       }
+
+
 
     }
 }

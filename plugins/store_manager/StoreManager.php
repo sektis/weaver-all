@@ -786,11 +786,14 @@ class StoreManager extends Makeable{
 
         // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
         $existing_wr_id = isset($data['wr_id']) ? (int)$data['wr_id'] : 0;
+
         $this->execute_before_set_hooks($data, $existing_wr_id);
         if($data['mb_id']){
+
             $mb= get_member($data['mb_id']);
 
             if(!$mb['mb_id']){
+
                 if(!$data['mb_nick']){
                     $data['mb_nick']=$data['mb_id']. date('YmdHis');
                 }
@@ -905,7 +908,7 @@ class StoreManager extends Makeable{
 
                     $prev_decoded    = wv_base64_decode_unserialize($prev_serialized);
 
-                    $walk_function = function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col,&$walk_function,$data) {
+                    $walk_function = function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col,&$walk_function,$data,$prev_decoded) {
 
 
                         if(!is_array($arr)){
@@ -1090,8 +1093,8 @@ class StoreManager extends Makeable{
                 }
 
                 if ($v === null || (is_string($v) && strtoupper($v) === 'NULL')) {
-                    $vals[] = "NULL";
-                    if ($k !== 'wr_id') $updates[] = "`{$k}`=NULL";
+                    $vals[] = "''";
+                    if ($k !== 'wr_id') $updates[] = "`{$k}`=''";
                 } else {
                     $vals[] = "'" . sql_escape_string($v) . "'";
                     if ($k !== 'wr_id') $updates[] = "`{$k}`=VALUES(`{$k}`)";
@@ -1103,7 +1106,7 @@ class StoreManager extends Makeable{
 
             sql_query($sql, true);
         }
-        $this->execute_after_set_hooks($data, $is_update, $wr_id);
+        $this->execute_after_set_hooks($data, $wr_id);
         // === 목록 파트 저장 ===
         $this->clear_cache($wr_id);
 
@@ -2122,6 +2125,7 @@ class StoreManager extends Makeable{
 
             $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id IN ({$in}) ORDER BY wr_id ASC, ord ASC, id ASC";
             $qry = sql_query($sql);
+
             while($r = sql_fetch_array($qry)){
                 $wid = (int)$r['wr_id'];
                 $row = array();

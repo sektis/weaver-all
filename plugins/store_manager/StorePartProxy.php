@@ -104,11 +104,9 @@ class StorePartProxy{
 
         $pkey = $this->get_part_key();
 
-        if ($pkey !== '' && $this->wr_id > 0 && $this->manager && method_exists($this->manager, 'get_list_part_list')) {
+
             $this->list = $this->manager->get_list_part_list($this->wr_id, $pkey);
-        } else {
-            $this->list = 'array()';
-        }
+
         return $this->list;
     }
 
@@ -279,8 +277,7 @@ class StorePartProxy{
 
         // 일반 파트: 모든 허용 컬럼 배열로 render_part 호출
 
-        $allowed = (array)$this->part->get_allowed_columns();
-
+        $allowed = array_keys($this->part->get_columns());
 
 
         if (!count($allowed)) return '';

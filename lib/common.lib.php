@@ -329,7 +329,44 @@ if(!function_exists('wv_path_replace_url')){
 }
 if(!function_exists('wv_is_base64_encoded')){
     function wv_is_base64_encoded($data){
-        return base64_encode(base64_decode($data, true)) === $data;
+        // 기본 체크
+        if (!is_string($data) || empty($data)) {
+            return false;
+        }
+
+        // ✅ 숫자만 있으면 false
+        if (preg_match('/^[0-9]+$/', $data)) {
+            return false;
+        }
+
+        // ✅ 너무 짧으면 false (최소 8자리)
+        if (strlen($data) < 8) {
+            return false;
+        }
+
+        // ✅ 영문자만 있고 8자 미만이면 false (일반 단어)
+        if (strlen($data) < 12 && preg_match('/^[a-zA-Z]+$/', $data)) {
+            return false;
+        }
+
+        // base64 문법 체크
+        if (!preg_match('/^[A-Za-z0-9+\/]*={0,2}$/', $data)) {
+            return false;
+        }
+
+        // 길이 체크 (4의 배수)
+        if (strlen($data) % 4 !== 0) {
+            return false;
+        }
+
+        // 디코딩 테스트
+        $decoded = base64_decode($data, true);
+        if ($decoded === false) {
+            return false;
+        }
+
+        // 재인코딩 일치 체크
+        return base64_encode($decoded) === $data;
     }
 }
 if(!function_exists('wv_is_serialized')){
@@ -3391,7 +3428,7 @@ if(!function_exists('wv_write_board')){
             $set_arr=array();
             foreach ($set_field_array as $field){
                 if(isset($post[$field])){
-                    $set_arr[] = " {$field} = '".$field."' ";
+                    $set_arr[] = " {$field} = '".$post[$field]."' ";
                 }
             }
             $sql_sql=implode(',', $set_arr);

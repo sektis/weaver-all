@@ -43,6 +43,7 @@ global $g5;
                 success: function (data) {
                     alert('완료');
                     $skin.closest('.offcanvas').offcanvas('hide')
+                    location.reload()
                 }
 
             })
