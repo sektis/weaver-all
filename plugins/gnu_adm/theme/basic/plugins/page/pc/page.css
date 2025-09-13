@@ -63,3 +63,17 @@
 .wv-data-list tbody tr{
     height: var(--wv-50);
 }
+.wv-data-list-edit-btn{
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #3F51B5 !important;
+}
+.wv-data-list-delete-btn{
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #FC5555 !important;
+}

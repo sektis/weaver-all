@@ -296,6 +296,13 @@
     font-weight: 500 !important;
     color: #989898 !important;
   }
+  .fs-\[14\/17\/-0\.56\/500\/\#97989C\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #97989C !important;
+  }
   .fs-\[14\/20\/-0\.56\/500\/\#0D171B\] {
     font-size: var(--wv-14) !important;
     line-height: var(--wv-20) !important;
@@ -323,13 +330,6 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0d171b !important;
-  }
-  .fs-\[14\/22\/-0\.56\/500\/\#3F51B5\] {
-    font-size: var(--wv-14) !important;
-    line-height: var(--wv-22) !important;
-    letter-spacing: -0.04em !important;
-    font-weight: 500 !important;
-    color: #3F51B5 !important;
   }
   .fs-\[16\/22\/-0\.64\/600\/\#0D171B\] {
     font-size: var(--wv-16) !important;

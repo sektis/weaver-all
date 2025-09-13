@@ -97,7 +97,13 @@ $list = $store_result['list'];
 
                             <td><?php echo $list[$i]['wr_datetime']; ?></td>
                             <td></td>
-                            <td><a href="<?php echo wv_page_url('0201_c','wr_id='.$list[$i]['wr_id']); ?>">수정</a></td>
+                            <td>
+                                <div class="hstack justify-content-center" style="gap:var(--wv-6)">
+                                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=sub01_01&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                       data-wv-ajax-type="none" data-wv-ajax-target="" class="wv-data-list-delete-btn">[삭제]</a>
+                                    <a href="<?php echo wv_page_url('0201_c','wr_id='.$list[$i]['wr_id']); ?>" class="wv-data-list-edit-btn">[수정]</a>
+                                </div>
+                            </td>
                         </tr>
                     <?php } ?>
                     </tbody>

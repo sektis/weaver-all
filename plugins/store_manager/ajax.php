@@ -116,6 +116,10 @@ if($action=='update'){
     $wr_id = wv()->store_manager->made($made)->set($_POST);
     wv_json_exit(array('wr_id'=>$wr_id));
 }
+if($action=='delete'){
+    $wr_id = wv()->store_manager->made($made)->delete(array('wr_id'=>$wr_id));
+    wv_json_exit(array('wr_id'=>$wr_id));
+}
 
 // 잘못된 action
 alert('잘못된 요청입니다.');

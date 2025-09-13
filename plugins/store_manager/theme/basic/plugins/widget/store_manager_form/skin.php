@@ -43,8 +43,10 @@ global $g5;
                 dataType:'json',
                 success: function (data) {
 
-                    alert('완료');
-                    $skin.closest('.offcanvas').offcanvas('hide')
+                    if(data.result){
+                        alert('완료');
+                    }
+
                     location.reload()
                 }
 

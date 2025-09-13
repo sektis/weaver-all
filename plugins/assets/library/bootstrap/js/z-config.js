@@ -97,8 +97,9 @@ $(document).ready(function () {
         const selector = {
             id: id,
             class: $el.data('wv-ajax-class') || '',
-            target: $el.data('wv-ajax-target') || '#site-wrapper'
+            target: $el.data('wv-ajax-target') || ((type=='modal' || type=='offcanvse')?'#site-wrapper':'')
         };
+
 
         // ajaxData 구성
         const ajaxData = {};

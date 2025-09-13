@@ -4504,6 +4504,125 @@ if(!function_exists('wv_write_member')){
         return true;
     }
 }
+if(!function_exists('wv_delete_board_row')){
+    function wv_delete_board_row($bo_table, $wr_id, $board_table_update = true){
+        global $g5, $config;
+
+        if(!$bo_table || !$wr_id) {
+            return '필수 파라미터가 없습니다.';
+        }
+
+        // 게시판 정보 가져오기
+        $board = sql_fetch("SELECT * FROM {$g5['board_table']} WHERE bo_table = '{$bo_table}'");
+        if(!$board['bo_table']) {
+            return '존재하지 않는 게시판입니다.';
+        }
+
+        $write_table = $g5['write_prefix'] . $bo_table;
+
+        // 삭제할 글 정보 가져오기
+        $write = sql_fetch("SELECT * FROM {$write_table} WHERE wr_id = '{$wr_id}'");
+        if(!$write['wr_id']) {
+            return '존재하지 않는 글입니다.';
+        }
+
+        // 답글이 있는 경우 삭제 불가 (원글인 경우만)
+        if($write['wr_reply'] == '') {
+            $reply_count = sql_fetch("SELECT COUNT(*) as cnt FROM {$write_table} WHERE wr_parent = '{$wr_id}' AND wr_id != '{$wr_id}'");
+            if($reply_count['cnt'] > 0) {
+                return '답글이 있는 글은 삭제할 수 없습니다.';
+            }
+        }
+
+        // 첨부파일 삭제
+        $file_result = sql_query("SELECT * FROM {$g5['board_file_table']} WHERE bo_table = '{$bo_table}' AND wr_id = '{$wr_id}'");
+        while($file = sql_fetch_array($file_result)) {
+            if($file['bf_file']) {
+                $file_path = G5_DATA_PATH . '/file/' . $bo_table . '/' . $file['bf_file'];
+                if(file_exists($file_path)) {
+                    @unlink($file_path);
+                }
+
+                // 썸네일 삭제
+                if(function_exists('delete_board_thumbnail')) {
+                    delete_board_thumbnail($bo_table, $file['bf_file']);
+                }
+            }
+        }
+
+        // 첨부파일 테이블에서 삭제
+        sql_query("DELETE FROM {$g5['board_file_table']} WHERE bo_table = '{$bo_table}' AND wr_id = '{$wr_id}'");
+
+        // 스크랩 삭제
+        sql_query("DELETE FROM {$g5['scrap_table']} WHERE bo_table = '{$bo_table}' AND wr_id = '{$wr_id}'");
+
+        // 댓글 수 카운트 (게시판 카운트 업데이트용)
+        $comment_count = sql_fetch("SELECT COUNT(*) as cnt FROM {$write_table} WHERE wr_parent = '{$wr_id}' AND wr_is_comment = '1'");
+
+        // 댓글 삭제 (항상 실행)
+        sql_query("DELETE FROM {$write_table} WHERE wr_parent = '{$wr_id}' AND wr_is_comment = '1'");
+
+        // 본문 삭제
+        sql_query("DELETE FROM {$write_table} WHERE wr_id = '{$wr_id}'");
+
+        if($board_table_update) {
+            // 게시판 테이블의 글 수 감소
+            sql_query("UPDATE {$g5['board_table']} SET bo_count_write = bo_count_write - 1 WHERE bo_table = '{$bo_table}'");
+
+            // 댓글 수도 함께 감소 (댓글이 있었다면)
+            if($comment_count['cnt'] > 0) {
+                sql_query("UPDATE {$g5['board_table']} SET bo_count_comment = bo_count_comment - {$comment_count['cnt']} WHERE bo_table = '{$bo_table}'");
+            }
+        }
+
+        // 최신글 캐시 삭제
+        if(function_exists('delete_cache_latest')) {
+            delete_cache_latest($bo_table);
+        }
+
+        // 검색 캐시 삭제
+        if(function_exists('delete_cache_board')) {
+            delete_cache_board($bo_table);
+        }
+
+        // 훅 실행 (있다면)
+        if(function_exists('run_event')) {
+            run_event('delete_board_post_after', $bo_table, $wr_id, $write, $board);
+        }
+
+        return true;
+    }
+}
+if(!function_exists('wv_delete_board_rows')){
+    function wv_delete_board_rows($bo_table, $wr_ids, $board_table_update = true){
+        $results = array();
+        $success_count = 0;
+
+        foreach($wr_ids as $wr_id) {
+            $result = wv_delete_board_post($bo_table, $wr_id, false); // 개별 삭제시에는 카운트 업데이트 안함
+
+            if($result === true) {
+                $success_count++;
+                $results[$wr_id] = 'success';
+            } else {
+                $results[$wr_id] = $result;
+            }
+        }
+
+        // 성공한 글이 있고 board_table_update가 true라면 카운트 업데이트
+        if($success_count > 0 && $board_table_update) {
+            global $g5;
+            sql_query("UPDATE {$g5['board_table']} SET bo_count_write = bo_count_write - {$success_count} WHERE bo_table = '{$bo_table}'");
+        }
+
+        return array(
+            'success_count' => $success_count,
+            'total_count' => count($wr_ids),
+            'results' => $results
+        );
+    }
+}
+
 
 /** php low version */
 if(!function_exists('array_column')) {
