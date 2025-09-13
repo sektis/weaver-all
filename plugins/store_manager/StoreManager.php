@@ -1093,6 +1093,11 @@ class StoreManager extends Makeable{
         return $wr_id;
     }
 
+    /** 삭제 */
+    public function delete($wr_id){
+
+    }
+
     protected function execute_before_set_hooks(&$data, $existing_wr_id) {
         if (!is_array($this->parts) || !count($this->parts)) {
             return;
@@ -1203,16 +1208,7 @@ class StoreManager extends Makeable{
     }
 
 
-    /** 삭제 */
-    public function delete($wr_id){
-        $table = $this->get_ext_table_name();
-        $wr_id = (int)$wr_id;
-        $sql = "DELETE FROM `{$table}` WHERE wr_id = {$wr_id}";
-        sql_query($sql, true);
-        $this->clear_cache($wr_id);
 
-        return true;
-    }
 
     /** 유틸: 컬럼 존재 여부 */
     protected function table_has_column($table, $column){
