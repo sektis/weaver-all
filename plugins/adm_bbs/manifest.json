@@ -1,6 +1,0 @@
-{
-    "plugins/adm_bbs/AdmBbs.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/adm_bbs/AdmBbs.php",
-    "plugins/adm_bbs/adm_bbs_index.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/adm_bbs/adm_bbs_index.php",
-    "plugins/adm_bbs/plugin.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/adm_bbs/plugin.php",
-    "plugins/adm_bbs/_common.php": "https://raw.githubusercontent.com/sektis/weaver-all/refs/heads/master/plugins/adm_bbs/_common.php"
-}
