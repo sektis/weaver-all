@@ -782,10 +782,13 @@ class StoreManager extends Makeable{
         global $member;
         $table = $this->get_ext_table_name();
         if (!is_array($data)) $data = array();
+        dd($_POST);
 
-
+        if(!isset($data['wr_id'])){
+            alert('wr_id 누락');
+        }
         // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
-        $existing_wr_id = isset($data['wr_id']) ? (int)$data['wr_id'] : 0;
+        $existing_wr_id = $data['wr_id'] ? (int)$data['wr_id'] : 0;
 
         $this->execute_before_set_hooks($data, $existing_wr_id);
 

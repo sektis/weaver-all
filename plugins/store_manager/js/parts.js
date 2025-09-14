@@ -1,6 +1,149 @@
 $(document).ready(function () {
 
+    $("body").loaded('.wv-ps-file', function (i, e) {
+        var $ps_file = $(e);
 
+        // 초기 상태 설정
+        updateFileState($ps_file);
+
+        // 파일 변경 이벤트
+        $ps_file.on('change', 'input[type=file]:not([multiple])', function () {
+            var $input = $(this);
+            var $wrapper = $input.closest('.wv-ps-file');
+            var $label = $input.closest('label');
+            var $deleteLabel = $wrapper.find('.wv-ps-file-delete');
+            var $deleteCheckbox = $deleteLabel.find('input[type=checkbox]');
+            var file = this.files[0];
+
+            // 파일이 변경/추가되면 삭제 체크 해제
+            $deleteCheckbox.prop('checked', false);
+
+            if (!file) {
+                // 파일이 선택되지 않은 경우 - 초기 상태로 복원
+                resetSingleFilePreview($wrapper);
+                $deleteLabel.css('display', 'none');
+                return;
+            }
+
+            // 삭제 버튼 표시 (원래 flex로 복원)
+            $deleteLabel.css('display', 'flex');
+
+            // 파일 타입에 따른 미리보기 처리
+            if (file.type.match('image.*')) {
+                // 이미지 파일인 경우 미리보기 표시
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var $img = $wrapper.find('img');
+
+                    if ($img.length === 0) {
+                        // img 태그가 없으면 생성
+                        $img = $('<img alt="" class="wh-100 object-fit-contain">');
+                        $label.prepend($img);
+                    }
+
+                    // 기존 파일명 텍스트 제거
+                    $wrapper.find('.wv-ps-file-name').remove();
+
+                    // 이미지 미리보기 설정
+                    $img.attr('src', e.target.result);
+                    $img.show();
+
+                    // 상태 업데이트
+                    updateFileState($wrapper);
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                // 이미지가 아닌 파일의 경우
+                var $img = $wrapper.find('img');
+
+                // 기존 이미지 숨기기
+                if ($img.length > 0) {
+                    $img.hide();
+                }
+
+                // 기존 파일명 텍스트 제거
+                $wrapper.find('.wv-ps-file-name').remove();
+
+                // 파일명 텍스트 추가
+                var $fileName = $('<div class="wv-ps-file-name position-absolute inset-0 d-flex-center text-center p-3"></div>');
+                $fileName.html('<div class="vstack" style="row-gap: var(--wv-6);"><i class="fa-solid fa-file fs-[30///700/] d-block"></i><p class="fs-[12//400/] text-break">' + file.name + '</p></div>');
+                $label.append($fileName);
+
+                // 상태 업데이트 (파일이 있다는 것을 표시)
+                updateFileState($wrapper, true);
+            }
+        });
+
+        // 삭제 버튼 클릭 이벤트
+        $ps_file.on('click', '.wv-ps-file-delete', function (e) {
+            // 이벤트 전파 중단
+            e.stopPropagation();
+            e.preventDefault();
+
+            var $deleteLabel = $(this);
+            var $wrapper = $deleteLabel.closest('.wv-ps-file');
+            var $deleteCheckbox = $deleteLabel.find('input[type=checkbox]');
+
+            // 무조건 파일 input 비우기
+            $wrapper.find('input[type=file]').val('');
+
+            // 체크박스 true로 설정
+            $deleteCheckbox.prop('checked', true);
+
+            // 삭제 버튼 숨기기
+            $deleteLabel.css('display', 'none');
+
+            // 미리보기 제거
+            resetSingleFilePreview($wrapper);
+
+            return false;
+        });
+    });
+
+// 파일 상태 업데이트 함수
+    function updateFileState($wrapper, hasFile) {
+        var $img = $wrapper.find('img');
+        var $fileName = $wrapper.find('.wv-ps-file-name');
+        var $deleteLabel = $wrapper.find('.wv-ps-file-delete');
+        var $newPlaceholder = $wrapper.find('.wv-ps-file-new');
+        var imgSrc = $img.attr('src');
+        var $fileInput = $wrapper.find('input[type=file]');
+
+        // 파일이 있는지 확인 (이미지 src, 파일명 표시, 또는 file input의 files)
+        var hasValidFile = hasFile ||
+            (imgSrc && imgSrc.trim() !== '' && imgSrc !== 'undefined' && $img.is(':visible')) ||
+            $fileName.length > 0 ||
+            ($fileInput.length && $fileInput[0].files && $fileInput[0].files.length > 0);
+
+        if (hasValidFile) {
+            // 파일이 있는 경우
+            $newPlaceholder.addClass('d-none');
+            // 삭제 버튼 표시 여부는 별도 로직에서 처리
+        } else {
+            // 파일이 없는 경우
+            $newPlaceholder.removeClass('d-none');
+            $deleteLabel.css('display', 'none');
+        }
+    }
+
+// 단독 파일 미리보기 초기화 함수
+    function resetSingleFilePreview($wrapper) {
+        var $img = $wrapper.find('img');
+        var $fileName = $wrapper.find('.wv-ps-file-name');
+
+        // 이미지 숨기기 및 src 제거
+        if ($img.length > 0) {
+            $img.attr('src', '');
+            $img.hide();
+        }
+
+        // 파일명 텍스트 제거
+        $fileName.remove();
+
+        // 상태 업데이트
+        updateFileState($wrapper);
+    }
 
     $("body").loaded('.wv-ps-col',function (i,e) {
 
@@ -10,6 +153,27 @@ $(document).ready(function () {
 
 
 
+        // 삭제 체크박스 이벤트도 함께 추가
+        $($ps_col).on('change', '.wv-ps-delete-label input[type=checkbox]', function () {
+            var $checkbox = $(this);
+            var $wrapper = $checkbox.closest('.wv-ps-each');
+            var $deleteLabel = $checkbox.closest('.wv-ps-delete-label');
+
+            if ($checkbox.is(':checked')) {
+                // 삭제 체크 시 - 미리보기 제거 및 파일 input 초기화
+                resetSingleImagePreview($wrapper);
+                $wrapper.find('input[type=file]').val('');
+                $deleteLabel.addClass('active');
+            } else {
+                // 삭제 해제 시
+                $deleteLabel.removeClass('active');
+                // 기존 이미지가 있다면 다시 표시 (원본 경로가 있는 경우)
+                var $hiddenId = $wrapper.find('input[name$="[id]"]');
+                if ($hiddenId.length && $hiddenId.val()) {
+                    // 기존 이미지가 있으므로 복원 처리는 서버에서 처리
+                }
+            }
+        });
 
         $($ps_col).on('change',"input[multiple]", function () {
 

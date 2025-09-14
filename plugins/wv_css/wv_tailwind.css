@@ -27,6 +27,9 @@
     white-space: nowrap !important;
     border-width: 0 !important;
   }
+  .absolute {
+    position: absolute !important;
+  }
   .static {
     position: static !important;
   }
@@ -188,6 +191,9 @@
   }
   .w-\[150px\] {
     width: var(--wv-150) !important;
+  }
+  .w-\[200px\] {
+    width: var(--wv-200) !important;
   }
   .w-\[279px\] {
     width: var(--wv-279) !important;

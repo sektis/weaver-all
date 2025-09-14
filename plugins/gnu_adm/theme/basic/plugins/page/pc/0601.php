@@ -84,7 +84,7 @@ $page_title = '계약 및 상품 설정';
                                 <p class="fs-[14/17/-0.56/500/#97989C]"><?php echo $list[$i]['jm_mb_name']; ?> (<?php echo $list[$i]['mb_id']; ?>)</p>
                                 <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                    class="wv-data-list-delete-btn ms-auto">[삭제]</a>
-                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=render_part&part=member&fields=manager_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=render_part&part=contractitem&fields=item_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                    data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                             </div>
 

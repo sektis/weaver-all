@@ -27,7 +27,7 @@ $list = $store_result['list'];
             <p>등록된 매장 수(<?php echo number_format($store_result['total_count']); ?>)</p>
         </div>
 
-        <form method="get" action="<?php echo wv_page_url('0101'); ?>" class="hstack" style="gap: var(--wv-8);">
+        <form method="get" action="<?php echo wv_page_url('0201'); ?>" class="hstack" style="gap: var(--wv-8);">
             <input type="hidden" name="wv_page_id" value="0101">
 
             <div class="form-floating" style="min-width:180px;">

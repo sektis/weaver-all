@@ -76,3 +76,28 @@
     align-items: center;
 
 }
+
+.wv-ps-image {
+    position: relative;
+    width: 100%;
+    background-color: #f9f9f9;
+    border-radius: var(--wv-4);
+    overflow: hidden;
+    border: 1px solid #dcdcdc
+}
+.wv-ps-file-delete {
+    border-radius: 50% !important;
+    top:var(--wv-6);right: var(--wv-6);width: var(--wv-16);height: var(--wv-16);
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(var(--wv-3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.wv-ps-file-delete>span{
+    width: var(--wv-6);
+    height: var(--wv-6);
+    background: url('../img/x.png') no-repeat center;
+    background-size: contain;
+}
