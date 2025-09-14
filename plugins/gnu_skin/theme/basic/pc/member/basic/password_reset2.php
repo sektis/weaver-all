@@ -11,7 +11,6 @@ if(!$mb['mb_id']){
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative h-100 flex-nowrap bg-white"  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
     <style>
         <?php echo $skin_selector?> {}
-        <?php echo $skin_selector?> .submit-btn.active{background-color:#000!important;}
 
         @media (min-width: 992px) {
 
@@ -24,7 +23,7 @@ if(!$mb['mb_id']){
 
     <div class="position-relative col col-lg-auto w-full md:w-full h-100 " style="">
         <div class="container h-100">
-            <form name="flogin" action="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset2.php"   method="post"   >
+            <form name="flogin" action="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset2.php"   method="post" class="wv-form-check"  >
                 <div class="vstack h-100 ">
                <div class="wv-offcanvas-header col-auto">
                    <div class="row align-items-center">
@@ -53,7 +52,7 @@ if(!$mb['mb_id']){
                            <input type="password" name="mb_password2" id="mb_password2" required class="mt-[12px] form-control fs-[16//-0.64/600/#0D171B] border-0 border-bottom  wv-password-toggle" style="padding: 0 0 var(--wv-6)" size="20" maxLength="8" minlength="8" placeholder="영문/숫자 조합 6~16자리" autocomplete="new-password">
                        </div>
                        <div class="mt-auto">
-                           <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] submit-btn transition hover:bg-[#0d171b]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">재설정 하기</button>
+                           <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition  " style="border:0;border-radius: var(--wv-4)">재설정 하기</button>
                        </div>
                    </div>
 
@@ -70,21 +69,6 @@ if(!$mb['mb_id']){
 
             var $skin = $("<?php echo $skin_selector?>");
 
-            var $input1 = $("#mb_password", $skin);
-            var $input2 = $("#mb_password2", $skin);
-            var $btn = $(".submit-btn", $skin);
-
-            $input1.on("keyup input", toggleLoginActive);
-            $input2.on("keyup input", toggleLoginActive);
-
-
-            function toggleLoginActive() {
-                if ($input1.val().length > 0 && $input2.val().length > 0) {
-                    $btn.addClass("active");
-                } else {
-                    $btn.removeClass("active");
-                }
-            }
 
 
         })

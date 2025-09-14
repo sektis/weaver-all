@@ -15,12 +15,12 @@ if($w==''){
     $member['mb_name']=get_session("wv_cert_mb_name");
 
     set_session("ss_cert_type",    get_session("wv_cert_type"));
-    set_session("ss_cert_no",      get_session("wv_md5_cert_no"));
-    set_session("ss_cert_hash",    get_session("wv_hash_data"));
-    set_session("ss_cert_adult",   get_session("wv_adult"));
-    set_session("ss_cert_birth",   get_session("wv_birth_day"));
-    set_session("ss_cert_sex",     (get_session("wv_sex_code")=="01"?"M":"F"));
-    set_session('ss_cert_dupinfo', get_session("wv_mb_dupinfo"));
+    set_session("ss_cert_no",      get_session("wv_cert_no"));
+    set_session("ss_cert_hash",    get_session("wv_cert_hash"));
+    set_session("ss_cert_adult",   get_session("wv_cert_adult"));
+    set_session("ss_cert_birth",   get_session("wv_cert_birth"));
+    set_session("ss_cert_sex",     get_session("wv_cert_sex"));
+    set_session('ss_cert_dupinfo', get_session("wv_cert_dupinfo"));
 
 }
 
@@ -99,8 +99,10 @@ if($w==''){
                                 <input type="hidden" name="mb_nick_default" value="<?php echo get_text($member['mb_nick']) ?>">
                                 <input type="hidden" name="mb_nick" value="<?php echo get_text($member['mb_nick']) ?>">
                             <?php }  ?>
-
-
+                            <?php if ($config['cf_cert_use'] && ($config['cf_cert_hp'] || $config['cf_cert_simple'])) { ?>
+                                <input type="hidden" name="old_mb_hp" value="<?php echo get_text($member['mb_hp']) ?>">
+                            <?php } ?>
+                            <input type="hidden" name="mb_hp" value="<?php echo get_text($member['mb_hp']) ?>">
 
 
                             <input type="hidden" name="mb_id" id="reg_mb_id" value="<?php echo $member['mb_id'] ?>"  >
@@ -371,7 +373,7 @@ gif, jpg, png파일만 가능하며 용량 <?php echo number_format($config['cf_
 
 
                                 <div class="mt-auto mb-[50px]"  >
-                                    <button type="submit" id="btn_submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] submit-btn transition hover:bg-[#0d171b] mt-[22px]" accesskey="s"  style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)" >확인</button>
+                                    <button type="submit" id="btn_submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition  mt-[22px]" accesskey="s"  style="border:0;border-radius: var(--wv-4)" >확인</button>
                                 </div>
                             </div>
 

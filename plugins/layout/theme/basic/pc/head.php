@@ -8,7 +8,7 @@
             <div class="hstack  flex-lg-nowrap justify-content-center" style="gap: var(--wv-md-31,var(--wv-30));padding: var(--wv-7) 0"   >
                 <div class="col-auto align-self-center">
                     <?php if($wv_page_id=='main'){ ?>
-                        <a href="javascript:;"  class="hstack  "   data-wv-ajax-url="<?php echo wv()->location->ajax_url().'?wv_location_action=region'; ?>" data-wv-ajax-type="offcanvas" data-wv-ajax-options="bottom,backdrop-static" data-wv-ajax-target="#site-wrapper">
+                        <a href="javascript:;"  class="hstack  "   data-wv-ajax-url="<?php echo wv()->location->ajax_url().'?wv_location_action=region'; ?>" data-wv-ajax-option="offcanvas,bottom,backdrop-static"  >
 
                             <p class="fs-[20/130%/-0.8/700/#0D171B]"><?php echo wv()->location->display('favorite_title') ?></p>
 
@@ -31,7 +31,7 @@
                 </div>
             </div>
             <?php if($wv_page_id!='main'){ ?>
-                <a href="javascript:;"  class="hstack  " style="padding: var(--wv-6) 0 var(--wv-12);"  data-wv-ajax-url="<?php echo wv()->location->ajax_url().'?wv_location_action=region'; ?>" data-wv-ajax-type="offcanvas" data-wv-ajax-options="bottom,backdrop-static" data-wv-ajax-target="#site-wrapper">
+                <a href="javascript:;"  class="hstack  " style="padding: var(--wv-6) 0 var(--wv-12);"  data-wv-ajax-url="<?php echo wv()->location->ajax_url().'?wv_location_action=region'; ?>" data-wv-ajax-option="offcanvas,bottom,backdrop-static"  >
                     <?php echo wv()->location->display('favorite_title_sub') ?>
                 </a>
             <?php }  ?>

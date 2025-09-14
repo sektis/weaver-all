@@ -141,16 +141,25 @@ $(function(){
         return true;
     });
 
-    $(document).ajaxComplete(function(event, xhr, settings, data) {
+    $(document).ajaxComplete(function(event, xhr, settings) {
         clearTimeout(timer);
         $loader.hide();
-        var parsed_json = JSON.parse(xhr.responseText);
-        if( isset(parsed_json.reload)){
-            if(isset(parsed_json.msg && !settings.success)){
-                alert(parsed_json.msg);
+        try {
+            var parsed_json = JSON.parse(xhr.responseText);
+            if( isset(parsed_json.reload)){
+                if(isset(parsed_json.msg && !settings.success)){
+                    alert(parsed_json.msg);
+                }
+                location.reload();
             }
+        } catch (e) {
+
+        }
+
+        if(settings.reload==true){
             location.reload();
         }
+
         if(settings.use_redirect==true && org_url!=last_url){
             var org_url = settings.url.replace(/\/+$/,"").replace(g5_url,'')
             var last_url = settings.wv_xhr.responseURL.replace(/\/+$/,"").replace(g5_url,'');

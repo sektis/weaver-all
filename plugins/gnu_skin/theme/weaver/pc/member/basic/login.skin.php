@@ -74,7 +74,7 @@ switch($config['cf_cert_hp']) {
                                 자동 로그인하기
                             </label>
                         </div>
-                        <a href="javascript:;"  data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,backdrop-static" data-wv-ajax-target="#site-wrapper"  class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
+                        <a href="javascript:;"  data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset.php" data-wv-ajax-option="offcanvas,end,backdrop-static"    class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
                     </div>
                 </div>
 

@@ -8,7 +8,8 @@ class Theme extends Plugin {
         add_event('write_update_after',array($this,'counsel_write_update_after'),0,5);
         add_replace('wv_hook_board_list_i',array($this,'counsel_list_name_mask'),0,2);
         add_replace('register_member_chk_captcha',array($this,'register_member_chk_captcha'),0);
-        add_event('register_form_update_after',array($this,'register_form_update_after'),0);
+        add_event('register_form_update_after',array($this,'register_form_update_after'),0,2);
+        add_event('member_delete_after',array($this,'member_delete_after'),0,1);
 
     }
 
@@ -56,9 +57,23 @@ class Theme extends Plugin {
     public function register_member_chk_captcha(){
         return false;
     }
-    public function register_form_update_after(){
+    public function register_form_update_after($mb_id,$w){
 
-        goto_url(wv_path_replace_url(wv()->gnu_skin->plugin_theme_path).'/member/basic/register_step4.php');
+        if($w==''){
+            $mb = get_member($mb_id);
+            $row = array(
+                'mb_id'=>$mb['mb_id'],
+                'wr_name'=>$mb['mb_name'],
+                'wr_password'=>$mb['mb_password']
+            );
+            wv()->store_manager->made('member')->set($row);
+            goto_url(wv_path_replace_url(wv()->gnu_skin->plugin_theme_path).'/member/basic/register_step4.php');
+        }
+
+    }
+    public function member_delete_after($mb_id){
+        global $g5;
+        sql_query(" delete from {$g5['member_table']} where mb_id = '$mb_id' ");
     }
 
 

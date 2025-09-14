@@ -8,7 +8,6 @@ if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
 <div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative h-100 flex-nowrap bg-white" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
     <style>
         <?php echo $skin_selector?> {}
-        <?php echo $skin_selector?> .submit-btn.active{background-color:#000!important;}
         @media (min-width: 992px) {
 
         }

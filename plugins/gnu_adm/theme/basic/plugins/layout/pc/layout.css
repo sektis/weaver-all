@@ -13,6 +13,7 @@
     --wv-ini-min:1;
     color:#0D171B;
     --wv-site-wrapper-width:var(--wv-360);
+    --bs-border-color:#efefef;
 }
 body[wv-login].wv-wrap, body[wv-login] .wv-wrap{
     --wv-ini-max:1.2;
@@ -103,7 +104,8 @@ input::placeholder,textarea::placeholder{color:var(--wv-placeholer-color,revert-
 }
 #footer-wrapper{
 }
-input::placeholder {color: #cfcfcf;font-size: inherit;font-style: normal;font-weight: inherit;line-height: inherit;letter-spacing:  calc(var(--wv-0_56) * -1);}
+input::placeholder,textarea::placeholder  {--wv-placeholer-color: #cfcfcf;font-size: inherit;font-style: normal;font-weight: inherit;line-height: inherit;letter-spacing:  calc(var(--wv-0_56) * -1);}
+
 
 @media (max-width: 1919.98px) {
 

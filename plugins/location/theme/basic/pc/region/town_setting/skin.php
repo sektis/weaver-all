@@ -30,7 +30,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 
                 <a href="#" class="wv-flex-box w-full h-[43px] rounded-[4px] bg-[#F9F9F9] position-relative justify-content-start px-[12px] cursor-pointer"
-                   data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/search.php"   data-wv-ajax-options="end,static">
+                   data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/search.php"   data-wv-ajax-option="offavanvas,end,static">
                     <p class="fs-[14/20/-0.56/500/#CFCFCF]">지역을 검색해보세요 (강남구, 논현동 등)</p>
                     <div class="btn p-0 outline-none position-absolute top-50 translate-middle-y end-[12px]"><img src="<?php echo WV_URL; ?>/img/search.png" class="w-[20px]" alt=""></div>
                 </a>

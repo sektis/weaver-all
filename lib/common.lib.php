@@ -810,7 +810,7 @@ if(!function_exists('wv_movie_display')){
     }
 }
 if(!function_exists('wv_page_url')){
-    function wv_page_url($wv_page_id,$query=array(),$wvd=''){
+    function wv_page_url($wv_page_id,$query='',$wvd=''){
         $query_arr = $query;
 
         $page_qstr = "/?";
@@ -4436,7 +4436,7 @@ if(!function_exists('wv_write_member')){
             }
 
             if (empty($update_fields) && empty($extend_data_arr)) {
-                return '수정할 데이터가 없습니다.';
+                return true;
             }
 
             $sql = "UPDATE {$g5['member_table']} SET " . implode(', ', $update_fields);

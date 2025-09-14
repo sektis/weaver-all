@@ -63,37 +63,37 @@ if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
                                 <input class="form-check-input  d-none wv-check-all-list must" name="agree" value="1" type="checkbox">
                                 <i class="fa-solid fa-check fs-08em must"></i>
                                 <p>(필수) 서비스 이용약관 </p>
-                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_1.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,static">보기</a>
+                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_1.php" data-wv-ajax-option="offcanvas,end,static">보기</a>
                             </label>
                             <label class="form-check-label   hstack  align-items-center" style="gap:var(--wv-9)">
                                 <input class="form-check-input  d-none wv-check-all-list must" name="agree2" value="1" type="checkbox">
                                 <i class="fa-solid fa-check fs-08em must"></i>
                                 <p>(필수) 개인정보 처리방침 </p>
-                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_2.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,static">보기</a>
+                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_2.php" data-wv-ajax-option="offcanvas,end,static">보기</a>
                             </label>
                             <label class="form-check-label   hstack  align-items-center" style="gap:var(--wv-9)">
                                 <input class="form-check-input  d-none wv-check-all-list" name="agree3" value="1" type="checkbox">
                                 <i class="fa-solid fa-check fs-08em"></i>
                                 <p>(선택) 위치 기반 서비스 이용 </p>
-                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_3.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,static">보기</a>
+                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_3.php" data-wv-ajax-option="offcanvas,end,static">보기</a>
                             </label>
                             <label class="form-check-label   hstack  align-items-center" style="gap:var(--wv-9)">
                                 <input class="form-check-input  d-none wv-check-all-list" name="agree4" value="1" type="checkbox">
                                 <i class="fa-solid fa-check fs-08em"></i>
                                 <p>(선택) 전자금융거래 이용</p>
-                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_4.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,static">보기</a>
+                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_4.php" data-wv-ajax-option="offcanvas,end,static">보기</a>
                             </label>
                             <label class="form-check-label   hstack  align-items-center" style="gap:var(--wv-9)">
                                 <input class="form-check-input  d-none wv-check-all-list" name="agree5" value="1" type="checkbox">
                                 <i class="fa-solid fa-check fs-08em"></i>
                                 <p>(선택) 이벤트 참여 및 혜택 제공을 위한 <br>개인정보 수집 및 이용 동의 </p>
-                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_5.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,static">보기</a>
+                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_5.php" data-wv-ajax-option="offcanvas,end,static">보기</a>
                             </label>
                             <label class="form-check-label   hstack  align-items-center" style="gap:var(--wv-9)">
                                 <input class="form-check-input  d-none wv-check-all-list " name="agree6" value="1" type="checkbox">
                                 <i class="fa-solid fa-check fs-08em"></i>
                                 <p>(선택) 마케팅 정보 수신</p>
-                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_6.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,static">보기</a>
+                                <a href="#" data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_terms_6.php" data-wv-ajax-option="offcanvas,end,static">보기</a>
                             </label>
                         </div>
                     </div>

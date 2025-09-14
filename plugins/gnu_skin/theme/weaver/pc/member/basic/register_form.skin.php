@@ -7,19 +7,19 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
     add_javascript('<script src="'.G5_JS_URL.'/certify.js?v='.G5_JS_VER.'"></script>', 0);
 if($w==''){
     if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
-//        alert('본인 인증 후 가입가능합니다.'.$pre_cert_no.'//'.get_session('wv_cert_no'));
+        alert('본인 인증 후 가입가능합니다.'.$pre_cert_no.'//'.get_session('wv_cert_no'));
     }
     $member['mb_certify']=$pre_cert_type;
     $member['mb_hp']=get_session("wv_cert_mb_hp");
     $member['mb_name']=get_session("wv_cert_mb_name");
 
     set_session("ss_cert_type",    get_session("wv_cert_type"));
-    set_session("ss_cert_no",      get_session("wv_md5_cert_no"));
-    set_session("ss_cert_hash",    get_session("wv_hash_data"));
-    set_session("ss_cert_adult",   get_session("wv_adult"));
-    set_session("ss_cert_birth",   get_session("wv_birth_day"));
-    set_session("ss_cert_sex",     (get_session("wv_sex_code")=="01"?"M":"F"));
-    set_session('ss_cert_dupinfo', get_session("wv_mb_dupinfo"));
+    set_session("ss_cert_no",      get_session("wv_cert_no"));
+    set_session("ss_cert_hash",    get_session("wv_cert_hash"));
+    set_session("ss_cert_adult",   get_session("wv_cert_adult"));
+    set_session("ss_cert_birth",   get_session("wv_cert_birth"));
+    set_session("ss_cert_sex",     get_session("wv_cert_sex"));
+    set_session('ss_cert_dupinfo', get_session("wv_cert_dupinfo"));
 
 }
 

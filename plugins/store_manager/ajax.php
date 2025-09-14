@@ -99,12 +99,12 @@ if($action=='render_part'){
     if(!$type){
         $type='form';
     }
-    $store = wv()->store_manager->made($made)->get($wr_id);
+    $manager = wv()->store_manager->made($made)->get($wr_id);
     ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),'form',array('member_type'=>'manager'));
+    echo $manager->{$part}->render_part(explode(',',$fields),'form');
     $render_content = ob_get_clean();
     $skin_data = array(
-        'store'=>$store,
+        'store'=>$manager,
         'theme_dir'=>'store_manager',
         'render_content' => $render_content,
         'made'=>$made

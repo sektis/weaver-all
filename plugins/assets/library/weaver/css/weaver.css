@@ -55,7 +55,10 @@
     .form-floating .wv-password-wrapper{width:100%}
     .form-floating .wv-password-wrapper input.wv-password-toggle{padding-right:40px!important}
     .wv-password-wrapper input.border-0.border-bottom + .wv-password-toggle-icon{right:8px}
-    .wv-submit-btn.active{background-color:#000!important;color:#fff!important;}
+    .wv-submit-btn{background-color:#cfcfcf;color:#fff;}
+    .wv-submit-btn.active{background-color:#000;color:#fff;}
+    .wv-submit-btn:hover{background-color:#000;color:#fff;}
+    .wv-submit-btn:not(.active){pointer-events: none;user-select: none}
 
     .lh-0{line-height: 0!important;}
     .fs-05em{font-size:.5em!important;}

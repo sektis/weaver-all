@@ -29,7 +29,6 @@ switch($config['cf_cert_hp']) {
 <div id="<?php echo $skin_id?>" class="position-relative d-flex-center flex-nowrap"  style="" >
     <style>
         <?php echo $skin_selector?> {}
-        <?php echo $skin_selector?> .submit-btn.active{background-color:#000!important;}
 
 
         @media (min-width: 992px) {
@@ -43,7 +42,7 @@ switch($config['cf_cert_hp']) {
 
     <div class="position-relative col col-lg-auto w-full md:w-full vstack justify-content-center" style="min-height: 100dvh">
         <div class="container">
-            <form name="fregisterform" action="<?php echo $login_action_url ?>" onsubmit="return flogin_submit(this);" method="post" class="fs-[16//-0.64/600/#CFCFCF]" >
+            <form name="fregisterform" action="<?php echo $login_action_url ?>" onsubmit="return flogin_submit(this);" method="post" class="fs-[16//-0.64/600/#CFCFCF] wv-form-check" >
                 <input type="hidden" name="cert_type" value="">
                 <input type="hidden" name="cert_no" value="">
                 <input type="hidden" name="mb_hp" value="">
@@ -74,12 +73,12 @@ switch($config['cf_cert_hp']) {
                                 자동 로그인하기
                             </label>
                         </div>
-                        <a href="javascript:;"  data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset.php" data-wv-ajax-type="offcanvas" data-wv-ajax-options="end,backdrop-static" data-wv-ajax-target="#site-wrapper"  class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
+                        <a href="javascript:;"  data-wv-ajax-url="<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/password_reset.php" data-wv-ajax-option="offcanvas,end,backdrop-static"    class="fs-[12//-0.48/500/#0D171B]">비밀번호 재설정하기</a>
                     </div>
                 </div>
 
                 <div class="mt-[40px]">
-                    <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] submit-btn transition hover:bg-[#0d171b]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">로그인하기</button>
+                    <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition hover:bg-[#0d171b]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">로그인하기</button>
                 </div>
 
                 <div class="hstack justify-content-center mt-[16px]">
@@ -177,21 +176,6 @@ switch($config['cf_cert_hp']) {
 
             var $skin = $("<?php echo $skin_selector?>");
 
-            var $id = $("#login_id", $skin);
-            var $pw = $("#login_pw", $skin);
-            var $btn = $(".submit-btn", $skin);
-
-            function toggleLoginActive() {
-                if ($id.val().length > 0 && $pw.val().length > 0) {
-                    $btn.addClass("active");
-                } else {
-                    $btn.removeClass("active");
-                }
-            }
-
-            // 입력 시마다 확인
-            $id.on("keyup input", toggleLoginActive);
-            $pw.on("keyup input", toggleLoginActive);
 
             $("#login_auto_login",$skin).click(function(){
                 if (this.checked) {
@@ -235,13 +219,13 @@ switch($config['cf_cert_hp']) {
                 }
             }
 
-            //var ajax_data = {
-            //    agree:1,
-            //    agree2:1,
-            //    no_layout:true,
-            //    pre_cert_no:321321,
-            //}
-            //wv_ajax_offcanvas('<?php //echo wv_path_replace_url(dirname(__FILE__)) ?>///register_step4.php',['end','backdrop-static'],{},ajax_data)
+            var ajax_data = {
+               agree:1,
+               agree2:1,
+               no_layout:true,
+               pre_cert_no:321321,
+            }
+            //wv_ajax_offcanvas('<?php //echo wv_path_replace_url(dirname(__FILE__)) ?>///register_step2.php',"end,backdrop-static",ajax_data)
             function onCertifyComplete(type) {
 // return false;
                 // 인증 완료 후 서버에서 상태 확인
@@ -259,7 +243,7 @@ switch($config['cf_cert_hp']) {
                         no_layout:true,
                         pre_cert_no:$("input[name=cert_no]",$skin).val(),
                     }
-                    wv_ajax_offcanvas('<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_step1.php',['end','backdrop-static'],{target:'#site-wrapper'},ajax_data)
+                    wv_ajax_offcanvas('<?php echo wv_path_replace_url(dirname(__FILE__)) ?>/register_step1.php','end,backdrop-static',ajax_data)
                 })
 
 

@@ -411,15 +411,16 @@ $(document).ready(function () {
         const $skin = $(this);
         var $btn = $("[type=submit]", $skin);
         var $requiredFields = $("input[required], textarea[required], select[required]", $skin);
+        var $allCheckboxes = $("input[type=checkbox]", $skin); // 모든 checkbox
         var isCheckingScheduled = false;
 
         function isFieldValid(field) {
             var type = field.type;
             var value = field.value;
 
-            // checkbox, radio는 checked 확인
+            // checkbox, radio는 required인 것만 checked 확인
             if (type === 'checkbox' || type === 'radio') {
-                return field.checked;
+                return !field.hasAttribute('required') || field.checked;
             }
 
             // 나머지는 값 확인
@@ -437,7 +438,12 @@ $(document).ready(function () {
             });
         }
 
+        // required 필드에 이벤트 바인딩
         $requiredFields.on("input change", scheduleCheck);
+
+        // 모든 checkbox에도 이벤트 바인딩 (전체선택 등으로 인한 변경 감지)
+        $allCheckboxes.on("change", scheduleCheck);
+
         scheduleCheck();
     });
 

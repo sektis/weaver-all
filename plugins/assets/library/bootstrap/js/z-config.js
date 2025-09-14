@@ -74,172 +74,289 @@ $(document).ready(function () {
         // offcanvasEl.style.paddingRight = `${scrollbarWidth}px`
     })
 
-    $(document).on('click', '[data-wv-ajax-url]', function (e) {
-        e.preventDefault();
 
-        const $el = $(this);
-        const url = $el.data('wv-ajax-url');
-        const type = $el.data('wv-ajax-type') || 'offcanvas';
-        const optionsStr = $el.data('wv-ajax-options') || '';
-        const options = optionsStr.split(',').map(opt => opt.trim()).filter(opt => opt);
+})
+// 옵션 파싱 공통 함수
+function parseWvAjaxOptions(options) {
+    var processedOptions = {};
 
-        // ID는 명시적으로 지정되거나, 자동 생성됨 (트리거 고유 기준)
-        let id = $el.data('wv-ajax-id');
+    if (typeof options === 'string') {
+        // 문자열 옵션 파싱
+        var optionArray = options.split(',');
+        for (var i = 0; i < optionArray.length; i++) {
+            var option = optionArray[i].trim();
 
+            if (option.indexOf('class:') === 0) {
+                processedOptions.class = option.substring(6).trim();
+            }
+            else if (option.indexOf('id:') === 0) {
+                processedOptions.id = option.substring(3).trim();
+            }
+            else if (option.indexOf('target:') === 0) {
+                processedOptions.target = option.substring(7).trim();
+            }
+            else if (option.indexOf('ajax_option:') === 0) {
+                try {
+                    var ajaxOptionStr = option.substring(12).trim();
+                    if (ajaxOptionStr.startsWith('{') && ajaxOptionStr.endsWith('}')) {
+                        ajaxOptionStr = ajaxOptionStr.replace(/([{,]\s*)(\w+):/g, '$1"$2":');
+                        ajaxOptionStr = ajaxOptionStr.replace(/:(\w+)([,}])/g, ':"$1"$2');
+                    }
+                    processedOptions.ajax = JSON.parse(ajaxOptionStr);
+                } catch(e) {
+                    console.error('ajax_option 파싱 오류:', e);
+                }
+            }
+            else {
+                if (!processedOptions.other) processedOptions.other = [];
+                processedOptions.other.push(option);
+            }
+        }
+    } else {
+        // 객체면 그대로 사용
+        processedOptions = options || {};
+    }
 
-        if (!id) {
-            // 트리거 자체를 기반으로 고유 ID 생성
-            const triggerKey = url;
-            id = (type === 'modal' ? 'wv-modal-' : 'wv-offcanvas-') +
-                btoa(triggerKey).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)+$el.index();
+    return processedOptions;
+}
+
+// 데이터 파싱 공통 함수
+function parseWvAjaxData(dataAttr) {
+    var ajaxData = {};
+    if (dataAttr) {
+        try {
+            if (typeof dataAttr === 'string') {
+                ajaxData = JSON.parse(dataAttr);
+            } else if (typeof dataAttr === 'object') {
+                ajaxData = dataAttr;
+            }
+        } catch(e) {
+            alert('data-wv-ajax-data 파싱 오류:', e);
+            ajaxData = {};
+        }
+    }
+    return ajaxData;
+}
+
+$(document).on('click', '[data-wv-ajax-url]', function (e) {
+    e.preventDefault();
+
+    var $this = $(this);
+
+    // 기본 속성 값들 가져오기
+    var url = $this.attr('data-wv-ajax-url');
+    var dataAttr = $this.attr('data-wv-ajax-data');
+    var optionAttr = $this.attr('data-wv-ajax-option');
+
+    // 데이터 처리
+    var ajaxData = parseWvAjaxData(dataAttr);
+
+    // 옵션 처리
+    var type = '';
+    var processedOptions = parseWvAjaxOptions(optionAttr);
+
+    // type 찾기 (processedOptions.other에서 추출)
+    if (processedOptions.other) {
+        for (var i = 0; i < processedOptions.other.length; i++) {
+            var option = processedOptions.other[i];
+            if (option === 'modal' || option === 'offcanvas') {
+                type = option;
+                // other 배열에서 제거
+                processedOptions.other.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    // target 기본값 설정 (원래 코드 로직 유지)
+    if (!processedOptions.target) {
+        processedOptions.target = (type === 'modal' || type === 'offcanvas') ? '#site-wrapper' : '';
+    }
+
+    // modal이나 offcanvas인 경우 중복 방지 처리
+    if (type === 'modal' || type === 'offcanvas') {
+        // ID 생성 (트리거 고유 기준)
+        if (!processedOptions.id) {
+            var triggerKey = url;
+            processedOptions.id = (type === 'modal' ? 'wv-modal-' : 'wv-offcanvas-') +
+                btoa(triggerKey).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12) + $this.index();
         }
 
-        const selector = {
-            id: id,
-            class: $el.data('wv-ajax-class') || '',
-            target: $el.data('wv-ajax-target') || ((type=='modal' || type=='offcanvse')?'#site-wrapper':'')
-        };
-
-
-        // ajaxData 구성
-        const ajaxData = {};
-        $.each(this.attributes, function () {
-            if (!this.name.startsWith('data-wv-ajax-')) return;
-            const raw = this.name.slice('data-wv-ajax-'.length);
-            if (['url', 'type', 'options', 'id', 'class', 'target'].includes(raw)) return;
-            const key = raw.replace(/-/g, '_');
-            ajaxData[key] = this.value;
-        });
-
         // 해당 트리거에서 이전에 띄운 인스턴스가 있다면 제거
-        const prevInstanceId = $el.data('wv-ajax-instance');
-        if (prevInstanceId && $(`#${prevInstanceId}`).length) {
+        var prevInstanceId = $this.data('wv-ajax-instance');
+        if (prevInstanceId && $('#' + prevInstanceId).length) {
             return;
         }
 
         // 새로운 인스턴스 ID 저장
-        $el.attr('data-wv-ajax-instance', id);
+        $this.data('wv-ajax-instance', processedOptions.id);
+    }
 
-        ajaxData['no_layout']=1;
+    // no_layout 추가 (기존 코드와 호환)
+    ajaxData.no_layout = 1;
 
-        // 실행
-        if (type === 'modal') {
-            wv_ajax_modal(url, options, selector, ajaxData);
-        } else if (type === 'offcanvas') {
-            wv_ajax_offcanvas(url, options, selector, ajaxData);
-        } else {
-            $.ajax({
-                url: url,
-                method: 'POST',
-                data: ajaxData,
-                success: function (res) {
-                    if (selector.target) {
-                        $(selector.target).html(res);
-                    }
+    // 실행
+    if (type === 'modal') {
+        wv_ajax_modal(url, processedOptions, ajaxData);
+    } else if (type === 'offcanvas') {
+        wv_ajax_offcanvas(url, processedOptions, ajaxData);
+    } else {
+        // 일반 AJAX 요청
+        var defaultAjaxSettings = {
+            url: url,
+            data: ajaxData,
+            method: 'POST',
+            success: function(response) {
+                // target이 있으면 해당 엘리먼트에 결과 삽입 (원래 코드 로직)
+                if (processedOptions.target) {
+                    $(processedOptions.target).html(response);
+                } else {
+                    // console.log('AJAX 성공:', response);
                 }
-            });
+            }
+        };
+
+        // ajax_option으로 기본값 오버라이딩
+        if (processedOptions.ajax) {
+            $.extend(defaultAjaxSettings, processedOptions.ajax);
         }
-    });
 
-})
+        $.ajax(defaultAjaxSettings);
+    }
+});
 
+function wv_ajax_modal(url, options = {}, data = {}) {
+    // 옵션 파싱
+    var processedOptions = parseWvAjaxOptions(options);
 
+    var $modal_target = processedOptions.target ? $(processedOptions.target) : $("#site-wrapper");
+    var modal_id = processedOptions.id || '';
+    var modal_class = processedOptions.class || '';
+    var modal_options = {};
+    var modal_data_attr = ['backdrop', 'keyboard', 'focus'];
+    var modal_dialog_class = ['centered', 'scrollable'];
+    var dialog_class = '';
+    var other_options = processedOptions.other || [];
 
+    // ID 자동 생성 (직접 호출시에만)
+    if (!modal_id) {
+        modal_id = 'wv-modal-' + btoa(url).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12) + Date.now().toString().slice(-4);
+    }
 
-
-function wv_ajax_modal(url,options=[],selector={},ajax_data={}){
-    const $modal_target = selector.target?$(selector.target):$("#site-wrapper");
-    const modal_id = selector.id || '';
-    const modal_class = selector.class || '';
-    const modal_options = {};
-    const modal_data_attr = ['backdrop', 'keyboard', 'focus'];
-    const modal_dialog_class = ['centered', 'scrollable'];
-    var dialog_class='';
-
-    options.forEach(opt => {
+    // 옵션 처리
+    other_options.forEach(function(opt) {
         if (modal_data_attr.includes(opt)) {
-            modal_options[opt] = options[opt] ?? (opt==='backdrop'?'static':true);
+            modal_options[opt] = opt === 'backdrop' ? 'static' : true;
+        } else if (modal_dialog_class.includes(opt)) {
+            dialog_class += ' modal-dialog-' + opt;
         } else {
-            dialog_class += modal_dialog_class.includes(opt)?` modal-dialog-${opt}`:` modal-${opt}`;
+            dialog_class += ' modal-' + opt;
         }
     });
 
-    const modalEl = $(`
-                <div id="${modal_id}" class="modal wv-modal fade ${modal_class}"   >
-                    <div class="modal-dialog ${dialog_class}">
-                        <div class="modal-content"></div>
-                    </div>
-                </div>
-            `);
+    var modalEl = $(`
+        <div id="${modal_id}" class="modal wv-modal fade ${modal_class}">
+            <div class="modal-dialog ${dialog_class}">
+                <div class="modal-content"></div>
+            </div>
+        </div>
+    `);
 
     $modal_target.append(modalEl);
 
-    const modal = new bootstrap.Modal(modalEl[0],modal_options);
+    var modal = new bootstrap.Modal(modalEl[0], modal_options);
     modal.show();
 
     $(modalEl).on("hidden.bs.modal", function () {
         modalEl.remove();
     });
 
-    $.ajax({
+    // AJAX 요청 설정
+    var ajaxSettings = {
         url: url,
         method: "POST",
-        data:ajax_data,
+        data: data,
         success: function (html) {
-            $(".modal-content",modalEl).html(html)
+            $(".modal-content", modalEl).html(html);
         },
-        error:function () {
+        error: function () {
             modal.hide();
             modalEl.remove();
         }
-    });
+    };
+
+    // ajax 옵션으로 오버라이드
+    if (processedOptions.ajax) {
+        $.extend(ajaxSettings, processedOptions.ajax);
+    }
+
+    $.ajax(ajaxSettings);
 }
 
-function wv_ajax_offcanvas(url, options = [], selector = {}, ajax_data = {}) {
-    const $offcanvas_target = selector.target ? $(selector.target) : $('#site-wrapper');
-    const offcanvas_id = selector.id || '';
-    const offcanvas_class = selector.class || '';
-    const placement = options.includes('end') ? 'offcanvas-end'
-        : options.includes('top') ? 'offcanvas-top'
-            : options.includes('bottom') ? 'offcanvas-bottom'
-                : 'offcanvas-start'; // 기본은 왼쪽
+function wv_ajax_offcanvas(url, options = {}, data = {}) {
+    // 옵션 파싱
+    var processedOptions = parseWvAjaxOptions(options);
 
-    const backdrop = options.includes('backdrop-static') ? 'static' : (options.includes('backdrop') ? true : false);
-    const scroll = options.includes('scroll') ? true : false;
+    var $offcanvas_target = processedOptions.target ? $(processedOptions.target) : $('#site-wrapper');
+    var offcanvas_id = processedOptions.id || '';
+    var offcanvas_class = processedOptions.class || '';
+    var other_options = processedOptions.other || [];
 
-    const offcanvasEl = $(`
-                <div id="${offcanvas_id}" class="offcanvas wv-offcanvas bg-white ${placement} ${offcanvas_class}" tabindex="-1">
-                
-                    <div class="offcanvas-body">
-                         
-                    </div>
-                </div>
-            `);
+    // ID 자동 생성 (직접 호출시에만)
+    if (!offcanvas_id) {
+        offcanvas_id = 'wv-offcanvas-' + btoa(url).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12) + Date.now().toString().slice(-4);
+    }
+
+    var placement = 'offcanvas-start'; // 기본값
+    var backdrop = true;
+    var scroll = false;
+
+    // 옵션 처리
+    other_options.forEach(function(opt) {
+        if (opt === 'end') placement = 'offcanvas-end';
+        else if (opt === 'top') placement = 'offcanvas-top';
+        else if (opt === 'bottom') placement = 'offcanvas-bottom';
+        else if (opt === 'backdrop-static') backdrop = 'static';
+        else if (opt === 'backdrop') backdrop = true;
+        else if (opt === 'scroll') scroll = true;
+    });
+
+    var offcanvasEl = $(`
+        <div id="${offcanvas_id}" class="offcanvas wv-offcanvas bg-white ${placement} ${offcanvas_class}" tabindex="-1">
+            <div class="offcanvas-body"></div>
+        </div>
+    `);
 
     $offcanvas_target.append(offcanvasEl);
 
-    const offcanvas = new bootstrap.Offcanvas(offcanvasEl[0], {
+    var offcanvas = new bootstrap.Offcanvas(offcanvasEl[0], {
         backdrop: backdrop,
         scroll: scroll
     });
     offcanvas.show();
 
-
     $(offcanvasEl).on("hidden.bs.offcanvas", function () {
         offcanvasEl.remove();
     });
 
-    $.ajax({
+    // AJAX 요청 설정
+    var ajaxSettings = {
         url: url,
         method: 'POST',
-        data: ajax_data,
+        data: data,
         success: function (html) {
-
-            $(".offcanvas-body",offcanvasEl).html(html)
+            $(".offcanvas-body", offcanvasEl).html(html);
         },
-        error:function () {
+        error: function () {
             offcanvas.hide();
             offcanvasEl.remove();
         }
-    });
+    };
+
+    // ajax 옵션으로 오버라이드
+    if (processedOptions.ajax) {
+        $.extend(ajaxSettings, processedOptions.ajax);
+    }
+
+    $.ajax(ajaxSettings);
 }

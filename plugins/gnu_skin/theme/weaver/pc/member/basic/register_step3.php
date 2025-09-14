@@ -65,7 +65,7 @@ if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
             });
 
             $.post(g5_bbs_url+'/register_form.php',formObj,function (data) {
-                $(".form-ajax-content",$skin).html(data);
+                // $(".form-ajax-content",$skin).html(data);
             },'html')
 
         })

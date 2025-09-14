@@ -33,7 +33,7 @@ class GnuAdm extends Plugin {
                     array('name' => '일반 사용자 관리', 'url' => '/?wv_page_id=0102','sub'=>array(
                         array('name' => '일반 사용자 관리', 'url' => '/?wv_page_id=0102_c'),
                     )),
-                    array('name' => '계정 활동 로그', 'url' => '/?wv_page_id=0103'),
+//                    array('name' => '계정 활동 로그', 'url' => '/?wv_page_id=0103'),
                 )),
                 array('name' => '매장관리', 'url' => '/?wv_page_id=0201','icon'=>wv()->gnu_adm->plugin_url.'/img/menu2.png','sub'=>array(
                     array('name' => '매장 관리', 'url' => '/?wv_page_id=0201','sub'=>array(

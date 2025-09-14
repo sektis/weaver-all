@@ -7,7 +7,9 @@ global $g5;
         <?php echo $skin_selector?> {}
         <?php echo $skin_selector?> .wv-offcanvas-header{padding: var(--wv-27) 0 var(--wv-7);font-size: var(--wv-18);font-weight: 700;}
         <?php echo $skin_selector?> .wv-offcanvas-body{padding: var(--wv-30) 0}
-        <?php echo $skin_selector?> .submit-btn.active{background-color:#000!important;color:#fff!important;}
+        <?php echo $skin_selector?> .wv-submit-btn:not(.active){pointer-events: none;user-select: none}
+        <?php echo $skin_selector?> .wv-submit-btn.active{background-color:#3f51b5!important;color:#fff!important;}
+        <?php echo $skin_selector?> .wv-submit-btn:hover{background-color:#3f51b5!important;color:#fff!important;}
         @media (min-width: 992px) {
 
         }
