@@ -10,6 +10,7 @@ class Tempdayoffs extends StoreSchemaBase implements StoreSchemaInterface{
     protected $columns = array(
         'start_date' => "DATE NOT NULL",
         'end_date' => "DATE NOT NULL",
+        'form'=>'',
     );
 
 

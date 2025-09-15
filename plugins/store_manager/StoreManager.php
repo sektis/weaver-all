@@ -782,7 +782,7 @@ class StoreManager extends Makeable{
         global $member;
         $table = $this->get_ext_table_name();
         if (!is_array($data)) $data = array();
-        dd($_POST);
+
 
         if(!isset($data['wr_id'])){
             alert('wr_id 누락');

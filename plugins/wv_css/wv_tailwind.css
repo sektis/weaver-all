@@ -186,8 +186,14 @@
   .w-\[80px\] {
     width: var(--wv-80) !important;
   }
+  .w-\[84px\] {
+    width: var(--wv-84) !important;
+  }
   .w-\[140px\] {
     width: var(--wv-140) !important;
+  }
+  .w-\[142px\] {
+    width: var(--wv-142) !important;
   }
   .w-\[150px\] {
     width: var(--wv-150) !important;
@@ -314,6 +320,13 @@
   }
   .pt-\[16px\] {
     padding-top: var(--wv-16) !important;
+  }
+  .fs-\[11\/15\/-0\.44\/500\/\#97989C\] {
+    font-size: var(--wv-11) !important;
+    line-height: var(--wv-15) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #97989C !important;
   }
   .fs-\[12\/13\.26\/-0\.02em\/400\/\#797979\] {
     font-size: var(--wv-12) !important;

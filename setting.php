@@ -25,6 +25,7 @@ $wv_main_menu_array = array(
     array('name' => '마이페이지', 'url' => '/?wv_page_id=0104','icon'=>WV_URL.'/img/foot_5.png'),
 
 );
+
 wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs'));
 wv()->store_manager->make('member','member',array('member'))->prune_columns();
 wv()->store_manager->make('contract_item','contract_item',array('contractitem'))->prune_columns();

@@ -10,6 +10,7 @@ class Dayoffs extends StoreSchemaBase implements StoreSchemaInterface{
     protected $columns = array(
         'cycle' => " VARCHAR(10) not null",
         'target' => " VARCHAR(10) not null",
+        'form'=>'',
     );
 
 

@@ -225,33 +225,22 @@ class StorePartProxy{
 
         $pkey = $this->get_part_key();
 
-
         if ($this->is_list_part()) {
-            // 목록 파트: context 파라미터 정리
-            $context = 'form';
-            $vars = array();
+            // 목록 파트: row/list 데이터 준비
+            $row = $this->ensure_rows();
+            $row[$pkey] = $this->ensure_list_rows();
 
-            if (is_string($arg1) && is_string($arg2)) {
-                // render_part('menu', 'form', vars) 형태
-                $context = $arg2;
-                $vars = is_array($arg3) ? $arg3 : array();
-            } else {
-                // render_part('form', vars) 형태
-                $context = is_string($arg1) ? $arg1 : 'form';
-                $vars = is_array($arg2) ? $arg2 : array();
+            if (method_exists($this->part, 'make_array')) {
+                $this->part->make_array($row[$pkey]);
             }
 
-            // row/list 데이터 준비
-            $row = $this->ensure_rows();
-
-            $row[$pkey] = $this->ensure_list_rows();
-            $this->part->make_array($row[$pkey]);
-
+            // vars에 list 데이터 추가
+            $vars = is_array($arg3) ? $arg3 : array();
             $vars = array_merge(array('row' => $row, 'list' => $row[$pkey]), $vars);
 
-            // StoreSchemaBase로 직접 위임
+            // StoreSchemaBase로 위임 (일반파트와 동일하게)
             if (is_object($this->part) && method_exists($this->part, 'render_part')) {
-                return $this->part->render_part($pkey, $context, $vars);
+                return $this->part->render_part($arg1, $arg2, $vars);
             }
             return '';
         }
@@ -259,33 +248,10 @@ class StorePartProxy{
         // 일반 파트: row 데이터 준비 후 StoreSchemaBase로 위임
         $row = $this->ensure_rows();
 
+
+
         if (is_object($this->part) && method_exists($this->part, 'render_part')) {
             return $this->part->render_part($arg1, $arg2, array_merge(array('row' => $row), is_array($arg3) ? $arg3 : array()));
-        }
-
-        return '';
-    }
-
-    /** render_all('form') */
-    public function render_all($context, $vars = array())    {
-        $pkey = $this->get_part_key();
-
-        if ($this->is_list_part()) {
-            // 목록 파트: render_part로 위임
-            return $this->render_part('*', (string)$context, is_array($vars) ? $vars : array());
-        }
-
-        // 일반 파트: 모든 허용 컬럼 배열로 render_part 호출
-
-        $allowed = array_keys($this->part->get_columns());
-
-
-        if (!count($allowed)) return '';
-
-        $row = $this->ensure_rows();
-
-        if (is_object($this->part) && method_exists($this->part, 'render_part')) {
-            return $this->part->render_part($allowed, (string)$context, array_merge(array('row' => $row), is_array($vars) ? $vars : array()));
         }
 
         return '';

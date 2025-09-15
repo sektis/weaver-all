@@ -1,7 +1,7 @@
 
 <div class="border rounded-[4px]" style="padding:0.775em 0.75em">
     <p class=" ">상품 아이콘</p>
-    <div class="wv-ps-file w-[200px] ratio ratio-16x9 mt-[8.5px]" >
+    <div class="wv-ps-file w-[200px] mx-auto ratio ratio-16x9 mt-[8.5px]" >
         <div>
             <input type="hidden" name="contractitem[icon][id]"      value="<?php echo $row['icon']['id']; ?>"    >
             <label class="wh-100 cursor-pointer d-flex-center text-center position-relative ">

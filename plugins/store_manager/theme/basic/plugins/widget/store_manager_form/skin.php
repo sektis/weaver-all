@@ -21,10 +21,10 @@ global $g5;
 
     <div class="position-relative col col-lg-auto  md:w-full h-100 " style="">
         <div class="container h-100">
-            <form name="flogin" action='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
+            <form name="fpartsupdate" action='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="made" value="<?php echo $data['made']; ?>">
-                <?php echo $data['store']->basic->render_all('form');; ?>
+                <?php echo $data['store']->basic->render_part('wr_id','form');; ?>
                 <?php echo $data['render_content']; ?>
 
 
@@ -39,10 +39,18 @@ global $g5;
 
 
 
+            // $("form",$skin).submit(function (e) {
+            //     e.preventDefault()
+            //
+            //     console.log($("form",$skin).serializeArray())
+            // })
 
 
             $("form", $skin).ajaxForm({
                 dataType:'json',
+                beforeSubmit:function (formData, jqForm, options) {
+                    console.log(jqForm.serializeArray())
+                },
                 success: function (data) {
 
                     if(data.result){

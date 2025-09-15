@@ -52,7 +52,7 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
         <form name="wv-data-form" id="wv-data-form"  method="post" enctype="multipart/form-data" class="" action="<?php echo wv_page_url('0201_u'); ?>">
             <input type="hidden" name="page" value="<?php echo $page ?>">
 
-            <?php echo $store->basic->render_all('form');; ?>
+            <?php echo $store->basic->render_part('wr_id','form');; ?>
             <div class="wv-vstack">
 
 
@@ -71,13 +71,13 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
                     <div class="info-wrap ">
                         <div class="info-title">영업정보</div>
                         <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-8)">
-                            <?php echo $store->biz->render_all('form'); ?>
+                            <?php echo $store->biz->render_part('*','form'); ?>
                         </div>
                     </div>
                     <div class="info-wrap ">
                         <div class="info-title">메뉴정보</div>
                         <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-8)">
-                            <?php echo $store->menu->render_all('form');;; ?>
+                            <?php echo $store->menu->render_part('inline_form','form');;; ?>
                         </div>
                     </div>
                 </div>

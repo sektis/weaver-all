@@ -1,5 +1,21 @@
 $(document).ready(function () {
 
+    $("body").loaded('.form-switch', function(i, e) {
+        var $switch = $(e);
+        var $checkbox = $switch.find('input[type="checkbox"]');
+        var $label = $switch.find('.form-check-label');
+        var onValue = $switch.data('on-value') || '';
+        var offValue = $switch.data('off-value') || '';
+
+        // 초기 라벨 설정
+        $label.text($checkbox.is(':checked') ? onValue : offValue);
+
+        // 변경 이벤트 리스너 추가
+        $checkbox.on('change', function() {
+            $label.text($(this).is(':checked') ? onValue : offValue);
+        });
+    });
+
     $("body").loaded('.wv-ps-file', function (i, e) {
         var $ps_file = $(e);
 
@@ -298,6 +314,7 @@ $(document).ready(function () {
             if (!$ps_list.length) return false;
 
             var meta = findMaxRowIndexAndPos($ps_list);
+
             var pos  = meta.pos;
             var next = (meta.max >= 0 ? meta.max + 1 : 0);
             if (pos < 0) return false; // id 패턴이 없으면 인덱싱 불가
@@ -315,6 +332,7 @@ $(document).ready(function () {
             $newRow.find('img').attr('src','').hide();
             $newRow.find('.wv-ps-file-count').text('0');
             $newRow.find('.wv-ps-each:not(.wv-ps-demo):has([name*="[id]"][value=""])').remove()
+
             $newRow.show();
             // 마지막 실제 행 뒤에 삽입 (업로더/타일 앞이 아닌, 실제 컨텐츠 끝에 추가)
             $newRow.removeClass('wv-ps-demo')
@@ -411,6 +429,7 @@ function rowIndexPosFromIdName(idName){
 // name 의 특정 토큰(pos)을 nextIndex 로 교체
 function replaceRowIndexInName(name, pos, nextIndex){
     var parsed = bracketTokens(name);
+
     if (pos < 0 || pos >= parsed.tokens.length) return name;
 
     // ✅ 개선: -1 키 (demo)도 숫자로 인식하여 교체 가능하게 수정
@@ -476,9 +495,10 @@ function reindexRow($row, pos, nextIndex){
     $row.find(':input[name]').each(function(){
         var $f = $(this);
         var oldName = $f.attr('name') || '';
+
         var newName = replaceRowIndexInName(oldName, pos, nextIndex);
         if (newName !== oldName) $f.attr('name', newName);
-
+// console.log(newName)
         // 값 초기화
         resetControl($f);
 

@@ -14,7 +14,7 @@ class Menu extends StoreSchemaBase implements StoreSchemaInterface{
         'desc'=>'TEXT DEFAULT NULL',
         'is_main' => "TINYINT(1) NOT NULL DEFAULT 0",
         'use_eum' => "TINYINT(1) NOT NULL DEFAULT 0",
-
+        'inline_form'=>'',
     );
     protected $image_max_count=8;
 

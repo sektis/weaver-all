@@ -21,9 +21,9 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
             <!-- 공휴일 휴무 설정 -->
             <div class="hstack justify-content-between">
                 <div class="wv-ps-subtitle">공휴일</div>
-                <div class="form-check form-switch <?php echo $is_holiday_off?'':'disabled'; ?>" style="gap:var(--wv-6)">
+                <div class="form-check form-switch <?php echo $is_holiday_off?'':'disabled'; ?>" style="gap:var(--wv-6)" data-on-value="설정 함" data-off-value="설정 안함">
                     <label class="form-check-label" for="holiday-off-switch">
-                        <?php echo $is_holiday_off?'설정 함':'설정 안함'; ?>
+
                     </label>
                     <input class="form-check-input"
                            type="checkbox"
@@ -42,7 +42,7 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
             <div class="">
                 <div>
                 <?php
-                echo $this->manager->get($row['wr_id'])->dayoffs->render_part('form');
+                echo $this->manager->get($row['wr_id'])->dayoffs->render_part('form','form');
                 ?>
                 </div>
             </div>
@@ -51,7 +51,7 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
             <div class="">
                 <div>
                 <?php
-                echo $this->manager->get($row['wr_id'])->tempdayoffs->render_part('form');
+                echo $this->manager->get($row['wr_id'])->tempdayoffs->render_part('form','form');
                 ?>
                 </div>
             </div>
@@ -63,15 +63,7 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
         $(document).ready(function(){
             var $skin = $("<?php echo $skin_selector?>");
 
-            // 공휴일 휴무 스위치 이벤트
-            $skin.on('change', '#holiday-off-switch', function(){
-                var checked = $(this).is(':checked');
-                var $switch = $(this).closest('.form-switch');
-                var $label = $switch.find('label');
 
-                $switch.toggleClass('disabled', !checked);
-                $label.text(checked ? '설정 함' : '설정 안함');
-            });
         });
     </script>
 </div>

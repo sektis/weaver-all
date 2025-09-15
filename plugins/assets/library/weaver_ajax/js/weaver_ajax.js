@@ -1,4 +1,60 @@
 $(function(){
+    if($.fn.ajaxForm && $.fn.ajaxSubmit) {
+
+        // ajaxForm 오버라이드
+        var originalAjaxForm = $.fn.ajaxForm;
+        $.fn.ajaxForm = function(options) {
+            options = options || {};
+
+            var originalBeforeSubmit = options.beforeSubmit;
+            options.beforeSubmit = function(formData, jqForm, opts) {
+                // 빈 파일 input 제거 (전역 처리)
+                for (var i = formData.length - 1; i >= 0; i--) {
+                    var item = formData[i];
+
+                    if (item.type === 'file' && (!item.value || item.value === '')) {
+                        formData.splice(i, 1);
+                    }
+                }
+
+                // 기존 beforeSubmit 실행
+                if (originalBeforeSubmit && typeof originalBeforeSubmit === 'function') {
+                    return originalBeforeSubmit.call(this, formData, jqForm, opts);
+                }
+
+                return true;
+            };
+
+            return originalAjaxForm.call(this, options);
+        };
+
+        // ajaxSubmit 오버라이드
+        var originalAjaxSubmit = $.fn.ajaxSubmit;
+        $.fn.ajaxSubmit = function(options) {
+            options = options || {};
+
+            var originalBeforeSubmit = options.beforeSubmit;
+            options.beforeSubmit = function(formData, jqForm, opts) {
+                // 빈 파일 input 제거 (전역 처리)
+                for (var i = formData.length - 1; i >= 0; i--) {
+                    var item = formData[i];
+
+                    if (item.type === 'file' && (!item.value || item.value === '')) {
+                        formData.splice(i, 1);
+                    }
+                }
+
+                // 기존 beforeSubmit 실행
+                if (originalBeforeSubmit && typeof originalBeforeSubmit === 'function') {
+                    return originalBeforeSubmit.call(this, formData, jqForm, opts);
+                }
+
+                return true;
+            };
+
+            return originalAjaxSubmit.call(this, options);
+        };
+    }
 
     $(document).ajaxError(function(event, jqxhr, settings){
         var msg,url;

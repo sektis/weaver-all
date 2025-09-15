@@ -37,6 +37,7 @@ class Plugin extends Weaver{
         self::$plugins_props->set($plugin_name,'plugin_theme_url',$this->get_theme_url('basic'));
         self::$plugins_props->set($plugin_name,'plugin_theme_dir_once','');
         self::$plugins_props->set($plugin_name,'plugin_theme_dir','basic');
+        self::$plugins_props->set($plugin_name,'ajax_url',WV_PLUGINS_URL.'/'.$plugin_name.'/ajax.php');
         $this->theme_injection();
     }
 
