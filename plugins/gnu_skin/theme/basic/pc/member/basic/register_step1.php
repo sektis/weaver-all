@@ -98,7 +98,7 @@ if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
                         </div>
                     </div>
 
-                    <div class="mt-auto mb-[50px]">
+                    <div class="mt-auto pb-[50px]">
                         <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition  " style="border:0;border-radius: var(--wv-4)">다음</button>
                     </div>
                 </div>

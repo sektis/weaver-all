@@ -1,4 +1,17 @@
+$(document).on('click','.wv-data-list-delete-btn',function (e) {
+
+
+    if(confirm('정말로 삭제하시겠습니까?')){
+        return true;
+    }else{
+        e.stopImmediatePropagation(); // 다른 click 핸들러 실행 안됨
+        e.stopPropagation(); // 다른 click 핸들러 실행 안
+        return false;
+    }
+
+})
 $(document).ready(function () {
+
 
     $("body").loaded('.form-switch', function(i, e) {
         var $switch = $(e);
@@ -430,6 +443,7 @@ function rowIndexPosFromIdName(idName){
 function replaceRowIndexInName(name, pos, nextIndex){
     var parsed = bracketTokens(name);
 
+    console.log(pos,parsed)
     if (pos < 0 || pos >= parsed.tokens.length) return name;
 
     // ✅ 개선: -1 키 (demo)도 숫자로 인식하여 교체 가능하게 수정

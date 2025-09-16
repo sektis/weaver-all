@@ -42,7 +42,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
             </div>
 
 
-            <div class="mt-auto mb-[50px]">
+            <div class="mt-auto pb-[50px]">
 
                 <button type="button" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] submit-btn transition hover:bg-[#0d171b] mt-[22px]" style="border:0;background-color: #cfcfcf;border-radius: var(--wv-4)">관심 동네 설정하기</button>
             </div>

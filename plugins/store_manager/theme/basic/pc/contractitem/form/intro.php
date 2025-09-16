@@ -82,17 +82,17 @@
                             <input
                                     type="text"
                                     class="form-control js-menu-name"
-                                    id="contractitem[intro][point][<?php echo $k; ?>[text]"
-                                    name="contractitem[intro][point][<?php echo $k; ?>[text]"
+                                    id="contractitem[intro][point][<?php echo $k; ?>][text]"
+                                    name="contractitem[intro][point][<?php echo $k; ?>][text]"
                                     maxlength="20"
                                     placeholder="특징을 입력하세요."
                                     value="<?php echo $v['text']; ?>">
-                            <label for="contractitem[intro][point][<?php echo $k; ?>[text]">특징</label>
+                            <label for="contractitem[intro][point][<?php echo $k; ?>][text]">특징</label>
                         </div>
 
                         <div class=" wv-ps-box ms-3  ">
                             <label class="h-100 ">
-                                <input type="checkbox" class="d-none" name="contractitem[intro][point][<?php echo $k; ?>[delete]" value="1">
+                                <input type="checkbox" class="d-none" name="contractitem[intro][point][<?php echo $k; ?>][delete]" value="1">
                                 <span class="btn w-100 h-100 border btn-danger d-flex-center">삭제</span>
                             </label>
                         </div>

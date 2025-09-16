@@ -40,14 +40,21 @@ $(document).ready(function () {
 
         const rec = wvPortalStore.get(el);
         if (!rec) return;
+
         const { originalParent, placeholder } = rec;
 
+        // body에서 제거
         if (el.parentElement === document.body) {
             document.body.removeChild(el);
         }
-        if (originalParent && placeholder) {
+
+        // 원래 위치로 복원
+        if (originalParent && placeholder && placeholder.parentElement === originalParent) {
             originalParent.replaceChild(el, placeholder);
         }
+
+        // store에서 기록 정리 (중요!)
+        wvPortalStore.delete(el);
     });
     function getScrollbarWidth() {
         const scrollDiv = document.createElement('div')
@@ -139,6 +146,7 @@ function parseWvAjaxData(dataAttr) {
 }
 
 $(document).on('click', '[data-wv-ajax-url]', function (e) {
+
     e.preventDefault();
 
     var $this = $(this);
@@ -255,7 +263,7 @@ function wv_ajax_modal(url, options = {}, data = {}) {
     });
 
     var modalEl = $(`
-        <div id="${modal_id}" class="modal wv-modal fade ${modal_class}">
+        <div id="${modal_id}" class="modal wv-modal wv-modal-portal fade ${modal_class}">
             <div class="modal-dialog ${dialog_class}">
                 <div class="modal-content"></div>
             </div>

@@ -18,8 +18,10 @@ class Member extends StoreSchemaBase{
         'mb_name' => "",
         'mb_hp' => "",
         'mb_email' => "",
-        'mb_id_form'=>''
-
+        'mb_id_form'=>'',
+        'member_form'=>'',
+        'ceo_form'=>'',
+        'manager_form'=>'',
     );
 
     public function get_indexes(){
@@ -38,18 +40,7 @@ class Member extends StoreSchemaBase{
     }
 
 
-    protected function get_member_options($where='1',$selected='',$fields='mb_id,mb_name'){
-        global $g5;
-        $options = '';
-        $sql = " SELECT {$fields} from {$g5['member_table']} where {$where} order by mb_no asc";
 
-        $result = sql_query($sql);
-        while($row = sql_fetch_array($result)){
-            $options.= option_selected($row['mb_id'],$selected,"{$row['mb_name']}({$row['mb_id']})");
-        }
-
-        return $options;
-    }
 
     public function before_set(&$data,  $wr_id,$pkey,$manager ) {
         // 좌표 유효성 검사

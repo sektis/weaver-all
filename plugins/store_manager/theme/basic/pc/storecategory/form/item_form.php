@@ -1,17 +1,16 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 global $g5;
-
-if($row['mb_id']){
-    $mb = get_member($row['mb_id']);
-    $row = array_merge($row,$mb);
-}
 ?>
-<div class="vstack h-100 ">
+<style>
+    <?php echo $skin_selector?> {}
+
+</style>
+<div class="vstack h-100 " id="<?php echo $skin_id; ?>">
     <div class="wv-offcanvas-header col-auto">
         <div class="row align-items-center">
             <div class="col"></div>
-            <div class="col-auto"><p>계약 담당자 관리</p></div>
+            <div class="col-auto"><p>업종 카테고리 관리</p></div>
 
             <div class="col text-end">
                 <button type="button" class="btn" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
@@ -20,11 +19,10 @@ if($row['mb_id']){
     </div>
 
     <div class="wv-offcanvas-body col vstack">
-        <input type="hidden" name="member[is_manager]" value="1">
-        <?php echo $this->store->member->render_part('mb_id','form',array('row'=>$row)); ?>
-        <?php echo $this->store->member->render_part('mb_password','form',array('row'=>$row)); ?>
-        <?php echo $this->store->member->render_part('mb_name','form',array('row'=>$row)); ?>
-        <?php echo $this->store->member->render_part('mb_email','form',array('row'=>$row)); ?>
+        <div class="vstack" style="row-gap: var(--wv-16)">
+        <?php echo $this->store->storecategory->render_part('*','form'); ?>
+
+        </div>
     </div>
 
     <div class="mt-auto pb-[50px]">

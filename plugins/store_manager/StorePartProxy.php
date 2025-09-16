@@ -220,8 +220,7 @@ class StorePartProxy{
 
     public function render_part($arg1, $arg2 = null, $arg3 = array()){
         // CSS/JS 자산 로딩
-        add_javascript('<script src="'.$this->manager->plugin_url.'/js/parts.js?ver='.G5_JS_VER.'"></script>', 11);
-        add_stylesheet('<link rel="stylesheet" href="'.$this->manager->plugin_url.'/css/parts.css?ver='.G5_CSS_VER.'">', 11);
+
 
         $pkey = $this->get_part_key();
 

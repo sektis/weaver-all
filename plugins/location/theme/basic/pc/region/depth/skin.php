@@ -735,11 +735,11 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                 e.preventDefault();
                 wv_get_current_location(function (result) {
                     try {
-                        if (!result || !result.address) return;
+                        if (!result  ) return;
 
-                        var d1 = (wv_trans_sido(result.address.region_1depth_name) || '').trim();
-                        var d2 = normalizeD2Name(result.address.region_2depth_name || '');
-                        var d3 = (result.address.region_3depth_name || '').trim();
+                        var d1 = (wv_trans_sido(result.region_1depth_name) || '').trim();
+                        var d2 = normalizeD2Name(result.region_2depth_name || '');
+                        var d3 = (result.region_3depth_name || '').trim();
                         if (!d1 || !d3) return;
 
                         // ✅ 이미 추가된 경우: 알림 후 종료
@@ -793,11 +793,9 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                     // ✅ d2는 비어도 OK (세종 등)
                     if (d1 && d3) {
                         payload.push({
-                            address: {
-                                region_1depth_name: d1,
-                                region_2depth_name: d2,
-                                region_3depth_name: d3
-                            }
+                            region_1depth_name: d1,
+                            region_2depth_name: d2,
+                            region_3depth_name: d3
                         });
                     }
                 });

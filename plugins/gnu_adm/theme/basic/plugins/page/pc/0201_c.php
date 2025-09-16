@@ -44,7 +44,7 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
 </style>
 <div class="wv-vstack">
     <div class="hstack justify-content-between">
-        <p class="fw-600">(매장) <?php echo $wr_id?'수정':'등록'; ?> 등록</p>
+        <p class="fw-600">(매장) <?php echo $wr_id?'수정':'신규 등록'; ?></p>
     </div>
 
     <div class="content-inner-wrapper">
@@ -56,8 +56,15 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
             <div class="wv-vstack">
 
 
-<!--                 --><?php //echo $store->contract->render_all('form');; ?>
 
+                <?php if($wr_id){?>
+
+                <?php }else{ ?>
+                    <?php echo $store->store->render_part('mb_id','form');; ?>
+                    <?php echo $store->contract->render_part('first_manager_wr_id','form');; ?>
+                    <?php echo $store->contract->render_part('first_item_wr_id','form');; ?>
+                <?php } ?>
+                <?php echo $store->store->render_part(array('biz_num'),'form');; ?>
 
                 <div class="mx-fit">
                     <div class="info-wrap ">

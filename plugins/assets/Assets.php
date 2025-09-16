@@ -108,11 +108,11 @@ class Assets extends Plugin {
         run_event('wv_hook_assets_before_add_assets');
 
         foreach ($this->js as $js){
-            add_javascript('<script src="'.wv_path_replace_url($js).'?ver='.G5_JS_VER.'"></script>');
+            add_javascript('<script src="'.wv_path_replace_url($js).'?ver='.G5_JS_VER.'"></script>',10);
         }
         foreach ($this->css as $css){
 
-            add_stylesheet('<link rel="stylesheet" href="'.wv_path_replace_url($css).'?ver='.G5_CSS_VER.'">');
+            add_stylesheet('<link rel="stylesheet" href="'.wv_path_replace_url($css).'?ver='.G5_CSS_VER.'">',10);
         }
 
     }

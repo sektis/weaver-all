@@ -3,8 +3,8 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 include_once(G5_LIB_PATH.'/latest.lib.php');
 
-add_stylesheet('<link rel="stylesheet" href="'.$wv_page_skin_url.'/page.css?ver='.G5_CSS_VER.'">', 1);
-add_javascript('<script src="'.$wv_page_skin_url.'/page.js?ver='.G5_JS_VER.'"></script>',1);
+add_stylesheet('<link rel="stylesheet" href="'.$wv_page_skin_url.'/page.css?ver='.G5_CSS_VER.'">', 11);
+add_javascript('<script src="'.$wv_page_skin_url.'/page.js?ver='.G5_JS_VER.'"></script>',11);
 
 ob_start();
 include wv('page')->get_page_path();

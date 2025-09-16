@@ -1733,6 +1733,25 @@ if(!function_exists('wv_empty_except_keys')){
         return count($arr) === 0;
     }
 }
+if(!function_exists('wv_extract_keys')){
+    /**
+     * 원하는 키들만 추출하는 함수
+     */
+    function wv_extract_keys($array, $keys) {
+        $result = array();
+        foreach ($array as $item) {
+            $temp = array();
+            foreach ($keys as $key) {
+                if (isset($item[$key])) {
+                    $temp[$key] = $item[$key];
+                }
+            }
+            $result[] = $temp;
+        }
+        return $result;
+    }
+
+}
 
 
 if(!function_exists('wv_format_biznum')){

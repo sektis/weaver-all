@@ -134,6 +134,16 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
 
     <script>
         $(document).ready(function(){
+//             var ps = new kakao.maps.services.Places();
+//
+// // 키워드로 장소 검색
+//             ps.keywordSearch('에일린의뜰', placesSearchCB);
+//
+//             function placesSearchCB(data, status, pagination) {
+//                 if (status === kakao.maps.services.Status.OK) {
+//                     console.log(data);
+//                 }
+//             }
             var $skin = $("<?php echo $skin_selector?>");
             var map, marker, geocoder;
             var currentData = {

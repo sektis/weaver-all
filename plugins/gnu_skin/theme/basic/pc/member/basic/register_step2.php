@@ -56,7 +56,7 @@ if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
 
                     </div>
 
-                    <div class="mt-auto mb-[50px]">
+                    <div class="mt-auto pb-[50px]">
 
                         <button type="submit" class="w-full btn hstack justify-content-center skin-recommend" style="gap:var(--wv-6)">
                             <p class="fs-[14/20/-0.56/500/#97989C]">추천 코드가 없어요</p>

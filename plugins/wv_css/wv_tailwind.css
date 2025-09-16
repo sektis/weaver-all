@@ -171,6 +171,9 @@
   .w-\[32px\] {
     width: var(--wv-32) !important;
   }
+  .w-\[50px\] {
+    width: var(--wv-50) !important;
+  }
   .w-\[54\.3px\] {
     width: var(--wv-54_3) !important;
   }
@@ -291,6 +294,9 @@
   .p-\[14px\] {
     padding: var(--wv-14) !important;
   }
+  .p-\[15px\] {
+    padding: var(--wv-15) !important;
+  }
   .p-\[20px\] {
     padding: var(--wv-20) !important;
   }
@@ -320,6 +326,9 @@
   }
   .pt-\[16px\] {
     padding-top: var(--wv-16) !important;
+  }
+  .pb-\[50px\] {
+    padding-bottom: var(--wv-50) !important;
   }
   .fs-\[11\/15\/-0\.44\/500\/\#97989C\] {
     font-size: var(--wv-11) !important;

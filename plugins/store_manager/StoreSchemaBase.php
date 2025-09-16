@@ -140,9 +140,11 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
         if (!is_string($column) || !strlen($column)) return '';
         // 컬럼 유효성 검증: $columns에 정의된 컬럼만 허용
+
         if (!isset($this->columns[$column])) {
-            return "<!-- StoreSchemaBase: column '{$column}' not defined in \$columns -->";
+            return "  StoreSchemaBase: column '{$column}' not defined in \$columns  ";
         }
+
         $tpl = $this->get_template_path($column, $type);
         if (!$tpl) return '';
 

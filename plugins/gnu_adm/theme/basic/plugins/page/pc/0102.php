@@ -55,11 +55,11 @@ $list = $result['list'];
             <p>탈퇴 회원 수(<?php echo number_format($left_count); ?>명)</p>
         </div>
 
-        <form method="get" action="<?php echo wv_page_url('0102'); ?>" class="hstack" style="gap: var(--wv-8);">
+        <form method="get" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
             <input type="hidden" name="wv_page_id" value="0102">
 
             <div class="form-floating" style="min-width:180px;">
-                <select name="sfl" id="sfl" class="form-select" aria-label="검색필드 선택">
+                <select name="sfl" id="sfl" required class="form-select" aria-label="검색필드 선택">
                     <option value=""<?php echo $sfl===''?' selected':''; ?>>검색필드 선택</option>
                     <?php
                     foreach($sfl_options as $key => $label){

@@ -12,6 +12,18 @@ class Location extends Plugin {
     private $ajax_url = '';
     protected $table = 'wv_location_region';
 
+    protected $kakao_js_apikey = '';
+    protected $kakao_rest_key = '';
+    protected $kakao_rest_header = '';
+    protected $kakao_rest_type = array(
+        'address'=>'search',
+        'coord2regioncode'=>'geo',
+        'coord2address'=>'geo',
+        'transcoord'=>'geo',
+        'keyword'=>'search',
+        'category'=>'search',
+    );
+
 
     public function __construct() {
 
@@ -20,14 +32,22 @@ class Location extends Plugin {
         if(!$config['cf_kakao_js_apikey'] or !$config['cf_kakao_rest_key']){
             $this->error('카카오 js api key를 등록하세요.',2);
         }
+
+        $this->kakao_rest_key = 'f57928291f014a0f3cc91f843b31d423';
+        $this->kakao_js_apikey = 'f1d7df6827c9cbc8a39c19ac0baac410';
+        $this->kakao_rest_header = array(
+            "Authorization: KakaoAK {$this->kakao_rest_key}"
+        );
+
         if(!wv_is_ajax()){
-            add_javascript('<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=f1d7df6827c9cbc8a39c19ac0baac410&libraries=services"></script>');
-            add_javascript('<script src="'.wv_path_replace_url(dirname(__FILE__)).'/js/func.js"></script>');
+            add_javascript('<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey='.$this->kakao_js_apikey.'&libraries=services"></script>');
         }
 
         $this->ajax_url = wv_path_replace_url(dirname(__FILE__)).'/ajax.php';
         $this->plugin_init();
         $this->make_json();
+
+
 
         add_event('wv_hook_before_header_wrapper',array($this,'wv_hook_before_header_wrapper'));
 
@@ -35,19 +55,22 @@ class Location extends Plugin {
     }
 
     public function wv_hook_before_header_wrapper(){
-        echo wv()->location->current(true);
+
+        wv()->location->init_script();
+        wv()->location->current(true);
     }
 
     public function set($name,$info=array(),$save_cookie=false){
 
         $this->locations[$name] = $info;
 
+
         foreach ($info as $key=>$val){
-            if(!$val['address']['lat']){
-                $arr = $this->address("{$val['address']['region_1depth_name']} {$val['address']['region_2depth_name']} {$val['address']['region_3depth_name']}");
+            if(!$val['lat']){
+                $arr = $this->address_search("{$val['region_1depth_name']} {$val['region_2depth_name']} {$val['region_3depth_name']}");
                 $info[$key]['lat']=$arr['lat'];
                 $info[$key]['lng']=$arr['lng'];
-                $info[$key]['address']['address_name']=$arr['address']['address_name'];
+
 
             }
         }
@@ -55,6 +78,7 @@ class Location extends Plugin {
         if($save_cookie){
             set_cookie("wv_location_{$name}",wv_base64_encode_serialize($info),60 * 60 * 24 * 365);
         }
+
     }
 
     public function get($name){
@@ -79,7 +103,8 @@ class Location extends Plugin {
     }
 
     public function display_text($arr){
-        return wv_trans_sido($arr['address']['region_1depth_name']).'/'.$arr['address']['region_3depth_name'];
+
+        return wv_trans_sido($arr['region_1depth_name']).'/'.$arr['region_3depth_name'];
     }
 
     public function get_favorite_max_count(){
@@ -87,11 +112,12 @@ class Location extends Plugin {
     }
 
 
+    public function init_script(){
+          include dirname(__FILE__).'/init_script.php';    }
+
     public function current($force=false){
-        if(!$this->get('current') and $force){
-
-            include dirname(__FILE__).'/init_current.php';
-
+        if(!$this->get('current') or $force){
+              include dirname(__FILE__).'/init_current.php';
         }
     }
 
@@ -101,80 +127,69 @@ class Location extends Plugin {
     }
 
 
-    public function address($address){
-        global $config;
+    public function address_search($address,$size=10,$page=1){
 
 
 
-        $url = "https://dapi.kakao.com/v2/local/search/address.json?query=" . urlencode($address);
-        $headers = [
-            "Authorization: KakaoAK {$config['cf_kakao_rest_key']}"
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        $data = json_decode($response, true);
+        $query_array = array(
+            'query'=>$address,
+            'size'=>$size,
+            'page'=>$page
+        );
 
 
-        if (!empty($data['documents'][0])) {
-            $arr = array();
-            $arr['lng'] = $data['documents'][0][x];
-            $arr['lat'] = $data['documents'][0][y];
-            $arr['region_1depth_name'] = $data['documents'][0]['address']['region_1depth_name'];
-            $arr['region_2depth_name'] = $data['documents'][0]['address']['region_2depth_name'];
-            $arr['region_3depth_name'] = $data['documents'][0]['address']['region_3depth_name'];
-            $arr['address_name'] = $data['documents'][0]['address']['address_name'];
-            $arr['address_road_name'] = $data['documents'][0]['road_address']['address_name'];
 
-        } else {
-            return null;
-        }
-
-        return $arr;
+        return $this->kakao_restapi('keyword',$query_array);
     }
 
-    public function coords($lat,$lng){
-        global $config;
+    public function coords_to_region($lat,$lng){
 
 
-        $address="x={$lng}&y={$lat}";
-        $url = "https://dapi.kakao.com/v2/local/geo/coord2address.json?" . ($address);
 
-        $headers = [
-            "Authorization: KakaoAK {$config['cf_kakao_rest_key']}"
-        ];
+        $query_array = array(
+            'x'=>$lng,
+            'y'=>$lat,
+        );
+        return $this->kakao_restapi('coord2regioncode',$query_array);
+
+
+
+    }
+
+    private function kakao_restapi($api,$query_array=array()){
+        $result = array();
+        if(!key_exists($api,$this->kakao_rest_type)){
+            alert('api type error');
+        }
+        $query_string = http_build_query($query_array, '', '&');
+        $url = "https://dapi.kakao.com/v2/local/{$this->kakao_rest_type[$api]}/{$api}.json?{$query_string}";
+
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $this->kakao_rest_header);
+
+
 
         $response = curl_exec($ch);
         curl_close($ch);
-
         $data = json_decode($response, true);
 
-        if (!empty($data['documents'][0])) {
-            $arr = array();
-            $arr['lng'] = $lng;
-            $arr['lat'] = $lat;
-            $arr['region_1depth_name'] = $data['documents'][0]['address']['region_1depth_name'];
-            $arr['region_2depth_name'] = $data['documents'][0]['address']['region_2depth_name'];
-            $arr['region_3depth_name'] = $data['documents'][0]['address']['region_3depth_name'];
-            $arr['address_name'] = $data['documents'][0]['address']['address_name'];
-            $arr['address_road_name'] = $data['documents'][0]['road_address']['address_name'];
-
-        } else {
-            return null;
+        if($data['errorType']   ){
+            $err_msg = "{$data['errorType']} : {$data['message']}";
+            if(WV_DEBUG){
+                alert($err_msg);
+            }
+            $result['error'] = $err_msg;
         }
 
-        return $arr;
+        if (count($data['documents'])) {
+            $result['list'] = wv_extract_keys($data['documents'], array('address_name','road_address_name','x','y','region_1depth_name','region_2depth_name','region_3depth_name'));
+            $result['total_count'] = $data['meta']['pageable_count'];
+            $result['is_end'] = $data['meta']['is_end'];
+        }
+        return $result;
     }
 
 
@@ -182,7 +197,20 @@ class Location extends Plugin {
 
         return $this->make_skin($skin,$data);
     }
-
+/*
+$aaa = wv()->location->address_search('영도구 동삼동');
+$bbb = $aaa['list'][0];
+$ccc = wv()->location->coords_to_region($bbb['y'],$bbb['x']);
+$ddd = $ccc['list'][0];
+$eee = $bbb+$ddd;
+echo '<pre>';
+print_r($bbb);
+echo '</pre>';
+echo '<pre>';
+print_r($ddd);
+echo '</pre>';
+dd($eee);
+ */
 
 }
 Location::getInstance();

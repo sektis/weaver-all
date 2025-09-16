@@ -372,7 +372,7 @@ gif, jpg, png파일만 가능하며 용량 <?php echo number_format($config['cf_
 
 
 
-                                <div class="mt-auto mb-[50px]"  >
+                                <div class="mt-auto pb-[50px]"  >
                                     <button type="submit" id="btn_submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition  mt-[22px]" accesskey="s"  style="border:0;border-radius: var(--wv-4)" >확인</button>
                                 </div>
                             </div>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weaver Location JavaScript 사용 예시</title>
+    
+    <!-- jQuery 로드 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 카카오맵 SDK 로드 -->
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=f1d7df6827c9cbc8a39c19ac0baac410&libraries=services"></script>
+    
+    <!-- Weaver Location 라이브러리 로드 -->
+    <script src="location.js"></script>
+    <script src="location-examples.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        
+        .button-group {
+            margin: 10px 0;
+        }
+        
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .input-group {
+            margin: 10px 0;
+        }
+        
+        .input-group label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+        
+        #map {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .results {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .place-item {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .place-item h4 {
+            margin: 0 0 5px 0;
+            color: #007bff;
+        }
+        
+        .place-item .address {
+            color: #666;
+            margin: 2px 0;
+        }
+        
+        .place-item .coords {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .restaurant-card {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .restaurant-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weaver Location JavaScript 라이브러리 테스트</h1>
+        
+        <!-- 1. 주소 검색 섹션 -->
+        <div class="section">
+            <h2>1. 주소/키워드 검색</h2>
+            <div class="input-group">
+                <label>검색어:</label>
+                <input type="text" id="search-keyword" value="영도구 맛집" placeholder="주소나 키워드를 입력하세요">
+            </div>
+            <div class="input-group">
+                <label>결과 개수:</label>
+                <input type="number" id="search-size" value="10" min="1" max="45">
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="test_address_search()">키워드/주소 검색</button>
+                <button class="btn" onclick="test_category_search_cafe()">카페 검색 (카테고리)</button>
+                <button class="btn" onclick="test_category_search_restaurant()">음식점 검색 (카테고리)</button>
+            </div>
+            <div id="search-results" class="results"></div>
+        </div>
+        
+        <!-- 2. 좌표 변환 섹션 -->
+        <div class="section">
+            <h2>2. 좌표를 지역코드로 변환</h2>
+            <div class="input-group">
+                <label>위도:</label>
+                <input type="number" id="coord-lat" value="35.0716363470706" step="0.0000001">
+            </div>
+            <div class="input-group">
+                <label>경도:</label>
+                <input type="number" id="coord-lng" value="129.057370812646" step="0.0000001">
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="test_coords_to_region()">좌표 → 지역코드</button>
+                <button class="btn" onclick="test_coords_to_address()">좌표 → 주소</button>
+                <button class="btn" onclick="get_current_location()">현재 위치 가져오기</button>
+            </div>
+            <div id="coord-results" class="results"></div>
+        </div>
+        
+        <!-- 3. 주소 변환 섹션 -->
+        <div class="section">
+            <h2>3. 주소 ↔ 좌표 변환</h2>
+            <div class="input-group">
+                <label>주소:</label>
+                <input type="text" id="address-input" value="부산 영도구 동삼동" placeholder="변환할 주소를 입력하세요">
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="test_address_to_coords()">주소 → 좌표</button>
+            </div>
+            <div id="address-results" class="results"></div>
+        </div>
+        
+        <!-- 4. 지도 표시 섹션 -->
+        <div class="section">
+            <h2>4. 지도에 검색 결과 표시</h2>
+            <div class="input-group">
+                <label>지도 검색:</label>
+                <input type="text" id="map-search" value="부산 해운대 카페" placeholder="지도에 표시할 장소를 검색하세요">
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="test_search_and_map()">검색 후 지도 표시</button>
+                <button class="btn" onclick="clear_map()">지도 초기화</button>
+            </div>
+            <div id="map"></div>
+            <div id="places-list" class="results"></div>
+        </div>
+        
+        <!-- 5. 현재 위치 기반 검색 섹션 -->
+        <div class="section">
+            <h2>5. 현재 위치 기반 검색</h2>
+            <div class="button-group">
+                <button class="btn" onclick="test_current_location_search()">현재 위치 주변 맛집 찾기</button>
+                <button class="btn" onclick="test_current_location_search_cafe()">현재 위치 주변 카페 찾기</button>
+            </div>
+            <div id="nearby-restaurants" class="results"></div>
+        </div>
+        
+        <!-- 6. 로그 섹션 -->
+        <div class="section">
+            <h2>6. 디버그 로그</h2>
+            <div class="button-group">
+                <button class="btn" onclick="clear_log()">로그 클리어</button>
+            </div>
+            <div id="debug-log" class="results" style="font-family: monospace; font-size: 12px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // 초기화
+        $(document).ready(function() {
+            // 카카오 API 키 설정 (이미 스크립트 태그에서 로드됨)
+            wv_location_init();
+            log_message('Weaver Location 라이브러리가 초기화되었습니다.');
+            
+            // 카카오 SDK 로드 확인
+            if (!wv_check_kakao()) {
+                log_message('⚠️ 카카오맵 SDK 로드 확인 실패');
+            } else {
+                log_message('✅ 카카오맵 SDK 로드 완료');
+            }
+        });
+        
+        // 테스트 함수들
+        function test_address_search() {
+            var keyword = $('#search-keyword').val();
+            var size = parseInt($('#search-size').val());
+            
+            log_message('주소 검색 시작: ' + keyword);
+            show_loading('#search-results');
+            
+            WeaverLocation.address_search(keyword, size, 1, function(result) {
+                hide_loading('#search-results');
+                if (result.error) {
+                    show_error('#search-results', '검색 오류: ' + result.error);
+                    log_message('검색 오류: ' + result.error);
+                } else {
+                    display_search_results(result.list);
+                    log_message('검색 완료: ' + result.list.length + '개 결과');
+                }
+            });
+        }
+        
+        function test_category_search_cafe() {
+            log_message('카페 카테고리 검색 시작');
+            show_loading('#search-results');
+            
+            WeaverLocation.category_search('CE7', function(result) {
+                hide_loading('#search-results');
+                if (result.error) {
+                    show_error('#search-results', '카페 검색 오류: ' + result.error);
+                    log_message('카페 검색 오류: ' + result.error);
+                } else {
+                    display_search_results(result.list);
+                    log_message('카페 검색 완료: ' + result.list.length + '개 결과');
+                }
+            });
+        }
+        
+        function test_category_search_restaurant() {
+            log_message('음식점 카테고리 검색 시작');
+            show_loading('#search-results');
+            
+            WeaverLocation.category_search('FD6', function(result) {
+                hide_loading('#search-results');
+                if (result.error) {
+                    show_error('#search-results', '음식점 검색 오류: ' + result.error);
+                    log_message('음식점 검색 오류: ' + result.error);
+                } else {
+                    display_search_results(result.list);
+                    log_message('음식점 검색 완료: ' + result.list.length + '개 결과');
+                }
+            });
+        }
+        
+        function test_coords_to_region() {
+            var lat = parseFloat($('#coord-lat').val());
+            var lng = parseFloat($('#coord-lng').val());
+            
+            log_message('좌표→지역 변환 시작: ' + lat + ', ' + lng);
+            show_loading('#coord-results');
+            
+            WeaverLocation.coords_to_region(lat, lng, function(result) {
+                hide_loading('#coord-results');
+                if (result.error) {
+                    show_error('#coord-results', '변환 오류: ' + result.error);
+                    log_message('변환 오류: ' + result.error);
+                } else {
+                    display_region_results(result.list);
+                    log_message('지역 변환 완료: ' + result.list.length + '개 지역');
+                }
+            });
+        }
+        
+        function test_coords_to_address() {
+            var lat = parseFloat($('#coord-lat').val());
+            var lng = parseFloat($('#coord-lng').val());
+            
+            log_message('좌표→주소 변환 시작: ' + lat + ', ' + lng);
+            show_loading('#coord-results');
+            
+            WeaverLocation.coords_to_address(lat, lng, function(result) {
+                hide_loading('#coord-results');
+                if (result.error) {
+                    show_error('#coord-results', '주소 변환 오류: ' + result.error);
+                    log_message('주소 변환 오류: ' + result.error);
+                } else {
+                    display_address_results(result.list);
+                    log_message('주소 변환 완료: ' + result.list.length + '개 주소');
+                }
+            });
+        }
+        
+        function test_address_to_coords() {
+            var address = $('#address-input').val();
+            
+            log_message('주소→좌표 변환 시작: ' + address);
+            show_loading('#address-results');
+            
+            WeaverLocation.address_to_coords(address, function(result) {
+                hide_loading('#address-results');
+                if (result.error) {
+                    show_error('#address-results', '좌표 변환 오류: ' + result.error);
+                    log_message('좌표 변환 오류: ' + result.error);
+                } else {
+                    display_coords_results(result.list);
+                    log_message('좌표 변환 완료: ' + result.list.length + '개 좌표');
+                }
+            });
+        }
+        
+        function get_current_location() {
+            if (!navigator.geolocation) {
+                show_error('#coord-results', '이 브라우저는 위치 정보를 지원하지 않습니다.');
+                return;
+            }
+            
+            log_message('현재 위치 가져오는 중...');
+            show_loading('#coord-results');
+            
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                
+                $('#coord-lat').val(lat);
+                $('#coord-lng').val(lng);
+                
+                log_message('현재 위치: ' + lat + ', ' + lng);
+                test_coords_to_region();
+            }, function(error) {
+                hide_loading('#coord-results');
+                show_error('#coord-results', '위치 정보를 가져올 수 없습니다: ' + error.message);
+                log_message('위치 오류: ' + error.message);
+            });
+        }
+        
+        function test_search_and_map() {
+            var keyword = $('#map-search').val();
+            
+            log_message('지도 검색 시작: ' + keyword);
+            show_loading('#places-list');
+            
+            WeaverLocation.address_search(keyword, 15, 1, function(result) {
+                hide_loading('#places-list');
+                if (result.error) {
+                    show_error('#places-list', '검색 오류: ' + result.error);
+                    log_message('지도 검색 오류: ' + result.error);
+                } else {
+                    display_places_on_map(result.list);
+                    display_places_list(result.list);
+                    log_message('지도 검색 완료: ' + result.list.length + '개 장소');
+                }
+            });
+        }
+        
+        function test_current_location_search() {
+            log_message('현재 위치 기반 맛집 검색 시작');
+            example_current_location_search();
+        }
+        
+        function test_current_location_search_cafe() {
+            if (!navigator.geolocation) {
+                show_error('#nearby-restaurants', '이 브라우저는 위치 정보를 지원하지 않습니다.');
+                return;
+            }
+            
+            log_message('현재 위치 기반 카페 검색 시작');
+            show_loading('#nearby-restaurants');
+            
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                
+                WeaverLocation.coords_to_region(lat, lng, function(region_result) {
+                    if (region_result.error) {
+                        show_error('#nearby-restaurants', '지역 정보 오류: ' + region_result.error);
+                        return;
+                    }
+                    
+                    if (region_result.list.length > 0) {
+                        var region = region_result.list[0];
+                        var search_keyword = region.region_2depth_name + ' 카페';
+                        
+                        WeaverLocation.address_search(search_keyword, 10, 1, function(search_result) {
+                            hide_loading('#nearby-restaurants');
+                            if (search_result.error) {
+                                show_error('#nearby-restaurants', '카페 검색 오류: ' + search_result.error);
+                            } else {
+                                display_nearby_restaurants(search_result.list);
+                                log_message('카페 검색 완료: ' + search_result.list.length + '개');
+                            }
+                        });
+                    }
+                });
+            });
+        }
+        
+        function clear_map() {
+            $('#map').empty();
+            $('#places-list').empty();
+            log_message('지도가 초기화되었습니다.');
+        }
+        
+        function clear_log() {
+            $('#debug-log').empty();
+        }
+        
+        // UI 헬퍼 함수들
+        function show_loading(selector) {
+            $(selector).html('<div class="loading">로딩 중...</div>');
+        }
+        
+        function hide_loading(selector) {
+            $(selector).find('.loading').remove();
+        }
+        
+        function show_error(selector, message) {
+            $(selector).html('<div class="error">' + message + '</div>');
+        }
+        
+        function show_success(selector, message) {
+            $(selector).html('<div class="success">' + message + '</div>');
+        }
+        
+        function log_message(message) {
+            var timestamp = new Date().toLocaleTimeString();
+            var log_html = '[' + timestamp + '] ' + message + '<br>';
+            $('#debug-log').append(log_html);
+            $('#debug-log').scrollTop($('#debug-log')[0].scrollHeight);
+        }
+        
+        // 결과 표시 함수들 (location-examples.js에서 정의된 함수들을 오버라이드)
+        function display_region_results(regions) {
+            var html = '<div class="region-results">';
+            html += '<h3>지역 정보 (' + regions.length + '개)</h3>';
+            
+            regions.forEach(function(region) {
+                html += '<div class="place-item">';
+                html += '<h4>' + region.region_1depth_name + ' ' + region.region_2depth_name + ' ' + region.region_3depth_name + '</h4>';
+                html += '<p class="address">시도: ' + region.region_1depth_name + '</p>';
+                html += '<p class="address">시군구: ' + region.region_2depth_name + '</p>';
+                html += '<p class="address">읍면동: ' + region.region_3depth_name + '</p>';
+                if (region.region_4depth_name) {
+                    html += '<p class="address">리: ' + region.region_4depth_name + '</p>';
+                }
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            $('#coord-results').html(html);
+        }
+        
+        function display_address_results(addresses) {
+            var html = '<div class="address-results">';
+            html += '<h3>주소 정보 (' + addresses.length + '개)</h3>';
+            
+            addresses.forEach(function(addr) {
+                html += '<div class="place-item">';
+                html += '<h4>주소 정보</h4>';
+                html += '<p class="address">지번주소: ' + addr.address_name + '</p>';
+                if (addr.road_address_name) {
+                    html += '<p class="address">도로명주소: ' + addr.road_address_name + '</p>';
+                }
+                if (addr.building_name) {
+                    html += '<p class="address">건물명: ' + addr.building_name + '</p>';
+                }
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            $('#coord-results').html(html);
+        }
+        
+        function display_coords_results(coords) {
+            var html = '<div class="coords-results">';
+            html += '<h3>좌표 정보 (' + coords.length + '개)</h3>';
+            
+            coords.forEach(function(coord) {
+                html += '<div class="place-item">';
+                html += '<h4>' + coord.address_name + '</h4>';
+                html += '<p class="address">지번주소: ' + coord.address_name + '</p>';
+                if (coord.road_address_name) {
+                    html += '<p class="address">도로명주소: ' + coord.road_address_name + '</p>';
+                }
+                html += '<p class="coords">위도: ' + coord.y + ', 경도: ' + coord.x + '</p>';
+                html += '<button class="btn" onclick="show_on_map(' + coord.y + ',' + coord.x + ')">지도에서 보기</button>';
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            $('#address-results').html(html);
+        }
+    </script>
+</body>
+</html>

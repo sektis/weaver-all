@@ -25,7 +25,7 @@ global $g5;
         </div>
     </div>
 
-    <div class="mt-auto mb-[50px]">
+    <div class="mt-auto pb-[50px]">
         <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition mt-[22px]" style="border:0; ;border-radius: var(--wv-4)">확인</button>
     </div>
 </div>

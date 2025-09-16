@@ -299,18 +299,29 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('input','.form-floating textarea',function () {
-        var $this = $(this);
-        if(!this.org_h){
-            this.org_h = $this.outerHeight();
+
+
+
+    function textarea_autoheight($elem) {
+
+        var vanila_elem = $elem[0];
+        if(!vanila_elem.org_h){
+            this.org_h = $elem.outerHeight();
         }
 
-        if(this.scrollHeight<this.org_h){
+        if(vanila_elem.scrollHeight<vanila_elem.org_h){
             return true;
         }
 
-        $this[0].style.height = 'auto';
-        $this[0].style.height = (this.scrollHeight) + 'px';
+        vanila_elem.style.height = 'auto';
+        vanila_elem.style.height = (vanila_elem.scrollHeight) + 'px';
+    }
+    $(document).on('input','.form-floating textarea',function () {
+
+        textarea_autoheight($(this))
+    })
+    $("body").loaded('.form-floating textarea',function () {
+        textarea_autoheight($(this));
     })
 
     $("form").loaded('#wr_content',function () {

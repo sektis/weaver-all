@@ -2,7 +2,7 @@
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 
-wv()->load(array('wv_css','theme','adm_bbs','location'));
+wv()->load(array('wv_css','theme','adm_bbs','location','parsing'));
 wv('assets')->add_library(array('weaver','weaver_ajax','weaver_bf_file','bootstrap','hc_sticky','font_awesome','swiper11','animate_css'));
 wv('assets')->add_font('pretendard');
 wv('layout')->set_theme_dir('basic');
@@ -26,13 +26,17 @@ $wv_main_menu_array = array(
 
 );
 
-wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs'));
+wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs','contract'))->prune_columns();
 wv()->store_manager->make('member','member',array('member'))->prune_columns();
 wv()->store_manager->make('contract_item','contract_item',array('contractitem'))->prune_columns();
-//wv()->store_manager->made('sub01_01')->rsync_mapping('sub01_01');
+wv()->store_manager->make('store_category','store_category',array('storecategory'))->prune_columns();
+wv()->store_manager->made('sub01_01')->rsync_mapping('sub01_01');
 //wv()->store_manager->made('member')->rsync_member();
 //dd(wv()->store_manager->make('','restaurant')->bind_schema('location')->location->render_part('address_name','view'));
 
 wv('menu')->make('fixed_bottom')->setMenu($wv_main_menu_array);
+
+
+
 
 

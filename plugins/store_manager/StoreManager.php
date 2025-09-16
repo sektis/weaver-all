@@ -60,10 +60,20 @@ class StoreManager extends Makeable{
                 if (!in_array($key, $this->bound_schema_parts)) $this->bind_schema($key);
             }
         }
+
+
+
     }
 
+
+
     /** Makeable 훅(필요 시 1회 초기화) */
-    public function init_once(){}
+    public function init_once(){
+
+        if(wv_is_ajax())return;
+        add_javascript('<script src="'.$this->plugin_url.'/js/parts.js?ver='.G5_JS_VER.'"></script>', 9);
+        add_stylesheet('<link rel="stylesheet" href="'.$this->plugin_url.'/css/parts.css?ver='.G5_CSS_VER.'">', 9);
+    }
 
     /** g5_board 존재 확인 후 바인딩 */
     public function bind_board($bo_table){
@@ -823,7 +833,7 @@ class StoreManager extends Makeable{
                 $is_list_part = $this->is_list_part_schema($schema);
                 if ($is_list_part) {
                     $allowed = array($pkey);
-                    $def = array_merge($schema->get_columns($this->bo_table),array_flip($this->meta_column));
+                    $def = array_merge(array_flip($schema->get_allowed_columns()),array_flip($this->meta_column));
 
                     $def_cols = array(); foreach ($def as $cname => $_ddl){ $def_cols[$cname] = true; }
 
@@ -2849,12 +2859,12 @@ class StoreManager extends Makeable{
         return $this->render_part('location', $wr_id, $context, $vars);
     }
 
-    public function rsync_store($bo_table){
+    public function rsync_mapping($bo_table){
         global $g5;
 return;
 
         $write_table = $g5['write_prefix'].$bo_table;
-        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id where wr_is_comment=0   order by wr_id asc";
+        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and  wr_is_comment=0   order by wr_id asc limit 1";
         $result = sql_query($sql);
 
         while ($row = sql_fetch_array($result)){
