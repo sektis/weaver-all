@@ -48,16 +48,13 @@ global $g5;
 
             $("form", $skin).ajaxForm({
                 dataType:'json',
-                beforeSubmit:function (formData, jqForm, options) {
-                    console.log(jqForm.serializeArray())
-                },
                 success: function (data) {
 
                     if(data.result){
                         alert('완료');
                     }
 
-                    location.reload()
+                    // location.reload()
                 }
 
             })

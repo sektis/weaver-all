@@ -20,8 +20,16 @@ class Location extends StoreSchemaBase implements StoreSchemaInterface{
 
     public function get_indexes(){
         return array(
-            array('name' => 'ix_lat_lng', 'type' => 'INDEX', 'cols' => array('lat','lng')),
-            array('name' => 'ix_region_depth', 'type' => 'INDEX', 'cols' => array('region_1depth_name','region_2depth_name','region_3depth_name'))
+            array(
+                'name' => 'ix_lat_lng22',
+                'type' => 'INDEX',
+                'cols' => array('lat', 'lng')
+            ),
+            array(
+                'name' => 'ix_region_depth',
+                'type' => 'INDEX',
+                'cols' => array('region_1depth_name', 'region_2depth_name', 'region_3depth_name')
+            )
         );
     }
 

@@ -10,14 +10,18 @@ class Storecategory extends StoreSchemaBase{
         'name' => "VARCHAR(255) DEFAULT NULL",
         'icon' => "TEXT DEFAULT NULL",
         'icon_main' => "TEXT DEFAULT NULL",
-
+        'use'=>'TINYINT(1) NOT NULL DEFAULT 1',
         'item_form'=>'',
 
     );
 
     public function get_indexes(){
         return array(
-            array()
+            array(
+                'name' => 'unique_name',
+                'type' => 'UNIQUE',
+                'cols' => array('name')
+            )
         );
     }
 

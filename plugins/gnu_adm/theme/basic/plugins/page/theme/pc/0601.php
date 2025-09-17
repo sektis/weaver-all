@@ -35,7 +35,7 @@ $page_title = '계약 및 상품 설정';
                        <td>
 
                                <div class="hstack border" style="gap:var(--wv-6);height: var(--wv-39);border-radius: var(--wv-4);padding: 0 var(--wv-16)">
-                                   <p class="fs-[14/17/-0.56/500/#97989C]"><?php echo $list[$i]['jm_mb_name']; ?> (<?php echo $list[$i]['mb_id']; ?>)</p>
+                                   <p class="fs-[14/17/-0.56/500/#97989C]"><?php echo $list[$i]['wr_id']; ?> (<?php echo $list[$i]['mb_id']; ?>)</p>
                                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                       class="wv-data-list-delete-btn ms-auto">[삭제]</a>
                                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part&part=member&fields=manager_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'

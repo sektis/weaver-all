@@ -780,6 +780,7 @@ class StoreManager extends Makeable{
         return $dropped;
     }
 
+
     /**
      * 저장(set)
      * - 폼이 part 중첩 배열 구조여도(set만으로) 처리되도록 내부 평탄화
@@ -797,312 +798,342 @@ class StoreManager extends Makeable{
         if(!isset($data['wr_id'])){
             alert('wr_id 누락');
         }
-        // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
-        $existing_wr_id = $data['wr_id'] ? (int)$data['wr_id'] : 0;
-
-        $this->execute_before_set_hooks($data, $existing_wr_id);
 
 
+        try {
+            $this->execute_query_safe("START TRANSACTION", "transaction_start");
+
+            // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
+            $existing_wr_id = $data['wr_id'] ? (int)$data['wr_id'] : 0;
+            $is_update = $existing_wr_id > 0;
+            $this->execute_before_set_hooks($data, $existing_wr_id);
 
 
-        if ($existing_wr_id <= 0) {
-            if (!isset($data['wr_subject']) || !strlen(trim($data['wr_subject']))) {
-                $data['wr_subject'] = '/';
-            }
-            $wr_id = $this->create_post_stub_and_get_wr_id($data);
-            $data['wr_id'] = $wr_id;
-            $existing_wr_id = $wr_id;
-        }else{
-            $data['w']='u';
-
-
-            $this->create_post_stub_and_get_wr_id($data);
-        }
-
-        $wr_id = $existing_wr_id;
-
-        $prev_ext_row   = $existing_wr_id > 0 ? $this->fetch_store_row($existing_wr_id) : array();
-
-
-
-        // === 일반 파트: 배열/파일 필드 공통 처리 ===
-        if (is_array($this->parts) && count($this->parts)) {
-            foreach ($this->parts as $pkey => $schema) {
-
-                $allowed = $schema->get_allowed_columns();
-                $is_list_part = $this->is_list_part_schema($schema);
-                if ($is_list_part) {
-                    $allowed = array($pkey);
-                    $def = array_merge(array_flip($schema->get_allowed_columns()),array_flip($this->meta_column));
-
-                    $def_cols = array(); foreach ($def as $cname => $_ddl){ $def_cols[$cname] = true; }
-
-                    $t   = $this->get_list_table_name($pkey);
-                    $wr  = (int)$existing_wr_id;
-
-                    $sel = array_unique(array_merge(array('id','wr_id'),$schema->get_allowed_columns()));
-
-                    $sql = "SELECT ".implode(',', array_map(function($c){ return '`'.$c.'`'; }, $sel))." FROM `{$t}` WHERE wr_id='{$wr}'";
-                    $rs = sql_query($sql);
-                    $list_part_rows = array();
-                    while($r = sql_fetch_array($rs)){
-                        $nr = array();
-                        foreach ($r as $key=>$val){
-                            $nr[$key]=wv_base64_decode_unserialize($val);
-                        }
-                        $list_part_rows[] = $nr;
-                     }
-
-                    $prev_ext_row[$pkey] = wv_base64_encode_serialize($list_part_rows);
-
-                    $list_part_form_array_intersect=array();
-                    foreach ($data[$pkey] as $i => $row) {
-
-                        $list_part_form_array_intersect[$i] = array_intersect_key($row, $def_cols);
-                    }
-                    $data[$pkey] = $list_part_form_array_intersect;
-
+            if ($existing_wr_id <= 0) {
+                if (!isset($data['wr_subject']) || !strlen(trim($data['wr_subject']))) {
+                    $data['wr_subject'] = '/';
                 }
+                $wr_id = $this->create_post_stub_and_get_wr_id($data);
+                $data['wr_id'] = $wr_id;
+                $existing_wr_id = $wr_id;
+            } else {
+                $data['w'] = 'u';
 
 
-                if (!is_array($allowed) || !count($allowed)) continue;
-                if (!isset($data[$pkey]) || !is_array($data[$pkey])) $data[$pkey] = array();
+                $this->create_post_stub_and_get_wr_id($data);
+            }
+
+            $wr_id = $existing_wr_id;
+
+            $prev_ext_row = $existing_wr_id > 0 ? $this->fetch_store_row($existing_wr_id) : array();
 
 
+            // === 일반 파트: 배열/파일 필드 공통 처리 ===
+            if (is_array($this->parts) && count($this->parts)) {
+                foreach ($this->parts as $pkey => $schema) {
 
-                foreach ($allowed as $logical_col) {
+                    $allowed = $schema->get_allowed_columns();
+                    $is_list_part = $this->is_list_part_schema($schema);
+                    if ($is_list_part) {
+                        $allowed = array($pkey);
+                        $def = array_merge(array_flip($schema->get_allowed_columns()), array_flip($this->meta_column));
 
+                        $def_cols = array();
+                        foreach ($def as $cname => $_ddl) {
+                            $def_cols[$cname] = true;
+                        }
+
+                        $t = $this->get_list_table_name($pkey);
+                        $wr = (int)$existing_wr_id;
+
+                        $sel = array_unique(array_merge(array('id', 'wr_id'), $schema->get_allowed_columns()));
+
+                        $sql = "SELECT " . implode(',', array_map(function ($c) {
+                                return '`' . $c . '`';
+                            }, $sel)) . " FROM `{$t}` WHERE wr_id='{$wr}'";
+                        $rs = $this->execute_query_safe($sql);
+                        $list_part_rows = array();
+                        while ($r = sql_fetch_array($rs)) {
+                            $nr = array();
+                            foreach ($r as $key => $val) {
+                                $nr[$key] = wv_base64_decode_unserialize($val);
+                            }
+                            $list_part_rows[] = $nr;
+                        }
+
+                        $prev_ext_row[$pkey] = wv_base64_encode_serialize($list_part_rows);
+
+                        $list_part_form_array_intersect = array();
+                        foreach ($data[$pkey] as $i => $row) {
+
+                            $list_part_form_array_intersect[$i] = array_intersect_key($row, $def_cols);
+                        }
+                        $data[$pkey] = $list_part_form_array_intersect;
+
+                    }
+
+
+                    if (!is_array($allowed) || !count($allowed)) continue;
                     if (!isset($data[$pkey]) || !is_array($data[$pkey])) $data[$pkey] = array();
 
-                    if($logical_col==$pkey){
-                        $logical_col='';
-                        $data_pkey_logical_col = &$data[$pkey];
 
-                    }else{
-                        $data_pkey_logical_col = &$data[$pkey][$logical_col];
-                    }
+                    foreach ($allowed as $logical_col) {
 
-                    $file_upload_array = wv_parse_file_array_tree($pkey,$logical_col);
+                        if (!isset($data[$pkey]) || !is_array($data[$pkey])) $data[$pkey] = array();
 
+                        if ($logical_col == $pkey) {
+                            $logical_col = '';
+                            $data_pkey_logical_col = &$data[$pkey];
 
-                    if($file_upload_array){
-                        if(!isset($data_pkey_logical_col)){
-                            $data_pkey_logical_col=array();
+                        } else {
+                            $data_pkey_logical_col = &$data[$pkey][$logical_col];
                         }
 
-                        $data_pkey_logical_col = wv_merge_by_key_recursive($data_pkey_logical_col,$file_upload_array);
-
-                    }
+                        $file_upload_array = wv_parse_file_array_tree($pkey, $logical_col);
 
 
-                    $phys = $this->get_physical_col($pkey, $logical_col);
-
-                    $prev_serialized = isset($prev_ext_row[$phys]) ? $prev_ext_row[$phys] : '';
-
-                    $prev_decoded    = wv_base64_decode_unserialize($prev_serialized);
-
-                    $walk_function = function (&$arr,$arr2,$node) use($is_list_part,&$data_pkey_logical_col,&$walk_function,$data,$prev_decoded) {
-
-
-                        if(!is_array($arr)){
-                            if(is_array($arr2)){
-                                $arr=$arr2;
-                            }
-                            return false;
-                        }
-
-                        $parent_key = wv_array_last($node);
-                        $is_old_file = wv_array_has_all_keys($this->file_meta_column ,$arr2);
-                        $is_new_file = wv_array_has_all_keys($this->file_arr_key ,$arr);
-                        $int_key = is_numeric($parent_key);
-                        $is_new = ($int_key or $is_new_file) ;
-                        if(isset($arr['id']) and $arr['id']){
-                            $is_new=false;
-                        }
-                        $is_delete = isset($arr['delete']);
-
-
-
-
-                        if($is_delete and $is_new){
-                            alert('delete : id가 없습니다.');
-                        }
-                        if($is_new and $arr2['id']){
-                            alert('insert : key 중복생성');
-                        }
-                        if(!$is_new and $arr['id']!=$arr2['id']){
-
-                            alert('update : id 체크 오류');
-                        }
-                        $i=0;
-                        foreach ($arr as $k=>&$v){
-                            if(is_numeric($k) and  !$v['delete'] and array_filter($v)){
-                                $v['ord']=$i;
-                                $i++;
-                            }
-                            if(!$is_delete){
-
-                                  wv_walk_by_ref_diff($v,$walk_function,$arr2[$k],array_merge($node,(array)$k));
-
-                            }
-                        }
-
-                        if($is_new_file and !$is_delete){
-
-                            $save_result = $this->save_uploaded_files($arr,'weaver/store_manager/'.$this->bo_table.'/'.date('Ym'));
-                            foreach ($this->file_arr_key as $key) {
-                                unset($arr[$key]);
+                        if ($file_upload_array) {
+                            if (!isset($data_pkey_logical_col)) {
+                                $data_pkey_logical_col = array();
                             }
 
-                            $arr = array_merge($arr,$save_result);
-                            if($is_old_file){
-                                $this->delete_physical_paths_safely(array($arr2['path']));
-                            }
+                            $data_pkey_logical_col = wv_merge_by_key_recursive($data_pkey_logical_col, $file_upload_array);
 
                         }
 
 
+                        $phys = $this->get_physical_col($pkey, $logical_col);
+
+                        $prev_serialized = isset($prev_ext_row[$phys]) ? $prev_ext_row[$phys] : '';
+
+                        $prev_decoded = wv_base64_decode_unserialize($prev_serialized);
+
+                        $walk_function = function (&$arr, $arr2, $node) use ($is_list_part, &$data_pkey_logical_col, &$walk_function, $data, $prev_decoded) {
 
 
-                        if($is_new){
-
-                            if(wv_empty_except_keys($arr,array('ord'))){
-                                $combined = 'unset($data_pkey_logical_col'. wv_array_to_text($node,"['","']").');';
-
-                                @eval("$combined;");
+                            if (!is_array($arr)) {
+                                if (is_array($arr2)) {
+                                    $arr = $arr2;
+                                }
                                 return false;
                             }
 
-
-                            if(!$is_list_part or (($is_list_part and count($node)<2) === false)){
-                                $arr['id'] = uniqid().$parent_key;
+                            $parent_key = wv_array_last($node);
+                            $is_old_file = wv_array_has_all_keys($this->file_meta_column, $arr2);
+                            $is_new_file = wv_array_has_all_keys($this->file_arr_key, $arr);
+                            $int_key = is_numeric($parent_key);
+                            $is_new = ($int_key or $is_new_file);
+                            if (isset($arr['id']) and $arr['id']) {
+                                $is_new = false;
                             }
-                        }else{
+                            $is_delete = isset($arr['delete']);
 
 
+                            if ($is_delete and $is_new) {
+                                alert('delete : id가 없습니다.');
+                            }
+                            if ($is_new and $arr2['id']) {
+                                alert('insert : key 중복생성');
+                            }
+                            if (!$is_new and $arr['id'] != $arr2['id']) {
 
-                            if($is_delete){
+                                alert('update : id 체크 오류');
+                            }
+                            $i = 0;
+                            foreach ($arr as $k => &$v) {
+                                if (is_numeric($k) and !$v['delete'] and array_filter($v)) {
+                                    $v['ord'] = $i;
+                                    $i++;
+                                }
+                                if (!$is_delete) {
 
-                                wv_walk_by_ref_diff($arr,function (&$arr,$arr2,$node){
-                                    if(wv_array_has_all_keys($this->file_meta_column ,$arr2)){
-                                        $this->delete_physical_paths_safely(array($arr2['path']));
-                                    }
-                                },$arr2);
+                                    wv_walk_by_ref_diff($v, $walk_function, $arr2[$k], array_merge($node, (array)$k));
 
-                                if(!$is_list_part or (($is_list_part and count($node)<2) === false)){
-                                    $combined = 'unset($data_pkey_logical_col'. wv_array_to_text($node,"['","']").');';
+                                }
+                            }
+
+                            if ($is_new_file and !$is_delete) {
+
+                                $save_result = $this->save_uploaded_files($arr, 'weaver/store_manager/' . $this->bo_table . '/' . date('Ym'));
+                                foreach ($this->file_arr_key as $key) {
+                                    unset($arr[$key]);
+                                }
+
+                                $arr = array_merge($arr, $save_result);
+                                if ($is_old_file) {
+                                    $this->delete_physical_paths_safely(array($arr2['path']));
+                                }
+
+                            }
+
+
+                            if ($is_new) {
+
+                                if (wv_empty_except_keys($arr, array('ord'))) {
+                                    $combined = 'unset($data_pkey_logical_col' . wv_array_to_text($node, "['", "']") . ');';
 
                                     @eval("$combined;");
+                                    return false;
                                 }
-                                return false;
-                            }else{
-                                if($is_old_file){
-                                    $arr = array_merge($arr2,$arr);
+
+
+                                if (!$is_list_part or (($is_list_part and count($node) < 2) === false)) {
+                                    $arr['id'] = uniqid() . $parent_key;
                                 }
+                            } else {
+
+
+                                if ($is_delete) {
+
+                                    wv_walk_by_ref_diff($arr, function (&$arr, $arr2, $node) {
+                                        if (wv_array_has_all_keys($this->file_meta_column, $arr2)) {
+                                            $this->delete_physical_paths_safely(array($arr2['path']));
+                                        }
+                                    }, $arr2);
+
+                                    if (!$is_list_part or (($is_list_part and count($node) < 2) === false)) {
+                                        $combined = 'unset($data_pkey_logical_col' . wv_array_to_text($node, "['", "']") . ');';
+
+                                        @eval("$combined;");
+                                    }
+                                    return false;
+                                } else {
+                                    if ($is_old_file) {
+                                        $arr = array_merge($arr2, $arr);
+                                    }
+                                }
+
                             }
 
+
+                            return false;
+
+                        };
+
+                        wv_walk_by_ref_diff($data_pkey_logical_col, $walk_function, $prev_decoded);
+
+                        if (is_array($data_pkey_logical_col) and !count($data_pkey_logical_col)) {
+                            $data_pkey_logical_col = '';
                         }
 
 
-
-                        return false;
-
-                    };
-
-                    wv_walk_by_ref_diff($data_pkey_logical_col,$walk_function,$prev_decoded);
-
-                    if(is_array($data_pkey_logical_col) and !count($data_pkey_logical_col)){
-                        $data_pkey_logical_col = '';
                     }
 
 
-                }
-
-
-                if ($is_list_part) {
-                    foreach ($data_pkey_logical_col as $row){
-                        if($row['id'] and $row['delete']){
-                            sql_query("DELETE FROM `{$t}` WHERE wr_id='".intval($wr)."' AND id='".intval($row['id'])."'");
-                            continue;
-                        }
-
-                        $sets = array();
-
-
-                        $sets['ord'] = sql_escape_string((string)$row['ord']);
-
-                        foreach ($def_cols as $col => $_u){
-
-                            if ($col==='id' or $col=='delete'  ) continue;
-
-                            if(is_array($row[$col])){
-                                $row[$col] = wv_base64_encode_serialize($row[$col]);
+                    if ($is_list_part) {
+                        foreach ($data_pkey_logical_col as $row) {
+                            if ($row['id'] and $row['delete']) {
+                                $this->execute_query_safe("DELETE FROM `{$t}` WHERE wr_id='" . intval($wr) . "' AND id='" . intval($row['id']) . "'");
+                                continue;
                             }
-                            $sets[$col] = sql_escape_string($row[$col]);
-                        }
-                        if($row['id']){
-                            sql_query("UPDATE `{$t}` SET ".wv_array_to_sql_set($sets)." WHERE id='".intval($row['id'])."' AND wr_id='".intval($wr)."'", true);
-                        }elseif(array_filter($row)){
-                            $sets['wr_id'] = $wr;
-                            sql_query("INSERT INTO `{$t}` SET ".wv_array_to_sql_set($sets), true);
-                        }
 
+                            $sets = array();
+
+
+                            $sets['ord'] = sql_escape_string((string)$row['ord']);
+
+                            foreach ($def_cols as $col => $_u) {
+
+                                if ($col === 'id' or $col == 'delete') continue;
+
+                                if (is_array($row[$col])) {
+                                    $row[$col] = wv_base64_encode_serialize($row[$col]);
+                                }
+                                $sets[$col] = sql_escape_string($row[$col]);
+                            }
+                            if ($row['id']) {
+                                $this->execute_query_safe("UPDATE `{$t}` SET " . wv_array_to_sql_set($sets) . " WHERE id='" . intval($row['id']) . "' AND wr_id='" . intval($wr) . "'");
+                            } elseif (array_filter($row)) {
+                                $sets['wr_id'] = $wr;
+                                $this->execute_query_safe("INSERT INTO `{$t}` SET " . wv_array_to_sql_set($sets));
+                            }
+
+                        }
                     }
                 }
             }
-        }
 
 
-        // === 평면화: 일반 파트만 물리 컬럼으로 펼치고 part 키 제거(목록 파트 제외) ===
-        if (count($this->parts)) {
-            foreach ($this->parts as $key => $schema) {
-                if (!isset($data[$key]) || !is_array($data[$key])) continue;
-                if ($this->is_list_part_schema($schema)) continue;
+            // === 평면화: 일반 파트만 물리 컬럼으로 펼치고 part 키 제거(목록 파트 제외) ===
+            if (count($this->parts)) {
+                foreach ($this->parts as $key => $schema) {
+                    if (!isset($data[$key]) || !is_array($data[$key])) continue;
+                    if ($this->is_list_part_schema($schema)) continue;
 
-                foreach ($data[$key] as $k => $v) {
-                    $phys = $this->get_physical_col($key, $k);
-                    if (!array_key_exists($phys, $data)) $data[$phys] = $v;
-                }
-                unset($data[$key]);
-            }
-        }
-
-
-
-
-        // === 확장테이블 업서트(허용 컬럼만) ===
-        $filtered = array('wr_id' => $wr_id);
-        foreach ($data as $k => $v) {
-            if (in_array($k, $this->allowed_columns)) $filtered[$k] = $v;
-        }
-
-        if (count($filtered) > 1) {
-            $cols = array(); $vals = array(); $updates = array();
-            foreach ($filtered as $k => $v) {
-                $cols[] = "`{$k}`";
-                if(is_array($v)){
-                    $v=wv_base64_encode_serialize($v);
-                }
-
-                if ($v === null || (is_string($v) && strtoupper($v) === 'NULL')) {
-                    $vals[] = "''";
-                    if ($k !== 'wr_id') $updates[] = "`{$k}`=''";
-                } else {
-                    $vals[] = "'" . sql_escape_string($v) . "'";
-                    if ($k !== 'wr_id') $updates[] = "`{$k}`=VALUES(`{$k}`)";
+                    foreach ($data[$key] as $k => $v) {
+                        $phys = $this->get_physical_col($key, $k);
+                        if (!array_key_exists($phys, $data)) $data[$phys] = $v;
+                    }
+                    unset($data[$key]);
                 }
             }
 
-            $sql = "INSERT INTO `{$table}` (".implode(',', $cols).") VALUES (".implode(',', $vals).")
-                ON DUPLICATE KEY UPDATE ".(count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
 
-            sql_query($sql, true);
+            // === 확장테이블 업서트(허용 컬럼만) ===
+            $filtered = array('wr_id' => $wr_id);
+            foreach ($data as $k => $v) {
+                if (in_array($k, $this->allowed_columns)) $filtered[$k] = $v;
+            }
+
+            if (count($filtered) > 1) {
+                $cols = array();
+                $vals = array();
+                $updates = array();
+                foreach ($filtered as $k => $v) {
+                    $cols[] = "`{$k}`";
+                    if (is_array($v)) {
+                        $v = wv_base64_encode_serialize($v);
+                    }
+
+                    if ($v === null || (is_string($v) && strtoupper($v) === 'NULL')) {
+                        $vals[] = "''";
+                        if ($k !== 'wr_id') $updates[] = "`{$k}`=''";
+                    } else {
+                        $vals[] = "'" . sql_escape_string($v) . "'";
+                        if ($k !== 'wr_id') $updates[] = "`{$k}`=VALUES(`{$k}`)";
+                    }
+                }
+
+//                $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")
+//                ON DUPLICATE KEY UPDATE " . (count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
+                if($is_update){
+                    $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")
+                ON DUPLICATE KEY UPDATE " . (count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
+                }else{
+                    $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")";
+
+                }
+
+                $this->execute_query_safe($sql);
+            }
+            $this->execute_after_set_hooks($data, $wr_id);
+            // === 목록 파트 저장 ===
+            $this->clear_cache($wr_id);
+            $this->execute_query_safe("COMMIT", "transaction_commit");
+
+            return $wr_id;
+        } catch (\Exception $e) {
+            $this->execute_query_safe("ROLLBACK", "transaction_rollback");
+            alert($e->getMessage());
+            return false;
         }
-        $this->execute_after_set_hooks($data, $wr_id);
-        // === 목록 파트 저장 ===
-        $this->clear_cache($wr_id);
+    }
 
-        return $wr_id;
+    private function execute_query_safe($sql, $context = '') {
+        global $g5;
+
+        $result = sql_query($sql, false); // 에러 시 die() 방지
+
+        if (!$result) {
+
+            $error = mysqli_error($g5['connect_db']);
+            $errno = mysqli_errno($g5['connect_db']);
+
+            // 상세한 에러 정보와 함께 Exception 발생
+            throw new \Exception("Database Error in {$context}: [{$errno}] {$error}\nSQL: {$sql}");
+        }
+
+        return $result;
     }
 
     /** 삭제 */
@@ -2862,11 +2893,30 @@ class StoreManager extends Makeable{
 
     public function rsync_mapping($bo_table){
         global $g5;
-
+        $manager_ids = array('609','610','611','612','613');
+        $category_ids = array(
+            1=>'한식',
+            2=>'중식',
+            3=>'일식',
+            4=>'양식',
+            5=>'아시아',
+            6=>'패스트푸드',
+            7=>'고깃집',
+            8=>'분식',
+            9=>'술집',
+            10=>'카페',
+            11=>'반찬',
+            12=>'문화체험',
+            13=>'뷰티&헬스',
+            14=>'족발&보쌈',
+            15=>'체험',
+            16=>'게시보류'
+        );
 return;
         $write_table = $g5['write_prefix'].$bo_table;
-        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and  wr_is_comment=0    order by wr_id asc limit 1";
+        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and  a.wr_is_comment=0    order by a.wr_id asc limit 1";
         $result = sql_query($sql);
+
 
         while ($row = sql_fetch_array($result)){
             $data =$row;
@@ -2881,6 +2931,7 @@ return;
             $data['store']['tel']=$row['wr_tel'];
             $data['store']['notice']=strip_tags($row['wr_content']);
             $data['store']['biz_num'] = wv_format_biznum($row['mb_3']);
+            $data['store']['category_wr_id'] = array_search($row['ca_name'],$category_ids);
             $images = get_file($bo_table,$row['wr_id']);
             foreach ($images as $k=>$v){
                 if(!$v['view'])continue;
@@ -2906,6 +2957,20 @@ return;
                 $data['location']['address_name'] = $ex_data_address;
             }
 
+            //contract
+            $data['contract'][0]['start'] = G5_TIME_YMD;
+            $data['contract'][0]['end'] = '2025-12-01';
+            $data['contract'][0]['last_modify'] = G5_TIME_YMD;
+            $data['contract'][0]['contractmanager_wr_id'] = $manager_ids[rand(1,5)];
+            $data['contract'][0]['contractitem_wr_id'] = 2;
+            $data['contract'][0]['status'] = 1;
+            $data['contract'][1]['start'] = G5_TIME_YMD;
+            $data['contract'][1]['end'] = '2025-12-01';
+            $data['contract'][1]['last_modify'] = G5_TIME_YMD;
+            $data['contract'][1]['contractmanager_wr_id'] = $manager_ids[rand(1,5)];
+            $data['contract'][1]['contractitem_wr_id'] = 3;
+            $data['contract'][1]['status'] = 1;
+
 
             //biz
             $data['biz']['parking']=get_text($row['wr_6']);
@@ -2924,8 +2989,22 @@ return;
                 $i++;
             }
             //menu
+            if($row['mb_id']!='admin'){
+                $member_fetch = sql_fetch("select * from g5_write_member where mb_id='{$row['mb_id']}'");
+                if(!$member_fetch['wr_id']){
+                    alert($row['mb_id']);
+                }
+                $post = array(
+                    'wr_subject'=>'/',
+                    'wr_content'=>'/',
+                    'wr_id'=>$member_fetch['wr_id'],
+                    'mb_id'=>$row['mb_id'],
+                    );
+                $post['member']['is_ceo']=1;
+                wv()->store_manager->made('member')->set($post);
+            }
 
- dd($data);
+
 
             wv()->store_manager->made('sub01_01')->set($data);
 

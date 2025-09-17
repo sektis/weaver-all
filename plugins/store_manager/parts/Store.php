@@ -11,7 +11,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
 
         'name' => "VARCHAR(255) DEFAULT NULL",
         'image'=>'TEXT DEFAULT NULL',
-        'category' => "TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '카테고리'",
+        'category_wr_id' => "int(11) not null",
         'tel' => "VARCHAR(255) DEFAULT NULL",
         'notice' => "TEXT DEFAULT NULL",
         'biz_num' => "char(10) NOT NULL DEFAULT '' COMMENT '사업자등록번호'",

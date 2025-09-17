@@ -26,6 +26,7 @@ $wv_main_menu_array = array(
 
 );
 
+
 wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs','contract'))->prune_columns();
 wv()->store_manager->make('member','member',array('member'))->prune_columns();
 wv()->store_manager->make('contract_item','contract_item',array('contractitem'))->prune_columns();
@@ -35,6 +36,11 @@ wv()->store_manager->made('sub01_01')->rsync_mapping('sub01_01');
 //dd(wv()->store_manager->make('','restaurant')->bind_schema('location')->location->render_part('address_name','view'));
 
 wv('menu')->make('fixed_bottom')->setMenu($wv_main_menu_array);
+
+//wv()->store_manager->make('made')->prune_columns();
+//wv()->store_manager->make('made')->prune_indexes();
+//wv()->store_manager->make('made')->apply_indexes();
+//wv()->store_manager->make('made')->sync_columns_safe();
 
 
 

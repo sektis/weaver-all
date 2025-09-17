@@ -23,7 +23,7 @@
             wv_get_current_location(function (result) {
 
 
-console.log(result)
+// console.log(result)
                 window.rawAjax({
                     url: '<?php echo wv()->location->ajax_url; ?>',
                     type: 'POST',
