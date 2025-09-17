@@ -1752,6 +1752,39 @@ if(!function_exists('wv_extract_keys')){
     }
 
 }
+if(!function_exists('wv_array_rename_keys')){
+    /**
+     * 원하는 키들만 추출하는 함수
+     */
+    function wv_array_rename_keys($data, $mapping ) {
+
+
+        $result = array();
+
+        // 다차원 배열 처리
+        foreach ($data as $key => $item) {
+            if (is_array($item)) {
+                $mapped_item = array();
+
+                foreach ($item as $item_key => $item_value) {
+                    // 매핑 규칙에 해당하는 키가 있으면 변경
+                    if (isset($mapping[$item_key])) {
+                        $mapped_item[$mapping[$item_key]] = $item_value;
+                    } else {
+                        $mapped_item[$item_key] = $item_value;
+                    }
+                }
+
+                $result[$key] = $mapped_item;
+            } else {
+                $result[$key] = $item;
+            }
+        }
+
+        return $result;
+    }
+
+}
 
 
 if(!function_exists('wv_format_biznum')){

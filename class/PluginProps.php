@@ -2,7 +2,7 @@
 namespace weaver;
 
 class PluginProps{
-    protected $props = array();
+    protected $props = array('plugin_name'=>'');
 
     public function set($plugin, $key, $value='') {
 

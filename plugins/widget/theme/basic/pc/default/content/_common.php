@@ -1,6 +1,6 @@
 <?php
 $common_file_path = '../../common.php';
-for ($i=1;$i<=7;$i++){
+for ($i=1;$i<=10;$i++){
     if(file_exists($common_file_path)){
         include_once $common_file_path;
         break;

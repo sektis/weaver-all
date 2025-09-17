@@ -105,7 +105,6 @@ if($action=='render_part'){
     $render_content = ob_get_clean();
     $skin_data = array(
         'store'=>$manager,
-        'theme_dir'=>'store_manager',
         'render_content' => $render_content,
         'made'=>$made
     );

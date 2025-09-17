@@ -44,7 +44,6 @@ class Location extends Plugin {
         }
 
         $this->ajax_url = wv_path_replace_url(dirname(__FILE__)).'/ajax.php';
-        $this->plugin_init();
         $this->make_json();
 
 
@@ -185,7 +184,10 @@ class Location extends Plugin {
         }
 
         if (count($data['documents'])) {
-            $result['list'] = wv_extract_keys($data['documents'], array('address_name','road_address_name','x','y','region_1depth_name','region_2depth_name','region_3depth_name'));
+            $result['list'] = wv_extract_keys($data['documents'], array('address_name','road_address_name','x','y','region_1depth_name','region_2depth_name','region_3depth_name','place_name'));
+            $result['list'] = wv_array_rename_keys($result['list'], array("x" => "lng",
+                "y" => "lat"));
+
             $result['total_count'] = $data['meta']['pageable_count'];
             $result['is_end'] = $data['meta']['is_end'];
         }

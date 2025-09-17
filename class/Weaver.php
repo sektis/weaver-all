@@ -17,7 +17,7 @@ class Weaver {
     protected static $plugins;
     protected static $plugins_props;
 
-    protected $temp_plugin_name;
+//    protected $temp_plugin_name;
 
     public static function getInstance() {
 
