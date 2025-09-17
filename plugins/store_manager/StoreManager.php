@@ -1416,14 +1416,61 @@ class StoreManager extends Makeable{
         return $write_table;
     }
 
-    public function fetch_write_row($wr_id){
+// StoreManager.php - 완성된 버전
+    public function fetch_write_row($wr_id, $join_member = true){
+        global $g5;
+
         $wr_id = (int)$wr_id;
         if ($wr_id <= 0) return array();
-        $table = $this->get_write_table_name();
-        $sql = "SELECT * FROM `{$table}` WHERE wr_id = {$wr_id} LIMIT 1";
+
+        $write_table = $this->get_write_table_name();
+        $member_table = $g5['member_table'];
+
+        if ($join_member) {
+            $sql = "
+            SELECT 
+                w.*,
+                mb.mb_id AS mb_mb_id,
+                mb.mb_name AS mb_mb_name,
+                mb.mb_nick AS mb_mb_nick,  
+                mb.mb_email AS mb_mb_email,
+                mb.mb_hp AS mb_mb_hp,
+                mb.mb_level AS mb_mb_level,
+                mb.mb_point AS mb_mb_point,
+                mb.mb_datetime AS mb_mb_datetime,
+                mb.mb_certify AS mb_mb_certify,
+                mb.mb_adult AS mb_mb_adult,
+                mb.mb_dupinfo AS mb_mb_dupinfo,
+                mb.mb_zip1 AS mb_mb_zip1,
+                mb.mb_zip2 AS mb_mb_zip2,
+                mb.mb_addr1 AS mb_mb_addr1,
+                mb.mb_addr2 AS mb_mb_addr2,
+                mb.mb_addr3 AS mb_mb_addr3,
+                mb.mb_addr_jibeon AS mb_mb_addr_jibeon,
+                mb.mb_signature AS mb_mb_signature,
+                mb.mb_profile AS mb_mb_profile,
+                mb.mb_today_login AS mb_mb_today_login,
+                mb.mb_login_ip AS mb_mb_login_ip,
+                mb.mb_mailling AS mb_mb_mailling,
+                mb.mb_sms AS mb_mb_sms,
+                mb.mb_open AS mb_mb_open,
+                mb.mb_memo AS mb_mb_memo,
+                mb.mb_leave_date AS mb_mb_leave_date,
+                mb.mb_intercept_date AS mb_mb_intercept_date
+            FROM `{$write_table}` w
+            LEFT JOIN `{$member_table}` mb ON w.mb_id = mb.mb_id
+            WHERE w.wr_id = {$wr_id} 
+            LIMIT 1
+        ";
+        } else {
+            $sql = "SELECT * FROM `{$write_table}` WHERE wr_id = {$wr_id} LIMIT 1";
+        }
+
         $row = sql_fetch($sql);
         return $row ? $row : array();
     }
+
+
 
     public function fetch_store_row($wr_id){
         $wr_id = (int)$wr_id;
@@ -2252,6 +2299,73 @@ class StoreManager extends Makeable{
 
 // StoreManager.php에서 기존 메서드 수정
 
+//    protected function fetch_list_part_rows_for_wr_ids($wr_ids, $ext_columns = array(), $target_parts = null) {
+//        $out = array();
+//        if(!is_array($this->parts) || !count($this->parts)) return $out;
+//        if(!is_array($wr_ids) || !count($wr_ids)) return $out;
+//
+//        $ids = array();
+//        foreach($wr_ids as $id){ $id = (int)$id; if($id>0) $ids[] = $id; }
+//        if(!count($ids)) return $out;
+//        $in = implode(',', $ids);
+//
+//        // target_parts가 지정되면 해당 파트들만, 아니면 모든 목록파트
+//        $parts_to_process = array();
+//        if (is_array($target_parts) && count($target_parts)) {
+//            // 지정된 파트들만
+//            foreach($target_parts as $pkey) {
+//                if(isset($this->parts[$pkey]) && $this->is_list_part_schema($this->parts[$pkey])) {
+//                    $parts_to_process[$pkey] = $this->parts[$pkey];
+//                }
+//            }
+//        } else {
+//            // 기존 방식: 모든 목록파트
+//            foreach($this->parts as $pkey => $schema) {
+//                if($this->is_list_part_schema($schema)) {
+//                    $parts_to_process[$pkey] = $schema;
+//                }
+//            }
+//        }
+//
+//        foreach($parts_to_process as $pkey => $schema) {
+//            $t = $this->get_list_table_name($pkey);
+//            $def = $schema->get_columns($this->bo_table);
+//            $cols = array('id','wr_id');
+//            foreach($def as $cname => $_ddl){ $cols[] = $cname; }
+//            $cols = array_unique($cols);
+//
+//            $existing = array();
+//            $rs = sql_query("SHOW COLUMNS FROM `{$t}`");
+//            while($c = sql_fetch_array($rs)){
+//                $existing[] = isset($c['Field']) ? $c['Field'] : $c[0];
+//            }
+//            $emap = array(); foreach($existing as $_c){ $emap[$_c]=true; }
+//            $sel = array(); foreach($cols as $_c){ if(isset($emap[$_c])) $sel[] = '`'.$_c.'`'; }
+//            if(!count($sel)) continue;
+//
+//            $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id IN ({$in}) ORDER BY wr_id ASC, ord ASC, id ASC";
+//            $qry = sql_query($sql);
+//
+//            while($r = sql_fetch_array($qry)){
+//                $wid = (int)$r['wr_id'];
+//                $row = array();
+//                if (isset($r['id']))  $row['id']  = (int)$r['id'];
+//                if (isset($r['ord'])) $row['ord'] = (int)$r['ord'];
+//                foreach($def as $cname => $_ddl){
+//                    if(isset($r[$cname])) $row[$cname] = wv_base64_decode_unserialize($r[$cname]);
+//                }
+//                if(isset($ext_columns[$pkey])) {
+//                    foreach ($ext_columns[$pkey] as $ex_k=>$ex_v){
+//                        $row[$ex_k]=$ex_v;
+//                    }
+//                }
+//                $out[$pkey][$wid][] = $row;
+//            }
+//        }
+//        return $out;
+//    }
+
+// StoreManager.php에 추가
     protected function fetch_list_part_rows_for_wr_ids($wr_ids, $ext_columns = array(), $target_parts = null) {
         $out = array();
         if(!is_array($this->parts) || !count($this->parts)) return $out;
@@ -2262,17 +2376,15 @@ class StoreManager extends Makeable{
         if(!count($ids)) return $out;
         $in = implode(',', $ids);
 
-        // target_parts가 지정되면 해당 파트들만, 아니면 모든 목록파트
+        // 처리할 목록파트들 선별
         $parts_to_process = array();
         if (is_array($target_parts) && count($target_parts)) {
-            // 지정된 파트들만
             foreach($target_parts as $pkey) {
                 if(isset($this->parts[$pkey]) && $this->is_list_part_schema($this->parts[$pkey])) {
                     $parts_to_process[$pkey] = $this->parts[$pkey];
                 }
             }
         } else {
-            // 기존 방식: 모든 목록파트
             foreach($this->parts as $pkey => $schema) {
                 if($this->is_list_part_schema($schema)) {
                     $parts_to_process[$pkey] = $schema;
@@ -2296,27 +2408,46 @@ class StoreManager extends Makeable{
             $sel = array(); foreach($cols as $_c){ if(isset($emap[$_c])) $sel[] = '`'.$_c.'`'; }
             if(!count($sel)) continue;
 
-            $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id IN ({$in}) ORDER BY wr_id ASC, ord ASC, id ASC";
-            $qry = sql_query($sql);
+            $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE `wr_id` IN({$in}) ORDER BY `wr_id`, `ord`";
+            $result = sql_query($sql);
 
-            while($r = sql_fetch_array($qry)){
-                $wid = (int)$r['wr_id'];
-                $row = array();
-                if (isset($r['id']))  $row['id']  = (int)$r['id'];
-                if (isset($r['ord'])) $row['ord'] = (int)$r['ord'];
-                foreach($def as $cname => $_ddl){
-                    if(isset($r[$cname])) $row[$cname] = wv_base64_decode_unserialize($r[$cname]);
-                }
-                if(isset($ext_columns[$pkey])) {
-                    foreach ($ext_columns[$pkey] as $ex_k=>$ex_v){
-                        $row[$ex_k]=$ex_v;
-                    }
-                }
+            while($row = sql_fetch_array($result)){
+                $wid = (int)$row['wr_id'];
+                if(!isset($out[$pkey])) $out[$pkey] = array();
+                if(!isset($out[$pkey][$wid])) $out[$pkey][$wid] = array();
+
+                // 🔥 column_extend 적용 - 여기가 핵심!
+                $this->apply_list_part_column_extend($row, $schema, $pkey, $out[$pkey][$wid]);
+
                 $out[$pkey][$wid][] = $row;
             }
         }
+
         return $out;
     }
+
+// 새 메서드 추가
+    protected function apply_list_part_column_extend(&$row, $schema, $part_key, $all_rows = array()) {
+        if (!is_object($schema) || !method_exists($schema, 'column_extend')) {
+            return;
+        }
+
+        try {
+            $extended = $schema->column_extend($row, $all_rows);
+
+            if (is_array($extended) && count($extended)) {
+                foreach($extended as $key => $value) {
+                    $row[$key] = $value;
+                }
+            }
+        } catch (Exception $e) {
+            // 에러 로깅
+            if (function_exists('write_log')) {
+                write_log("List part column_extend error in {$part_key}: " . $e->getMessage(), G5_DATA_PATH . '/log/store_errors.log');
+            }
+        }
+    }
+
     public function get_list_part_list($wr_id, $part_key){
         $wr_id = (int)$wr_id;
         if($wr_id <= 0) return array();
@@ -3003,7 +3134,7 @@ return;
                 $post['member']['is_ceo']=1;
                 wv()->store_manager->made('member')->set($post);
             }
-
+dd($data);
 
 
             wv()->store_manager->made('sub01_01')->set($data);

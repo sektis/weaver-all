@@ -442,6 +442,12 @@
     font-weight: 600 !important;
     color: #0D171B !important;
   }
+  .fs-\[14\/22\/-0\.56\/500\/\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+  }
   .fs-\[25\/30\/-0\.5\/700\/\] {
     font-size: var(--wv-25) !important;
     line-height: var(--wv-30) !important;

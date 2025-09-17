@@ -1,7 +1,7 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
-$page_title = '매장 관리';
+$page_title = '계약상품 현황';
 $sfl_options = array(
     'jm_mb_id'    => '아이디',
     'jm_mb_name'  => '대표자이름',
@@ -25,11 +25,11 @@ $get_list_option = array(
 
     'where_location' =>    array(
         'and'=>array(
-                array('lat'=>"<>''"),
-                array('lng'=>"<>''"),
+            array('lat'=>"<>''"),
+            array('lng'=>"<>''"),
         )
     ),
-
+    'with_list_part'=>'contract',
     'page'=>$page,
     'rows'=>20,
     'list_url'=>wv_page_url($wv_page_id, $qstr)
@@ -46,7 +46,7 @@ $list = $result['list'];
 
     <div class="hstack justify-content-between">
         <div class="fw-600 hstack fs-[14//-0.56/600/#0D171B]" style="gap:var(--wv-10)">
-            <p>등록된 매장 수(<?php echo number_format($result['total_count']); ?>명)</p>
+            <p>총 개수 (<?php echo number_format($result['total_count']); ?>)</p>
         </div>
 
         <form method="get" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
@@ -77,48 +77,51 @@ $list = $result['list'];
     <div class="content-inner-wrapper">
         <form name="wv-data-form" id="wv-data-form" method="post">
             <div class="table-responsive">
-                <table class="table table-hover align-middle wv-data-list">
+                <table class="table   align-middle wv-data-list">
                     <thead>
                     <tr>
-                        <th scope="col">아이디</th>
-                        <th scope="col">대표자 이름</th>
                         <th scope="col">매장명</th>
-                        <th scope="col">업종</th>
-                        <th scope="col">지역</th>
-                        <th scope="col">상품</th>
-                        <th scope="col">등록일</th>
-                        <th scope="col">서비스 등록 여부</th>
+                        <th scope="col">계약 담당자</th>
+                        <th scope="col">계약 상품</th>
+                        <th scope="col">계약 기간</th>
+                        <th scope="col">남은기한</th>
+                        <th scope="col">진행 상태</th>
+                        <th scope="col">상태 변경일</th>
+                        <th scope="col">메모</th>
                         <th class="text-center w-[140px]">관리</th>
                     </tr>
                     </thead>
                     <tbody>
                     <?php if(count($list) > 0){ ?>
-                        <?php for($i=0; $i<count($list); $i++){ ?>
+                        <?php for($i=0; $i<count($list); $i++){
+
+                            $row_span = count($list[$i]['contract']);
+                            ?>
                             <tr>
-                                <td><?php echo $list[$i]['mb_id']; ?></td>
-                                <td><?php echo $list[$i]['jm_mb_name']; ?></td>
-                                <td class="text-start" >
-                                    <div class="hstack align-items-center bo_tit" style="gap:.5em">
-                                        <div class="hstack text-truncate" style="gap:1em" >
-                                            <p class="text-truncate">
-                                                <?php echo $list[$i]['store']['name'] ?>
-                                            </p>
+                                <td rowspan="<?php echo $row_span?>"><?php echo $list[$i]['store']['name']; ?></td>
+                                <?php for($j=0;$j<$row_span;$j++){
+                                    $cont = $list[$i]['contract'][$j]
+                                    ?>
+                                    <?php if($j>0){ ?>
+                                    </tr><tr>
+                                    <?php } ?>
+                                    <td ><?php echo $cont['manager_name']; ?></td>
+                                    <td ><?php echo $cont['item_name']; ?></td>
+                                    <td class="ff-Roboto-mono"><?php echo date('Y.m.d',strtotime($cont['start']))?><?php echo $cont['end']?'~':''; ?> <?php echo date('Y.m.d',strtotime($cont['end']))?></td>
+                                    <td ><?php echo $cont['end']?"D-".wv_get_days_since($cont['end']):''; ?></td>
+                                    <td ><?php echo $cont['status_html'] ?></td>
+                                    <td class="ff-Roboto-mono"><?php echo date('Y.m.d',strtotime($cont['last_modify'])); ?></td>
+                                    <td ></td>
+                                    <td >
+                                        <div class="hstack justify-content-center gap-[6px]">
+                                            <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=sub01_01&action=render_part&part=contract&fields=cont_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                                         </div>
-                                    </div>
-                                </td>
-                                <td><?php echo $list[$i]['store']['category_text'] ?></td>
-                                <td><?php echo $list[$i]['location']['region_name_full'] ?></td>
-                                <td><?php echo $list[$i]['contract']['cont_pdt_type_text'] ?></td>
-                                <td><?php echo $list[$i]['wr_datetime']; ?></td>
-                                <td></td>
-                                <td>
-                                    <div class="hstack justify-content-center gap-[6px]">
-                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=sub01_01&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
-                                           class="wv-data-list-delete-btn  ">[삭제]</a>
-                                        <a href="<?php echo wv_page_url('0201_c','wr_id='.$list[$i]['wr_id']); ?>" class="wv-data-list-edit-btn">[수정]</a>
-                                    </div>
-                                </td>
+                                    </td>
+                                <?php }?>
                             </tr>
+
+
                         <?php } ?>
                     <?php }else{ ?>
                         <tr>

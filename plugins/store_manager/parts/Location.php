@@ -33,7 +33,7 @@ class Location extends StoreSchemaBase implements StoreSchemaInterface{
         );
     }
 
-    public function column_extend($row){
+    public function column_extend($row,$all_row=array()){
         $arr = array();
         $arr['address_name_full'] = $row['address_name'].' '.$row['address_detail_name'];
         $arr['region_name_full'] = $row['region_1depth_name'].' '.$row['region_2depth_name'];

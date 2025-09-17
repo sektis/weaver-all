@@ -107,53 +107,129 @@ function wv_offset_check(){
 //     })
 // })
 
+// $.fn.loaded = function(selector, callback){
+//     var $root = this;
+//
+//     if (typeof selector !== 'string' || !selector) return $root;
+//     if (typeof callback !== 'function') return $root;
+//
+//     // mark helper: store a per-selector flag on the element
+//     function markOnce(el){
+//         var $el = $(el);
+//         var bag = $el.data('__wv_loaded__');
+//         if (!bag) { bag = {}; $el.data('__wv_loaded__', bag); }
+//         if (bag[selector]) return false;     // already initialized for this selector
+//         bag[selector] = true;
+//         return true;
+//     }
+//
+//     // run callback only once per element+selector
+//     function run(el, idx){
+//         if (markOnce(el)) {
+//             callback.call(el, idx, el);
+//         }
+//     }
+//
+//     // initialize existing matches under root
+//     $root.find(selector).each(function(i, el){ run(el, i); });
+//
+//     // attach a single observer per root (reused across multiple .loaded calls)
+//     var obs = $root.data('__wv_loaded_observer__');
+//     if (!obs) {
+//         obs = new MutationObserver(function(mutations){
+//             for (var m=0; m<mutations.length; m++){
+//                 var rec = mutations[m];
+//                 // only process added element nodes
+//                 for (var n=0; n<rec.addedNodes.length; n++){
+//                     var node = rec.addedNodes[n];
+//                     if (node.nodeType !== 1) continue; // ELEMENT_NODE only
+//
+//                     var $node = $(node);
+//                     // if the node itself matches
+//                     if ($node.is(selector)) run(node, 0);
+//                     // descendants that match
+//                     $node.find(selector).each(function(i, el){ run(el, i); });
+//                 }
+//             }
+//         });
+//
+//         // observe once per root
+//         var rootNode = $root[0];
+//         if (rootNode) {
+//             obs.observe(rootNode, { childList: true, subtree: true });
+//             $root.data('__wv_loaded_observer__', obs);
+//         }
+//     }
+//
+//     return $root;
+// };
+
 $.fn.loaded = function(selector, callback){
     var $root = this;
 
     if (typeof selector !== 'string' || !selector) return $root;
     if (typeof callback !== 'function') return $root;
 
-    // mark helper: store a per-selector flag on the element
-    function markOnce(el){
+    // 각 selector별 콜백들을 저장
+    var callbacks = $root.data('__wv_loaded_callbacks__') || {};
+    if (!callbacks[selector]) {
+        callbacks[selector] = [];
+    }
+    callbacks[selector].push(callback);
+    $root.data('__wv_loaded_callbacks__', callbacks);
+
+    // mark helper
+    function markOnce(el, sel){
         var $el = $(el);
         var bag = $el.data('__wv_loaded__');
         if (!bag) { bag = {}; $el.data('__wv_loaded__', bag); }
-        if (bag[selector]) return false;     // already initialized for this selector
-        bag[selector] = true;
+        if (bag[sel]) return false;
+        bag[sel] = true;
         return true;
     }
 
-    // run callback only once per element+selector
-    function run(el, idx){
-        if (markOnce(el)) {
-            callback.call(el, idx, el);
+    // run callback for specific selector
+    function runForSelector(el, idx, sel){
+        if (markOnce(el, sel)) {
+            var selectorCallbacks = callbacks[sel] || [];
+            selectorCallbacks.forEach(function(cb) {
+                cb.call(el, idx, el);
+            });
         }
     }
 
-    // initialize existing matches under root
-    $root.find(selector).each(function(i, el){ run(el, i); });
+    // initialize existing matches for this selector
+    $root.find(selector).each(function(i, el){
+        runForSelector(el, i, selector);
+    });
 
-    // attach a single observer per root (reused across multiple .loaded calls)
+    // single observer per root
     var obs = $root.data('__wv_loaded_observer__');
     if (!obs) {
         obs = new MutationObserver(function(mutations){
             for (var m=0; m<mutations.length; m++){
                 var rec = mutations[m];
-                // only process added element nodes
                 for (var n=0; n<rec.addedNodes.length; n++){
                     var node = rec.addedNodes[n];
-                    if (node.nodeType !== 1) continue; // ELEMENT_NODE only
+                    if (node.nodeType !== 1) continue;
 
                     var $node = $(node);
-                    // if the node itself matches
-                    if ($node.is(selector)) run(node, 0);
-                    // descendants that match
-                    $node.find(selector).each(function(i, el){ run(el, i); });
+
+                    // ✅ 모든 등록된 selector에 대해 체크
+                    Object.keys(callbacks).forEach(function(sel) {
+                        // node 자체가 매치되는지
+                        if ($node.is(sel)) {
+                            runForSelector(node, 0, sel);
+                        }
+                        // 하위 노드들이 매치되는지
+                        $node.find(sel).each(function(i, el){
+                            runForSelector(el, i, sel);
+                        });
+                    });
                 }
             }
         });
 
-        // observe once per root
         var rootNode = $root[0];
         if (rootNode) {
             obs.observe(rootNode, { childList: true, subtree: true });

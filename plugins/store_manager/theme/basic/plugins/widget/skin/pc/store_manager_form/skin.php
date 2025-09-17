@@ -54,7 +54,7 @@ global $g5;
                         alert('완료');
                     }
 
-                    // location.reload()
+                    location.reload()
                 }
 
             })

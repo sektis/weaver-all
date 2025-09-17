@@ -30,7 +30,7 @@ class Member extends StoreSchemaBase{
         );
     }
 
-    public function column_extend($row){
+    public function column_extend($row,$all_row=array()){
         $arr = array();
         $arr['active_text'] = $this->active_arr[$row['active']];
         $mb = get_member($row['mb_id']);

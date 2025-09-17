@@ -100,7 +100,7 @@ label.required:before{content: '*';font-size: 1em;position: absolute;color: red;
 .dropdown-menu #autosave_pop ul{all:revert-layer}
 .dropdown-menu  #autosave_pop:before {all:revert-layer}
 .btn{outline:none!important;box-shadow:none!important;border:0!important;}
-table.table th,table.table td{all:revert-layer}
+/*table.table th,table.table td{all:revert-layer}*/
 table.table {all:revert-layer}
 .tooltip[role="tooltip"]{all:revert-layer}
 .tooltip[role="tooltip"]:before{all:revert-layer}
