@@ -1,6 +1,6 @@
 <?php
 $skin_data = array(
-    'theme_dir'=>'store_manager',
+
     'open_trigger'=>$skin_selector,
     'ev_trigger_name'=>"member-select-{$skin_id}"
 );

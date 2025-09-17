@@ -119,9 +119,9 @@ window.WeaverLocation = (function() {
                 return {
                     address_name: place.address_name || '',
                     road_address_name: place.road_address_name || '',
-                    x: place.x || '',
-                    y: place.y || '',
-                    // place_name: place.place_name || '',
+                    lng: place.x || '',
+                    lat: place.y || '',
+                    place_name: place.place_name || '',
                     // category_name: place.category_name || '',
                     // category_group_name: place.category_group_name || '',
                     // phone: place.phone || '',

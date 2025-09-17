@@ -103,29 +103,13 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
             <!-- 주소 검색 섹션 -->
             <div class="address-search-section">
                 <div class="position-relative">
-                    <input type="text"
-                           class="form-control address-search-input w-100"
-                           placeholder="주소를 검색하세요 (예: 서울 강남구, 강남구 논현동)"
-                           autocomplete="off">
-                    <button type="button" class="search-btn">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="#97989C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M18.9999 19L14.6499 14.65" stroke="#97989C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
+                    <?php echo wv_widget('search_address',array())?>
                 </div>
             </div>
 
             <!-- 카카오맵 섹션 -->
             <div class="map-section">
                 <div class="kakao-map w-100 h-100"></div>
-                <button type="button" class="current-location-btn">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <circle cx="6" cy="6" r="2" fill="#97989C"/>
-                        <path d="M6 1v2M6 9v2M1 6h2M9 6h2" stroke="#97989C" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    현 위치로 설정
-                </button>
             </div>
 
 
@@ -134,16 +118,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
 
     <script>
         $(document).ready(function(){
-//             var ps = new kakao.maps.services.Places();
-//
-// // 키워드로 장소 검색
-//             ps.keywordSearch('에일린의뜰', placesSearchCB);
-//
-//             function placesSearchCB(data, status, pagination) {
-//                 if (status === kakao.maps.services.Status.OK) {
-//                     console.log(data);
-//                 }
-//             }
+
             var $skin = $("<?php echo $skin_selector?>");
             var map, marker, geocoder;
             var currentData = {
@@ -155,212 +130,21 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                 address_name: '<?php echo htmlspecialchars($initial_address); ?>',
                 full_address: ''
             };
+            var  event_sending = false;
 
             // 전역 이벤트 발생 함수
             function triggerAddressChangedEvent(data) {
                 // jQuery 이벤트
+                if(event_sending){
+                    event_sending=false;
+                    return true;
+                }
                 $(document).trigger('wv_location_address_changed', [data]);
-
-                // 네이티브 이벤트
-                var event = new CustomEvent('wv_location_address_changed', {
-                    detail: data
-                });
-                document.dispatchEvent(event);
-
-                console.log('Location address changed:', data);
             }
 
-            // location 플러그인의 주소 검색 API 활용
-            function searchAddress(query) {
-                if (!query.trim()) return;
-
-                // 1. 먼저 카카오 지오코더로 직접 검색 (더 정확한 좌표 획득)
-                if (geocoder) {
-                    geocoder.addressSearch(query.trim(), function(result, status) {
-                        if (status === kakao.maps.services.Status.OK) {
-                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-                            // ✅ 지도 센터와 마커 즉시 이동
-                            map.setCenter(coords);
-                            marker.setPosition(coords);
-
-                            // 좌표를 지역 정보로 변환
-                            geocoder.coord2RegionCode(result[0].x, result[0].y, function(regionResult, regionStatus) {
-                                if (regionStatus === kakao.maps.services.Status.OK) {
-                                    for (var i = 0; i < regionResult.length; i++) {
-                                        if (regionResult[i].region_type === 'H') {
-                                            updateLocationData(
-                                                result[0].y,
-                                                result[0].x,
-                                                regionResult[i].region_1depth_name,
-                                                regionResult[i].region_2depth_name,
-                                                regionResult[i].region_3depth_name,
-                                                result[0].address_name || query.trim()
-                                            );
-                                            return;
-                                        }
-                                    }
-                                }
-                                // 지역 정보를 못 가져왔을 때는 검색어를 그대로 사용
-                                updateLocationData(
-                                    result[0].y,
-                                    result[0].x,
-                                    '',
-                                    '',
-                                    '',
-                                    result[0].address_name || query.trim()
-                                );
-                            });
-                            return;
-                        }
-
-                        // 카카오 지오코더 실패 시 location 플러그인 API 사용
-                        useLocationPluginSearch(query);
-                    });
-                } else {
-                    // geocoder가 없으면 location 플러그인 API 사용
-                    useLocationPluginSearch(query);
-                }
-            }
-            function useLocationPluginSearch(query) {
-                $.ajax({
-                    url: '<?php echo wv()->location->ajax_url(); ?>',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        wv_location_action: 'api',
-                        a: 'search',
-                        q: query.trim()
-                    }
-                }).done(function(res) {
-                    handleSearchResults(res);
-                }).fail(function() {
-                    console.warn('주소 검색 실패');
-                });
-            }
-            function handleSearchResults(res) {
-                var results = [];
-                if (Array.isArray(res)) {
-                    results = res;
-                } else if (res.items && Array.isArray(res.items)) {
-                    results = res.items;
-                } else if (res.data && Array.isArray(res.data)) {
-                    results = res.data;
-                }
-
-                if (results.length > 0) {
-                    var first = results[0];
-                    var region1 = first.depth1 || first.region_1depth_name || first.d1 || '';
-                    var region2 = first.depth2 || first.region_2depth_name || first.d2 || '';
-                    var region3 = first.depth3 || first.region_3depth_name || first.name || first.d3 || '';
-
-                    if (region1 && region3) {
-                        moveMapToAddress(region1, region2, region3);
-                    } else {
-                        console.warn('지역 정보 부족:', first);
-                    }
-                } else {
-                    console.warn('검색 결과 없음');
-                }
-            }
-            function moveMapToAddress(region1, region2, region3) {
-                if (!geocoder) {
-                    console.warn('Geocoder가 초기화되지 않았습니다.');
-                    return;
-                }
-
-                var fullAddress = region1 + ' ' + (region2 ? region2 + ' ' : '') + region3;
-
-                geocoder.addressSearch(fullAddress, function(result, status) {
-                    if (status === kakao.maps.services.Status.OK) {
-                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-                        // ✅ 지도 센터와 마커 이동
-                        map.setCenter(coords);
-                        marker.setPosition(coords);
-
-                        updateLocationData(result[0].y, result[0].x, region1, region2, region3, result[0].address_name || fullAddress);
-                    } else {
-                        console.warn('주소 검색 실패:', fullAddress, status);
-                    }
-                });
-            }
-            function updateLocationData(lat, lng, region1, region2, region3, fullAddress) {
-                currentData = {
-                    lat: parseFloat(lat),
-                    lng: parseFloat(lng),
-                    region_1depth_name: region1 || '',
-                    region_2depth_name: region2 || '',
-                    region_3depth_name: region3 || '',
-                    address_name: fullAddress || '',
-                    full_address: fullAddress || ''
-                };
-
-                // 주소 표시 업데이트
-
-                var displayText = (region1 || '') +
-                    (region2 ? ' ' + region2 : '') +
-                    (region3 ? ' ' + region3 : '');
 
 
 
-                // 전역 이벤트 발생
-                triggerAddressChangedEvent(currentData);
-            }
-
-            function getCurrentLocation() {
-                if (typeof wv_get_current_location === 'function') {
-                    wv_get_current_location(function(result) {
-                        if (result && result.lat && result.lng) {
-                            var coords = new kakao.maps.LatLng(result.lat, result.lng);
-                            map.setCenter(coords);
-                            marker.setPosition(coords);
-
-                            var addr = result.address || {};
-                            updateLocationData(
-                                result.lat,
-                                result.lng,
-                                addr.region_1depth_name || '',
-                                addr.region_2depth_name || '',
-                                addr.region_3depth_name || '',
-                                addr.address_name || ''
-                            );
-                        }
-                    });
-                } else {
-                    // 기본 geolocation 사용
-                    if ('geolocation' in navigator) {
-                        navigator.geolocation.getCurrentPosition(function(position) {
-                            var lat = position.coords.latitude;
-                            var lng = position.coords.longitude;
-
-                            var coords = new kakao.maps.LatLng(lat, lng);
-                            map.setCenter(coords);
-                            marker.setPosition(coords);
-
-                            // 좌표를 주소로 변환
-                            geocoder.coord2RegionCode(lng, lat, function(result, status) {
-                                if (status === kakao.maps.services.Status.OK) {
-                                    for (var i = 0; i < result.length; i++) {
-                                        if (result[i].region_type === 'H') {
-                                            updateLocationData(
-                                                lat, lng,
-                                                result[i].region_1depth_name,
-                                                result[i].region_2depth_name,
-                                                result[i].region_3depth_name,
-                                                result[i].address_name || ''
-                                            );
-                                            break;
-                                        }
-                                    }
-                                }
-                            });
-                        }, function() {
-                            alert('현재 위치를 가져올 수 없습니다.');
-                        });
-                    }
-                }
-            }
 
             function initMap() {
                 if (typeof kakao === 'undefined' || !kakao.maps) {
@@ -388,25 +172,16 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                     var latlng = mouseEvent.latLng;
 
                     marker.setPosition(latlng);
+                    wv_coords_to_address(latlng.getLat(),latlng.getLng(),function (result) {
+
+                        if(isset(result.list) && result.list.length){
+                            triggerAddressChangedEvent( result.list[0]);
+                        }
+
+                    })
 
                     // 클릭한 위치의 주소 정보 가져오기
-                    geocoder.coord2RegionCode(latlng.getLng(), latlng.getLat(), function(result, status) {
-                        if (status === kakao.maps.services.Status.OK) {
-                            for (var i = 0; i < result.length; i++) {
-                                if (result[i].region_type === 'H') {
-                                    updateLocationData(
-                                        latlng.getLat(),
-                                        latlng.getLng(),
-                                        result[i].region_1depth_name,
-                                        result[i].region_2depth_name,
-                                        result[i].region_3depth_name,
-                                        result[i].address_name || ''
-                                    );
-                                    break;
-                                }
-                            }
-                        }
-                    });
+ ;
                 });
 
                 // 초기 위치가 있으면 설정
@@ -414,30 +189,32 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                     var coords = new kakao.maps.LatLng(currentData.lat, currentData.lng);
                     map.setCenter(coords);
                     marker.setPosition(coords);
-
-
                 }
             }
 
             // 이벤트 바인딩
             function bindEvents() {
-                // 주소 검색
-                $skin.on('keypress', '.address-search-input', function(e) {
-                    if (e.which === 13) {
-                        e.preventDefault();
-                        searchAddress($(this).val());
-                    }
-                });
 
-                $skin.on('click', '.search-btn', function() {
-                    var query = $skin.find('.address-search-input').val();
-                    searchAddress(query);
-                });
 
-                // 현재 위치 버튼
-                $skin.on('click', '.current-location-btn', function() {
-                    getCurrentLocation();
-                });
+                $(document).on("wv_location_search_address_select",function(event, data) {
+
+                    var coords = new kakao.maps.LatLng(data.y, data.x);
+
+                    // ✅ 지도 센터와 마커 즉시 이동
+
+
+                    wv_address_result_to_region_merge(data,function (res) {
+
+                        triggerAddressChangedEvent(res);
+
+                        map.setCenter(coords);
+                        marker.setPosition(coords);
+                        map.setLevel(3);
+                    })
+
+
+                })
+
             }
 
             // 카카오맵이 로드될 때까지 대기
@@ -451,20 +228,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
             }
             checkKakaoMap();
 
-            // 외부에서 데이터 설정할 수 있는 메서드 노출
-            window['wv_location_address_' + '<?php echo $skin_id; ?>'] = {
-                setData: function(data) {
-                    if (data.lat && data.lng && map) {
-                        var coords = new kakao.maps.LatLng(data.lat, data.lng);
-                        map.setCenter(coords);
-                        marker.setPosition(coords);
-                        updateLocationData(data.lat, data.lng, data.region_1depth_name, data.region_2depth_name, data.region_3depth_name, data.address_name);
-                    }
-                },
-                getData: function() {
-                    return currentData;
-                }
-            };
+
         });
     </script>
 </div>

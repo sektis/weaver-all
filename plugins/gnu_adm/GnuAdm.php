@@ -7,13 +7,12 @@ class GnuAdm extends Plugin {
 
     public function __construct() {
          global $wv_dir_var,$wv_page_id;
-         $this->plugin_init();
 
          wv_dir_var_pre_check($this->dir_var);
 
          if($wv_dir_var==$this->dir_var){
 
-             $this->theme_injection_use();
+             $this->injection_theme_use();
              wv_must_login();
              wv_never_register();
 

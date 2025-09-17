@@ -2,6 +2,8 @@
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 $store = wv()->store_manager->made('sub01_01')->get($wr_id);
 
+
+
 //dd($store->contract->cont_pdt_type_text);
 //$sss = $store->get_ext_row();
 //dd(wv_base64_decode_unserialize($sss['store_image']));

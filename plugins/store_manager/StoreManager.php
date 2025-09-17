@@ -2770,6 +2770,7 @@ class StoreManager extends Makeable{
     protected function delete_physical_paths_safely($paths){
         if (!is_array($paths) || !count($paths)) return;
 
+        return;
         $base = defined('G5_DATA_PATH') ? rtrim(G5_DATA_PATH, '/') : (defined('G5_PATH') ? rtrim(G5_PATH,'/').'/data' : '');
         if ($base === '') return;
 
@@ -2861,10 +2862,10 @@ class StoreManager extends Makeable{
 
     public function rsync_mapping($bo_table){
         global $g5;
-return;
 
+return;
         $write_table = $g5['write_prefix'].$bo_table;
-        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and  wr_is_comment=0   order by wr_id asc limit 1";
+        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and  wr_is_comment=0    order by wr_id asc limit 1";
         $result = sql_query($sql);
 
         while ($row = sql_fetch_array($result)){
@@ -2879,26 +2880,31 @@ return;
             $data['store']['category']=$this->parts['store']->get_category_index($row['ca_name']);
             $data['store']['tel']=$row['wr_tel'];
             $data['store']['notice']=strip_tags($row['wr_content']);
+            $data['store']['biz_num'] = wv_format_biznum($row['mb_3']);
             $images = get_file($bo_table,$row['wr_id']);
             foreach ($images as $k=>$v){
                 if(!$v['view'])continue;
                 $path_arr = explode('/data/',$v['path']);
                 $data['store']['image'][$k]=array(
                     'source'=>$v['source'],
-                    'path'=>'https://dum2yo.com/data/'.$path_arr[1].'/'.$v['file'],
+                    'path'=>'/data/'.$path_arr[1].'/'.$v['file'],
                     'type'=>$v['type'],
                     'ord'=>$k
                 );
             }
 
             //contract
-            $data['contract']['cont_pdt_type'] = 1;
-            $data['contract']['biz_num'] = wv_format_biznum($row['mb_3']);
-            $data['contract']['mb_id'] = $row['mb_id'];
 
             //location
-
-            $data['location'] = wv()->location->coords($row['map_lat'],$row['map_lng']);
+            $ex_data = unserialize($data['ex_data']);
+            $ex_data_address = explode('|',$ex_data['zip'])[1];
+            $region_result = wv()->location->coords_to_region($row['map_lat'],$row['map_lng']);
+            $data['location'] = $region_result['list'][0];
+            $data['location']['lat'] = $data['map_lat'];
+            $data['location']['lng'] = $data['map_lng'];
+            if($ex_data_address){
+                $data['location']['address_name'] = $ex_data_address;
+            }
 
 
             //biz
@@ -2910,7 +2916,7 @@ return;
             $i=0;
             while ($row2 = sql_fetch_array($result2)){
                 $data['menu'][$i]['name'] = $row2['wr_subject'];
-                $data['menu'][$i]['prices'][0] = str_replace(',','',$row2['wr_10']);
+                $data['menu'][$i]['prices'][0]['price'] = str_replace(',','',$row2['wr_10']);
                 $data['menu'][$i]['is_main'] = $row2['wr_1']=='대표메뉴'?1:0;
                 $data['menu'][$i]['use_eum'] = $row2['wr_use_eum'];
                 $data['menu'][$i]['ord'] = $i;
@@ -2919,38 +2925,14 @@ return;
             }
             //menu
 
+ dd($data);
+
             wv()->store_manager->made('sub01_01')->set($data);
 
         }
 
     }
 
-    public function rsync_member(){
-        global $g5;
-
-return;
-        $write_table = $this->get_write_table_name();
-
-        $sql = "select * from g5_member where mb_id<>'admin'   order by mb_no asc  ";
-        $result = sql_query($sql);
-
-        while ($row = sql_fetch_array($result)){
-            $data =$row;
-
-            $data['mb_id']=$row['mb_id'];
-            $data['wr_name']=$row['mb_name'];
-            $data['wr_password']=$row['mb_password'];
-            $data['wr_subject']='/';
-            $data['wr_content']='/';
-            if($row['mb_level']==3){
-                $data['member']['is_ceo']='1';
-            }
-
-            $this->set($data);
-
-        }
-
-    }
 
     ///////////////캐싱적용
     /** 캐싱이 적용된 write_row 조회 */

@@ -105,7 +105,8 @@ table.table {all:revert-layer}
 .tooltip[role="tooltip"]{all:revert-layer}
 .tooltip[role="tooltip"]:before{all:revert-layer}
 /*input[type=text]:focus,input[type=password]:focus, textarea:focus,select:focus {box-shadow:revert-layer;border:revert-layer !important;}*/
-.form-control[readonly]{opacity: .8;cursor: not-allowed;background-color: #ccc}
+.form-control[readonly]{opacity: .8;background-color: #ededed}
+:has(>.form-control[readonly]){cursor:  not-allowed}
 input, button {font-family:revert-layer}
 .wv-modal .modal-dialog{--bs-modal-width:auto;--bs-modal-bg:transparent;justify-content: center}
 .wv-modal .modal-content{width:auto;border: 0!important;border-radius: 0!important;}

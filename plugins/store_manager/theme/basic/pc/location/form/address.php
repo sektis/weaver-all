@@ -58,13 +58,18 @@ $address_skin_data = array(
                 <p class="wv-ps-subtitle">매장 주소</p>
                 <div class="hstack  " style="gap:var(--wv-10)">
                     <div class="form-floating position-relative" style="z-index: 10">
-                        <input type="text" name="location[address_name]"   id="location[address_name]" required class="form-control required location-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
-                               value="<?php echo htmlspecialchars($address_name); ?>">
+                        <input type="text" name="location[address_name]"   id="location[address_name]" required readonly class="form-control required location-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
+                               value="<?php echo htmlspecialchars($row['address_name']); ?>">
                         <label for="contract[biz_num]" class="floatingInput">기본주소</label>
                     </div>
                     <div class="form-floating position-relative" style="z-index: 10">
-                        <input type="text" name="location[address_detail_name]"   id="location[address_detail_name]" required class="form-control required   "  placeholder="지도에서 검색하거나 핀을 움직이세요."
-                                value="<?php echo htmlspecialchars($row['address_detail_name']); ?>">
+                        <input type="text" name="location[road_address_name]"   id="location[road_address_name]" required readonly class="form-control required location-road-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
+                               value="<?php echo htmlspecialchars($row['road_address_name']); ?>">
+                        <label for="contract[biz_num]" class="floatingInput">도로명주소</label>
+                    </div>
+                    <div class="form-floating position-relative col" style="z-index: 10">
+                        <input type="text" name="location[detail_address_name]"   id="location[detail_address_name]"   class="form-control required   "  placeholder="지도에서 검색하거나 핀을 움직이세요."
+                                value="<?php echo htmlspecialchars($row['detail_address_name']); ?>">
                         <label for="contract[biz_num]" class="floatingInput">상세주소</label>
                     </div>
                 </div>
@@ -112,11 +117,11 @@ $address_skin_data = array(
                 console.log('Store Manager에서 주소 변경 이벤트 수신:', data);
 
                 // Hidden input 필드들 업데이트
-                if (data.lat !== undefined) {
-                    $skin.find('.location-lat').val(data.lat);
+                if (data.y !== undefined) {
+                    $skin.find('.location-lat').val(data.lng);
                 }
-                if (data.lng !== undefined) {
-                    $skin.find('.location-lng').val(data.lng);
+                if (data.x !== undefined) {
+                    $skin.find('.location-lng').val(data.lat);
                 }
                 if (data.region_1depth_name !== undefined) {
                     $skin.find('.location-region-1depth-name').val(data.region_1depth_name);
@@ -130,6 +135,9 @@ $address_skin_data = array(
                 if (data.address_name !== undefined) {
                     $skin.find('.location-address-name').val(data.address_name);
                 }
+                if (data.road_address_name !== undefined) {
+                    $skin.find('.location-road-address-name').val(data.road_address_name);
+                }
 
                 // 선택적: 커스텀 처리가 필요하면 여기에 추가
                 // 예: 주소 변경 후 추가 검증, UI 업데이트 등
@@ -138,10 +146,7 @@ $address_skin_data = array(
             // jQuery 이벤트 리스너 등록
             $(document).on('wv_location_address_changed', handleAddressChanged);
 
-            // 네이티브 이벤트 리스너도 등록 (백업용)
-            document.addEventListener('wv_location_address_changed', function(event) {
-                handleAddressChanged(event);
-            });
+
 
             // 폼 제출 전 검증
             var $form = $skin.closest('form');
@@ -168,19 +173,7 @@ $address_skin_data = array(
                 });
             }
 
-            // 디버깅용: 현재 위치 데이터 확인하는 함수
-            window['wv_store_location_debug_' + '<?php echo $skin_id; ?>'] = function() {
-                var data = {
-                    lat: $skin.find('.location-lat').val(),
-                    lng: $skin.find('.location-lng').val(),
-                    region_1depth_name: $skin.find('.location-region-1depth-name').val(),
-                    region_2depth_name: $skin.find('.location-region-2depth-name').val(),
-                    region_3depth_name: $skin.find('.location-region-3depth-name').val(),
-                    address_name: $skin.find('.location-address-name').val()
-                };
-                console.log('Store Manager Location Data:', data);
-                return data;
-            };
+
         });
     </script>
 </div>
