@@ -3073,7 +3073,7 @@ if(!function_exists('wv_write_board')){
             $wr_subject = substr(trim($post['wr_subject']),0,255);
             $wr_subject = preg_replace("#[\\\]+$#", "", $wr_subject);
         }
-        if ($wr_subject == '') {
+        if ($w=='' and $wr_subject == '') {
             $msg[] = '<strong>제목</strong>을 입력하세요.';
         }
 
@@ -3083,7 +3083,7 @@ if(!function_exists('wv_write_board')){
             $wr_content = preg_replace("#[\\\]+$#", "", $wr_content);
             $wr_content = addslashes($wr_content);
         }
-        if ($wr_content == '') {
+        if ($w=='' and $wr_content == '') {
             $msg[] = '<strong>내용</strong>을 입력하세요.';
         }
 
@@ -3286,7 +3286,7 @@ if(!function_exists('wv_write_board')){
             return('w 값이 제대로 넘어오지 않았습니다.');
         }
 
-        if (!isset($post['wr_subject']) || !trim($post['wr_subject']))
+        if ($w='' and (!isset($post['wr_subject']) || !trim($post['wr_subject'])))
             return ('제목을 입력하여 주십시오.');
 
 

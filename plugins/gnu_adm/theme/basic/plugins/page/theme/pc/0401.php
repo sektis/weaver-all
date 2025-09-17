@@ -99,8 +99,8 @@ $list = $result['list'];
                             ?>
                             <tr>
                                 <td rowspan="<?php echo $row_span?>"><?php echo $list[$i]['store']['name']; ?></td>
-                                <?php for($j=0;$j<$row_span;$j++){
-                                    $cont = $list[$i]['contract'][$j]
+                                <?php $j=0; foreach($list[$i]['contract'] as $k =>$cont){
+
                                     ?>
                                     <?php if($j>0){ ?>
                                     </tr><tr>
@@ -115,10 +115,11 @@ $list = $result['list'];
                                     <td >
                                         <div class="hstack justify-content-center gap-[6px]">
                                             <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=sub01_01&action=render_part&part=contract&fields=cont_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                               data-wv-ajax-data='{"contract_key":"<?php echo $k?>"}'
                                                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                                         </div>
                                     </td>
-                                <?php }?>
+                                <?php $j++;}?>
                             </tr>
 
 

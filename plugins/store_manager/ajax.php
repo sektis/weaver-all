@@ -99,12 +99,13 @@ if($action=='render_part'){
     if(!$type){
         $type='form';
     }
-    $manager = wv()->store_manager->made($made)->get($wr_id);
+    $store = wv()->store_manager->made($made)->get($wr_id);
+
     ob_start();
-    echo $manager->{$part}->render_part(explode(',',$fields),'form');
+    echo $store->{$part}->render_part(explode(',',$fields),'form',$_POST);
     $render_content = ob_get_clean();
     $skin_data = array(
-        'store'=>$manager,
+        'store'=>$store,
         'render_content' => $render_content,
         'made'=>$made
     );
@@ -112,7 +113,21 @@ if($action=='render_part'){
     exit;
 }
 if($action=='update'){
-    $wr_id = wv()->store_manager->made($made)->set($_POST);
+    $manager = wv()->store_manager->made($made);
+    $wr_id = $manager->set($_POST);
+    $store = $manager->get($wr_id);
+    if($fields){
+        ob_start();
+        echo $store->{$part}->render_part(explode(',',$fields),'form',$_POST);
+        $render_content = ob_get_clean();
+        $skin_data = array(
+            'store'=>$store,
+            'render_content' => $render_content,
+            'made'=>$made
+        );
+        echo wv_widget('store_manager_form', $skin_data);
+        exit;
+    }
     wv_json_exit(array('wr_id'=>$wr_id));
 }
 if($action=='delete'){

@@ -1,8 +1,8 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 global $g5;
- 
 
+$vars['target']=$skin_selector;
 ?>
 <style>
     <?php echo $skin_selector?> {}
@@ -36,17 +36,21 @@ global $g5;
 
 
             <div class="hstack">
-                <p class="text1 w-[75px]">계정 관리</p>
-                <div class="col"> </div>
+                <p class="text1 w-[75px]  " style="line-height: var(--wv-31)">매장운영자</p>
+                <div class="col">
+                    <div class="col"><?php echo $this->store->contract->render_part('mb_name','form'); ?></div>
+                </div>
+            </div>
+
+            <div class="hstack align-items-start" >
+                <p class="text1 w-[75px] " style="line-height: var(--wv-31)">계정 상태</p>
+                <div class="col">
+                    <div class="col"><?php echo $this->store->contract->render_part('status','form',$vars); ?></div>
+                </div>
             </div>
 
             <div class="hstack">
-                <p class="text1 w-[75px]">계정 상태</p>
-                <div class="col"> </div>
-            </div>
-
-            <div class="hstack">
-                <p class="text1 w-[75px]">관리자 메모</p>
+                <p class="text1 w-[75px]" style="line-height: var(--wv-31)">관리자 메모</p>
                 <div class="col"> </div>
             </div>
 

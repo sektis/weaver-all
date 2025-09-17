@@ -165,8 +165,12 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
 
         if (is_array($vars) && count($vars)) {
-            foreach ($vars as $__k => $__v) { $__k = $__v; }
+            foreach ($vars as $__k => $__v) {
+                $$__k = $__v;
+            }
         }
+
+
 
         $skin_id = wv_make_skin_id();
         $skin_selector = wv_make_skin_selector($skin_id);

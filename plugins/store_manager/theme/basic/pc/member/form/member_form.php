@@ -76,7 +76,7 @@ if($row['mb_id']){
                 </div>
                 <div class="hstack gap-[33px]">
                     <p class="text2 ">계좌번호</p>
-                    <p class="text3"> </p>
+                    <p class="text3"><?php echo $row['member']['bank_info']; ?></p>
                 </div>
             </div>
 

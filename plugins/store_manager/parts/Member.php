@@ -12,6 +12,8 @@ class Member extends StoreSchemaBase{
         'is_manager'=>"TINYINT(1) NOT NULL DEFAULT 0",
         'is_ceo'=>"TINYINT(1) NOT NULL DEFAULT 0",
         'admin_memo'=>"text not null default ''",
+        'bank_name'=>"VARCHAR(255) DEFAULT NULL",
+        'ban_account_number'=>"VARCHAR(255) DEFAULT NULL",
         'mb_id' => "",
         'mb_password' => "",
         'mb_password_init' => "",
@@ -32,6 +34,7 @@ class Member extends StoreSchemaBase{
 
     public function column_extend($row,$all_row=array()){
         $arr = array();
+        $arr['bank_info'] = $row['bank_name'].' | '.$row['bank_account_number'];
         $arr['active_text'] = $this->active_arr[$row['active']];
         $mb = get_member($row['mb_id']);
         $arr['is_cert'] = ($mb['mb_dupinfo']   && $mb['mb_certify']);

@@ -1,7 +1,7 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 $store = wv()->store_manager->made('sub01_01')->get($wr_id);
-//dd($store->menu->list);
+
 
 //dd($store->contract->cont_pdt_type_text);
 //$sss = $store->get_ext_row();
@@ -56,7 +56,24 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
             <?php echo $store->basic->render_part('wr_id','form');; ?>
             <div class="wv-vstack">
 
+                <div class="border rounded-[4px] p-[14px] vstack  " style="row-gap: var(--wv-16)">
+                    <div class="hstack gap-[8px]">
+                        <p class="fw-600">계약정보</p>
 
+                    </div>
+                    <div class="hstack gap-[33px]">
+                        <p class="w-[70px] ">대표관리자</p>
+                        <p class="text3"><?php echo $store->mb_name; ; ?></p>
+                    </div>
+                    <div class="hstack gap-[33px]">
+                        <p class="w-[70px] ">계약담당자</p>
+                        <p class="text3"><?php echo implode(' | ',array_column($store->contract->list, 'manager_name')); ; ?></p>
+                    </div>
+                    <div class="hstack gap-[33px]">
+                        <p class="w-[70px] ">계약상품</p>
+                        <p class=" "><?php echo implode(' | ',array_column($store->contract->list, 'item_name')) ; ?></p>
+                    </div>
+                </div>
 
                 <?php if($wr_id){?>
 

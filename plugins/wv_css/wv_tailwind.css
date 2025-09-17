@@ -72,6 +72,9 @@
   .mt-\[16px\] {
     margin-top: var(--wv-16) !important;
   }
+  .mt-\[18px\] {
+    margin-top: var(--wv-18) !important;
+  }
   .mt-\[20px\] {
     margin-top: var(--wv-20) !important;
   }
@@ -182,6 +185,9 @@
   }
   .w-\[63px\] {
     width: var(--wv-63) !important;
+  }
+  .w-\[70px\] {
+    width: var(--wv-70) !important;
   }
   .w-\[75px\] {
     width: var(--wv-75) !important;
@@ -441,6 +447,12 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0D171B !important;
+  }
+  .fs-\[14\/17\/-0\.56\/600\/\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
   }
   .fs-\[14\/22\/-0\.56\/500\/\] {
     font-size: var(--wv-14) !important;

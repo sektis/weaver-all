@@ -4,9 +4,7 @@ use weaver\store_manager\StoreSchemaBase;
 use weaver\store_manager\StoreSchemaInterface;
 
 class Store extends StoreSchemaBase implements StoreSchemaInterface{
-    protected $category_arr = array(1=>'한식',2=>'중식',3=>'일식',4=>'양식',5=>'아시아',6=>'패스트푸드',7=>'고깃집',8=>'분식',9=>'술집',10=>'카페',11=>'반찬',
-        12=>'족발&보쌈',13=>'뷰티&헬스',14=>'체험'
-    ,15=>'레저스포츠',16=>'학원',17=>'숙박',18=>'배달',19=>'기타',20=>'게시보류');
+
     protected $columns = array(
 
         'name' => "VARCHAR(255) DEFAULT NULL",
@@ -34,7 +32,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
 
     public function column_extend($row,$all_row=array()){
         $arr = array();
-        $arr['category_text'] = $this->category_arr[$row['category']];
+        $arr['category_text'] = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory->name;
         $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';
         $first_image = reset($row['image']);
         $arr['main_image'] =  $first_image['path'];
