@@ -101,7 +101,7 @@
                     <?php  } ?>
 
                     <div class="wv-ps-new col-auto btn btn-dark"><i class="fa-solid fa-plus me-2"></i> 특징 추가</div>
-            </div>
+                </div>
             </div>
 
 

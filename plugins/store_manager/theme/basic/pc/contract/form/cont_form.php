@@ -11,6 +11,7 @@ $vars['form_selector']=$skin_selector;
     <?php echo $skin_selector?> .text2{font-size: var(--wv-14);font-weight: 500;color:#97989C;width: var(--wv-60)}
     <?php echo $skin_selector?> input, <?php echo $skin_selector?> select{height: var(--wv-39)}
 </style>
+<input type="hidden" name="contract[<?php echo $contract_id; ?>][id]" value="<?php echo $row['id']; ?>">
 <div class="vstack h-100 wmember-form" id="<?php echo $skin_id; ?>">
     <div class="wv-offcanvas-header col-auto">
         <div class="row align-items-center">
@@ -73,14 +74,18 @@ $vars['form_selector']=$skin_selector;
             </div>
 
             <?php if($contract_id){ ?>
-            <a href="#"  class="wv-flex-box border h-[39px]" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' data-wv-ajax-option="replace_with:<?php echo $skin_selector; ?>"
+            <a href="#"  class="wv-flex-box border h-[39px]" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php'  data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"
                data-wv-ajax-data='<?php echo json_encode($ajax_data); ?>'
-               data-wv-ajax-data-add='{"action":"render_part"}'>
+               data-wv-ajax-data-add='{"action":"render_part_form"}'>
                 <i class="fa-solid fa-plus"></i>
                 <p class="fs-[14/17/-0.56/500/#0D171B]">계약추가</p>
             </a>
             <?php } ?>
-
+            <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
+            <div class="vstack" style="row-gap:var(--wv-10)">
+                <p class="text1">메모</p>
+                <?php echo $this->store->contract->render_part('memo','form',$vars); ?>
+            </div>
         </div>
     </div>
 

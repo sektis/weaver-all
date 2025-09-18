@@ -108,7 +108,7 @@ $list = $result['list'];
                                     <td ><?php echo $cont['manager_name']; ?></td>
                                     <td ><?php echo $cont['item_name']; ?></td>
                                     <td class="ff-Roboto-mono"><?php echo date('Y.m.d',strtotime($cont['start']))?><?php echo $cont['end']?'~':''; ?> <?php echo date('Y.m.d',strtotime($cont['end']))?></td>
-                                    <td ><?php echo $cont['end']?"D-".wv_get_days_since($cont['end']):''; ?></td>
+                                    <td ><?php echo wv_date_empty_chk($cont['end'])?"D-".wv_get_days_since($cont['end']):''; ?></td>
                                     <td ><?php echo $cont['status_html'] ?></td>
                                     <td class="ff-Roboto-mono"><?php echo  wv_date_empty_chk($cont['last_modify'])?date('Y.m.d',strtotime($cont['last_modify'])):''; ?></td>
                                     <td ></td>
@@ -118,7 +118,7 @@ $list = $result['list'];
                                                data-wv-ajax-data='{
                                                "made":"sub01_01",
                                                "part":"contract",
-                                               "action":"render_part",
+                                               "action":"render_part_form",
                                                "fields":"cont_form",
                                                "wr_id":"<?php echo $list[$i]['wr_id']; ?>",
                                                "contract_id":"<?php echo $cont['id']?>"

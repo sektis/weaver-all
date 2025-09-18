@@ -20,42 +20,48 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
     <div class="hstack date-input-wrap">
         <div class="form-floating">
             <input type="date"
-                   name="contract[start]"
+                   name="<?php echo str_replace('[start_end]', '[start]', $field_name); ?>"
                    value="<?php echo $row['start'] ? date('Y-m-d', strtotime($row['start'])) : ''; ?>"
-                   id="contract_start_<?php echo $skin_id; ?>"
+                   id="<?php echo $part_key; ?>_start_<?php echo $skin_id; ?>"
                    class="form-control required"
                    required>
-            <label for="contract_start_<?php echo $skin_id; ?>">시작일</label>
+            <label for="<?php echo $part_key; ?>_start_<?php echo $skin_id; ?>">시작일</label>
         </div>
 
         <span class="date-separator">~</span>
 
         <div class="form-floating">
             <input type="date"
-                   name="contract[end]"
+                   name="<?php echo str_replace('[start_end]', '[end]', $field_name); ?>"
                    value="<?php echo $row['end'] ? date('Y-m-d', strtotime($row['end'])) : ''; ?>"
-                   id="contract_end_<?php echo $skin_id; ?>"
+                   id="<?php echo $part_key; ?>_end_<?php echo $skin_id; ?>"
                    class="form-control required"
                    required>
-            <label for="contract_end_<?php echo $skin_id; ?>">종료일</label>
+            <label for="<?php echo $part_key; ?>_end_<?php echo $skin_id; ?>">종료일</label>
         </div>
     </div>
 
     <script>
         $(document).ready(function(){
             var $skin = $("#<?php echo $skin_id; ?>");
-            var $startInput = $("#contract_start_<?php echo $skin_id; ?>", $skin);
-            var $endInput = $("#contract_end_<?php echo $skin_id; ?>", $skin);
+            var $startInput = $("#<?php echo $part_key; ?>_start_<?php echo $skin_id; ?>", $skin);
+            var $endInput = $("#<?php echo $part_key; ?>_end_<?php echo $skin_id; ?>", $skin);
 
             // 종료일 유효성 검사
-            function validateDateRange(){
+            function validateDateRange(changedInput){
                 var startDate = $startInput.val();
                 var endDate = $endInput.val();
 
                 if(startDate && endDate){
                     if(new Date(endDate) <= new Date(startDate)){
                         alert('종료일은 시작일보다 나중이어야 합니다.');
-                        $endInput.focus();
+
+                        // 잘못 선택한 날짜 초기화 (폼 제출 시에는 초기화하지 않음)
+                        if(changedInput === 'start'){
+                            $startInput.val('').focus();
+                        } else if(changedInput === 'end'){
+                            $endInput.val('').focus();
+                        }
                         return false;
                     }
                 }
@@ -71,17 +77,17 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                     nextDay.setDate(nextDay.getDate() + 1);
                     $endInput.attr('min', nextDay.toISOString().split('T')[0]);
                 }
-                validateDateRange();
+                validateDateRange('start');
             });
 
             // 종료일 변경 시 유효성 검사
             $endInput.on('change', function(){
-                validateDateRange();
+                validateDateRange('end');
             });
 
             // 폼 제출 시 최종 검사
             $skin.closest('form').on('submit', function(e){
-                if(!validateDateRange()){
+                if(!validateDateRange(null)){
                     e.preventDefault();
                     return false;
                 }

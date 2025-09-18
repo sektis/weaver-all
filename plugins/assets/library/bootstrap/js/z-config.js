@@ -81,6 +81,19 @@ $(document).ready(function () {
         // offcanvasEl.style.paddingRight = `${scrollbarWidth}px`
     })
 
+    $(document).on('show.bs.offcanvas', '.offcanvas', function() {
+        // 이미 열린 offcanvas가 있는지 확인
+        var openOffcanvas = $('.offcanvas.show').length;
+
+        if(openOffcanvas > 0) {
+            // 두 번째 이상의 offcanvas에 특별한 클래스 추가
+            $(this).addClass('offcanvas-nested');
+        }
+    });
+
+    $(document).on('hidden.bs.offcanvas', '.offcanvas', function() {
+        $(this).removeClass('offcanvas-nested');
+    });
 
 })
 // 옵션 파싱 공통 함수
