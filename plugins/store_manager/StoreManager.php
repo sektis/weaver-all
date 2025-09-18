@@ -2496,7 +2496,9 @@ class StoreManager extends Makeable{
                 // ✅ 핵심 변경: 배열 키를 DB row id로 사용
                 $row_id = isset($row['id']) ? (int)$row['id'] : 0;
                 if ($row_id > 0) {
-                    $out[$pkey][$wid][$row_id] = $row;
+
+
+                    $out[$pkey][$wid][$row_id] = array_map('wv_base64_decode_unserialize',$row);
                 } else {
                     // 안전장치: id가 없는 경우 기존 방식으로 폴백
                     $out[$pkey][$wid][] = $row;
@@ -2545,7 +2547,7 @@ class StoreManager extends Makeable{
                     $row[$key] = $value;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // 에러 로깅
             if (function_exists('write_log')) {
                 write_log("List part column_extend error in {$part_key}: " . $e->getMessage(), G5_DATA_PATH . '/log/store_errors.log');

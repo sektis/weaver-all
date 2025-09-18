@@ -442,7 +442,7 @@ function rowIndexPosFromIdName(idName){
 function replaceRowIndexInName(name, pos, nextIndex){
     var parsed = bracketTokens(name);
 
-    console.log(pos,parsed)
+    // console.log(pos,parsed)
     if (pos < 0 || pos >= parsed.tokens.length) return name;
 
     // ✅ 개선: -1 키 (demo)도 숫자로 인식하여 교체 가능하게 수정

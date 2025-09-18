@@ -81,7 +81,7 @@
                         <div class="form-floating col">
                             <input
                                     type="text"
-                                    class="form-control js-menu-name"
+                                    class="form-control  "
                                     id="contractitem[intro][point][<?php echo $k; ?>][text]"
                                     name="contractitem[intro][point][<?php echo $k; ?>][text]"
                                     maxlength="20"

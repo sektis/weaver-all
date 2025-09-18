@@ -16,7 +16,7 @@ $this->make_array($row['memo']);
 
                         <input
                             type="text"
-                            class="form-control js-menu-name"
+                            class="form-control col"
                             id="<?php echo $field_name; ?>[<?php echo $k; ?>][text]"
                             name="<?php echo $field_name; ?>[<?php echo $k; ?>][text]"
                             maxlength="20"
@@ -25,7 +25,7 @@ $this->make_array($row['memo']);
                         <label for="<?php echo $field_name; ?>[<?php echo $k; ?>][text]" class="visually-hidden">메모</label>
 
 
-                    <div class=" wv-ps-box ms-3  ">
+                    <div class=" wv-ps-box ms-3  col-auto ">
                         <label class="h-100 ">
                             <input type="checkbox" class="d-none" name="<?php echo $field_name; ?>[<?php echo $k; ?>][delete]" value="1">
                             <span class="btn w-100 h-100 border btn-danger d-flex-center">삭제</span>

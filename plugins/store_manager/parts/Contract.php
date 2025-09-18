@@ -74,4 +74,8 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
 
         return $arr;
     }
+
+    public function before_set(&$data,  $wr_id,$pkey,$manager ) {
+
+    }
 }
