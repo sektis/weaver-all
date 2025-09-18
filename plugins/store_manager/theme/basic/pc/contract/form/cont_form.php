@@ -56,6 +56,20 @@ $vars['form_selector']=$skin_selector;
                 </div>
             </div>
 
+            <div class="hstack">
+                <p class="text1 w-[75px]" style="line-height: var(--wv-31)">계약기간</p>
+                <div class="col">
+                    <div class="col"><?php echo $this->store->contract->render_part('contract_item','form',$vars); ?></div>
+                </div>
+            </div>
+
+            <div class="hstack">
+                <p class="text1 w-[75px]" style="line-height: var(--wv-31)">계약 담당자</p>
+                <div class="col">
+                    <div class="col"><?php echo $this->store->contract->render_part('contractmanager_wr_id','form',$vars); ?></div>
+                </div>
+            </div>
+
         </div>
     </div>
 

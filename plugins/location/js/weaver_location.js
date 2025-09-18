@@ -373,7 +373,9 @@ function wv_coords_to_region(lat, lng, callback) {
     WeaverLocation.coords_to_region(lat, lng, callback);
 }
 function wv_address_result_to_region_merge(address_result, callback) {
-    WeaverLocation.coords_to_region(address_result['y'], address_result['x'], function (response) {
+
+    WeaverLocation.coords_to_region(address_result['lat'], address_result['lng'], function (response) {
+
         var result = Object.assign({}, response.list[0], address_result)
         callback(result)
     });

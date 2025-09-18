@@ -102,8 +102,8 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                             'data-address_name': row.address_name,
                             'data-road_address_name': row.road_address_name,
                             'data-place_name': row.place_name,
-                            'data-lng': row.x,
-                            'data-lat': row.y,
+                            'data-lng': row.lng,
+                            'data-lat': row.lat,
                         });
 
                     $box.append($a);
@@ -125,8 +125,8 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                     address_name: $this.data('address_name'),
                     road_address_name: $this.data('road_address_name'),
                     place_name: $this.data('place_name'),
-                    x: $this.data('lng'),
-                    y: $this.data('lat'),
+                    lng: $this.data('lng'),
+                    lat: $this.data('lat'),
                 };
 
                 $(document).trigger('wv_location_search_address_select', [eventData]);

@@ -68,7 +68,7 @@ $address_skin_data = array(
                         <label for="contract[biz_num]" class="floatingInput">도로명주소</label>
                     </div>
                     <div class="form-floating position-relative col" style="z-index: 10">
-                        <input type="text" name="location[detail_address_name]"   id="location[detail_address_name]"   class="form-control     "  placeholder="지도에서 검색하거나 핀을 움직이세요."
+                        <input type="text" name="location[detail_address_name]"   id="location[detail_address_name]"   class="form-control     "  placeholder="상세주소를 입력하세요."
                                 value="<?php echo htmlspecialchars($row['detail_address_name']); ?>">
                         <label for="contract[biz_num]" class="floatingInput">상세주소</label>
                     </div>
@@ -117,11 +117,11 @@ $address_skin_data = array(
                 console.log('Store Manager에서 주소 변경 이벤트 수신:', data);
 
                 // Hidden input 필드들 업데이트
-                if (data.y !== undefined) {
-                    $skin.find('.location-lat').val(data.lng);
+                if (data.lat !== undefined) {
+                    $skin.find('.location-lat').val(data.lat);
                 }
-                if (data.x !== undefined) {
-                    $skin.find('.location-lng').val(data.lat);
+                if (data.lng !== undefined) {
+                    $skin.find('.location-lng').val(data.lng);
                 }
                 if (data.region_1depth_name !== undefined) {
                     $skin.find('.location-region-1depth-name').val(data.region_1depth_name);

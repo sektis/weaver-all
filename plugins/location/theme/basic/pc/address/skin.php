@@ -134,6 +134,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
 
             // 전역 이벤트 발생 함수
             function triggerAddressChangedEvent(data) {
+
                 // jQuery 이벤트
                 if(event_sending){
                     event_sending=false;
@@ -175,7 +176,8 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
                     wv_coords_to_address(latlng.getLat(),latlng.getLng(),function (result) {
 
                         if(isset(result.list) && result.list.length){
-                            triggerAddressChangedEvent( result.list[0]);
+                            var assign_result = Object.assign(  result.list[0], {lat:latlng.getLat(),lng:latlng.getLng()})
+                            triggerAddressChangedEvent( assign_result);
                         }
 
                     })
@@ -198,7 +200,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
 
                 $(document).on("wv_location_search_address_select",function(event, data) {
 
-                    var coords = new kakao.maps.LatLng(data.y, data.x);
+                    var coords = new kakao.maps.LatLng(data.lat, data.lng);
 
                     // ✅ 지도 센터와 마커 즉시 이동
 

@@ -1083,6 +1083,18 @@ class StoreManager extends Makeable{
                     unset($data[$key]);
                 }
             }
+            if (count($this->parts)) {
+                foreach ($this->parts as $key => $schema) {
+                    if (!isset($org_data[$key]) || !is_array($org_data[$key])) continue;
+                    if ($this->is_list_part_schema($schema)) continue;
+
+                    foreach ($org_data[$key] as $k => $v) {
+                        $phys = $this->get_physical_col($key, $k);
+                        if (!array_key_exists($phys, $org_data)) $org_data[$phys] = $v;
+                    }
+                    unset($org_data[$key]);
+                }
+            }
 
             // === 확장테이블 업서트(허용 컬럼만) ===
 //            $filtered = array('wr_id' => $wr_id);
@@ -1124,6 +1136,7 @@ class StoreManager extends Makeable{
 
             // === 확장테이블 업서트(허용 컬럼만) ===
             $filtered = array('wr_id' => $wr_id);
+
 
 // ✅ 수정: $data에 실제로 있는 필드만 필터링
             $original_data_keys = array_keys($org_data);
