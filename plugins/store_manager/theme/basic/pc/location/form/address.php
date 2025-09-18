@@ -58,17 +58,17 @@ $address_skin_data = array(
                 <p class="wv-ps-subtitle">매장 주소</p>
                 <div class="hstack  " style="gap:var(--wv-10)">
                     <div class="form-floating position-relative" style="z-index: 10">
-                        <input type="text" name="location[address_name]"   id="location[address_name]" required readonly class="form-control required location-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
+                        <input type="text" name="location[address_name]"   id="location[address_name]" required readonly class="form-control   location-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
                                value="<?php echo htmlspecialchars($row['address_name']); ?>">
                         <label for="contract[biz_num]" class="floatingInput">기본주소</label>
                     </div>
                     <div class="form-floating position-relative" style="z-index: 10">
-                        <input type="text" name="location[road_address_name]"   id="location[road_address_name]" required readonly class="form-control required location-road-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
+                        <input type="text" name="location[road_address_name]"   id="location[road_address_name]"   readonly class="form-control   location-road-address-name " maxlength="10" minlength="10" placeholder="지도에서 검색하거나 핀을 움직이세요."
                                value="<?php echo htmlspecialchars($row['road_address_name']); ?>">
                         <label for="contract[biz_num]" class="floatingInput">도로명주소</label>
                     </div>
                     <div class="form-floating position-relative col" style="z-index: 10">
-                        <input type="text" name="location[detail_address_name]"   id="location[detail_address_name]"   class="form-control required   "  placeholder="지도에서 검색하거나 핀을 움직이세요."
+                        <input type="text" name="location[detail_address_name]"   id="location[detail_address_name]"   class="form-control     "  placeholder="지도에서 검색하거나 핀을 움직이세요."
                                 value="<?php echo htmlspecialchars($row['detail_address_name']); ?>">
                         <label for="contract[biz_num]" class="floatingInput">상세주소</label>
                     </div>

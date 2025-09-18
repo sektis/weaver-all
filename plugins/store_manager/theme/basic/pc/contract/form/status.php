@@ -1,5 +1,7 @@
 <?php
-$cont =  $row['contract'][$contract_key];
+$cont =  $row['contract'][$contract_id];
+global $qstr;
+ 
 ?>
 <div>
     <div class="hstack" style="gap:var(--wv-6)">
@@ -12,12 +14,12 @@ $cont =  $row['contract'][$contract_key];
         $post_data=array(
             'wr_id'=>$row['wr_id']
         );
-        $post_data['contract'][$contract_key]['status']=$this->status_change_value_array[$cont['status']];
-        $post_data['contract'][$contract_key]['id']=$cont['id'];
+        $post_data['contract'][$contract_id]['status']=$this->status_change_value_array[$cont['status']];
+        $post_data['contract'][$contract_id]['id']=$cont['id'];
         ?>
         <a class="fs-[14/17/-0.56/600/] hstack justify-content-center w-full cursor-pointer gap-[6px]"
               style="height:var(--wv-40);padding:0 var(--wv-10);color:#fff;border-radius:var(--wv-4);<?php echo $this->status_change_style_array[$cont['status']]?>"
-           href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=sub01_01&action=update&part=contract&fields=cont_form' data-wv-ajax-option="target:<?php echo $target; ?>"
+           href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?action=update&<?php echo $qstr; ?>' data-wv-ajax-option="target:<?php echo $target; ?>"
         data-wv-ajax-data='<?php echo json_encode($post_data); ?>'>
 
             <?php echo  $this->status_change_icon_array[$cont['status']]; ?>

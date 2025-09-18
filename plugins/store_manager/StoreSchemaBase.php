@@ -34,6 +34,13 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
     /** @var array 업서트 허용 컬럼(논리명). 비어있으면 $columns 기준 자동 */
     protected $allowed = array();
 
+    protected $checkbox_fields = array();
+
+    /** @var array is_ 패턴이지만 체크박스가 아닌 필드들 (제외 목록) */
+    protected $non_checkbox_is_fields = array();
+
+    protected $checkbox_patterns = array('is_', 'use_');
+
     public function set_context($manager, $bo_table, $part_key, $plugin_theme_path = ''){
         $this->manager           = $manager;
         $this->bo_table          = (string)$bo_table;
@@ -54,6 +61,48 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
     public function get_indexes(){
         return $this->indexes;
+    }
+
+    protected function get_auto_detected_checkbox_fields(){
+        $auto_fields = array();
+        $patterns = $this->get_checkbox_patterns(); // ['is_', 'use_']
+        $non_checkbox = $this->get_non_checkbox_pattern_fields();
+
+        foreach ($this->columns as $name => $ddl) {
+            // 패턴 중 하나라도 매치되고 제외 목록에 없으면 체크박스로 간주
+            $matches_pattern = false;
+            foreach ($patterns as $pattern) {
+                if (strpos($name, $pattern) === 0) {
+                    $matches_pattern = true;
+                    break;
+                }
+            }
+
+            if ($matches_pattern && !in_array($name, $non_checkbox, true)) {
+                $auto_fields[] = $name;
+            }
+        }
+
+        return $auto_fields;
+    }
+
+    /**
+     * 명시적 정의 + 자동 감지 결합한 체크박스 필드 목록 반환
+     */
+    public function get_checkbox_fields(){
+        $explicit = is_array($this->checkbox_fields) ? $this->checkbox_fields : array();
+        $auto = $this->get_auto_detected_checkbox_fields();
+
+        // 중복 제거하여 합침
+        return array_values(array_unique(array_merge($explicit, $auto)));
+    }
+
+    public function get_non_checkbox_is_fields(){
+        return is_array($this->non_checkbox_is_fields) ? $this->non_checkbox_is_fields : array();
+    }
+
+    public function is_checkbox_field($field_name){
+        return in_array($field_name, $this->get_checkbox_fields(), true);
     }
 
     public function get_allowed_columns(){

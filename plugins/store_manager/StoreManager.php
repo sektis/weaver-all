@@ -69,7 +69,7 @@ class StoreManager extends Makeable{
 
     /** Makeable 훅(필요 시 1회 초기화) */
     public function init_once(){
-
+        wv_add_qstr(array('made','fields','wr_id'));
         if(wv_is_ajax())return;
         add_javascript('<script src="'.$this->plugin_url.'/js/parts.js?ver='.G5_JS_VER.'"></script>', 9);
         add_stylesheet('<link rel="stylesheet" href="'.$this->plugin_url.'/css/parts.css?ver='.G5_CSS_VER.'">', 9);
@@ -781,14 +781,7 @@ class StoreManager extends Makeable{
     }
 
 
-    /**
-     * 저장(set)
-     * - 폼이 part 중첩 배열 구조여도(set만으로) 처리되도록 내부 평탄화
-     * - wr_subject 비어오면 '/' 기본값 보정
-     * - wv_write_board() 호출 결과가 문자열(에러)이면 즉시 error()
-     * - 목록 파트(array_part=true)는 별도 테이블에 자동 저장
-     * @return int wr_id
-     */
+
     public function set($data = array()){
         global $member;
         $table = $this->get_ext_table_name();
@@ -858,7 +851,7 @@ class StoreManager extends Makeable{
                             foreach ($r as $key => $val) {
                                 $nr[$key] = wv_base64_decode_unserialize($val);
                             }
-                            $list_part_rows[] = $nr;
+                            $list_part_rows[$r['id']] = $nr;
                         }
 
                         $prev_ext_row[$pkey] = wv_base64_encode_serialize($list_part_rows);
@@ -908,6 +901,7 @@ class StoreManager extends Makeable{
 
                         $prev_decoded = wv_base64_decode_unserialize($prev_serialized);
 
+
                         $walk_function = function (&$arr, $arr2, $node) use ($is_list_part, &$data_pkey_logical_col, &$walk_function, $data, $prev_decoded) {
 
 
@@ -932,7 +926,10 @@ class StoreManager extends Makeable{
                             if ($is_delete and $is_new) {
                                 alert('delete : id가 없습니다.');
                             }
-                            if ($is_new and $arr2['id']) {
+                            if (!$is_list_part and $is_new and $arr2['id']) {
+
+
+
                                 alert('insert : key 중복생성');
                             }
                             if (!$is_new and $arr['id'] != $arr2['id']) {
@@ -1071,14 +1068,22 @@ class StoreManager extends Makeable{
 
             // === 확장테이블 업서트(허용 컬럼만) ===
             $filtered = array('wr_id' => $wr_id);
-            foreach ($data as $k => $v) {
-                if (in_array($k, $this->allowed_columns)) $filtered[$k] = $v;
+
+// ✅ 수정: $data에 실제로 있는 필드만 필터링
+            $original_data_keys = array_keys($data);
+            foreach ($original_data_keys as $k) {
+                if ($k === 'wr_id') continue; // wr_id는 이미 처리됨
+                if (in_array($k, $this->allowed_columns) && array_key_exists($k, $data)) {
+                    $filtered[$k] = $data[$k];
+                }
             }
 
+// 업데이트 로직도 개선
             if (count($filtered) > 1) {
                 $cols = array();
                 $vals = array();
                 $updates = array();
+
                 foreach ($filtered as $k => $v) {
                     $cols[] = "`{$k}`";
                     if (is_array($v)) {
@@ -1094,17 +1099,20 @@ class StoreManager extends Makeable{
                     }
                 }
 
-//                $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")
-//                ON DUPLICATE KEY UPDATE " . (count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
-                if($is_update){
-                    $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")
-                ON DUPLICATE KEY UPDATE " . (count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
-                }else{
-                    $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")";
-
+                // ✅ 개선: 기존 레코드가 있으면 UPDATE만, 없으면 INSERT
+                if ($is_update && $prev_ext_row['wr_id']) {
+                    // UPDATE만 실행 - $data에 있는 필드만 업데이트
+                    if (count($updates) > 0) {
+                        $update_sql = "UPDATE `{$table}` SET " . implode(',', $updates) . " WHERE wr_id = " . intval($wr_id);
+                        $this->execute_query_safe($update_sql, "ext_table_update");
+                    }
+                } else {
+                    // INSERT (신규 생성)
+                    if (count($filtered) > 1) {
+                        $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")";
+                        $this->execute_query_safe($sql, "ext_table_insert");
+                    }
                 }
-
-                $this->execute_query_safe($sql);
             }
             $this->execute_after_set_hooks($data, $wr_id);
             // === 목록 파트 저장 ===
@@ -1475,10 +1483,13 @@ class StoreManager extends Makeable{
     public function fetch_store_row($wr_id){
         $wr_id = (int)$wr_id;
         if ($wr_id <= 0) return array();
+
         $table = $this->get_ext_table_name();
-        $sql = "SELECT * FROM `{$table}` WHERE wr_id = {$wr_id} LIMIT 1";
+        $sql = "SELECT * FROM `{$table}` WHERE `wr_id` = '{$wr_id}'";
         $row = sql_fetch($sql);
-        return $row ? $row : array('wr_id' => $wr_id);
+
+        // ✅ 변경: 빈 행일 때 완전히 빈 배열 반환
+        return $row ? $row : array();
     }
 
     public function physical_col($part_key, $logical){
@@ -2408,25 +2419,65 @@ class StoreManager extends Makeable{
             $sel = array(); foreach($cols as $_c){ if(isset($emap[$_c])) $sel[] = '`'.$_c.'`'; }
             if(!count($sel)) continue;
 
-            $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE `wr_id` IN({$in}) ORDER BY `wr_id`, `ord`";
+            $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE `wr_id` IN({$in}) ORDER BY `wr_id`, `ord`, `id`";
             $result = sql_query($sql);
 
+//            while($row = sql_fetch_array($result)){
+//                $wid = (int)$row['wr_id'];
+//                if(!isset($out[$pkey])) $out[$pkey] = array();
+//                if(!isset($out[$pkey][$wid])) $out[$pkey][$wid] = array();
+//
+//                // 🔥 column_extend 적용 - 여기가 핵심!
+//                $this->apply_list_part_column_extend($row, $schema, $pkey, $out[$pkey][$wid]);
+//
+//                $out[$pkey][$wid][] = $row;
+//            }
             while($row = sql_fetch_array($result)){
                 $wid = (int)$row['wr_id'];
                 if(!isset($out[$pkey])) $out[$pkey] = array();
                 if(!isset($out[$pkey][$wid])) $out[$pkey][$wid] = array();
 
-                // 🔥 column_extend 적용 - 여기가 핵심!
                 $this->apply_list_part_column_extend($row, $schema, $pkey, $out[$pkey][$wid]);
 
-                $out[$pkey][$wid][] = $row;
+                // ✅ 핵심 변경: 배열 키를 DB row id로 사용
+                $row_id = isset($row['id']) ? (int)$row['id'] : 0;
+                if ($row_id > 0) {
+                    $out[$pkey][$wid][$row_id] = $row;
+                } else {
+                    // 안전장치: id가 없는 경우 기존 방식으로 폴백
+                    $out[$pkey][$wid][] = $row;
+                }
             }
         }
 
         return $out;
     }
 
-// 새 메서드 추가
+
+    /**
+     * 목록파트 특정 id 항목 조회
+     */
+    public function get_list_part_item($wr_id, $part_key, $item_id){
+        $list = $this->get_list_part_list($wr_id, $part_key);
+        return isset($list[$item_id]) ? $list[$item_id] : null;
+    }
+
+    /**
+     * 목록파트 id 목록 조회
+     */
+    public function get_list_part_ids($wr_id, $part_key){
+        $list = $this->get_list_part_list($wr_id, $part_key);
+        return array_keys($list);
+    }
+
+    /**
+     * 목록파트 개수 조회
+     */
+    public function get_list_part_count($wr_id, $part_key){
+        $list = $this->get_list_part_list($wr_id, $part_key);
+        return count($list);
+    }
+
     protected function apply_list_part_column_extend(&$row, $schema, $part_key, $all_rows = array()) {
         if (!is_object($schema) || !method_exists($schema, 'column_extend')) {
             return;
@@ -3024,6 +3075,9 @@ class StoreManager extends Makeable{
 
     public function rsync_mapping($bo_table){
         global $g5;
+
+return;
+
         $manager_ids = array('609','610','611','612','613');
         $category_ids = array(
             1=>'한식',
@@ -3043,7 +3097,7 @@ class StoreManager extends Makeable{
             15=>'체험',
             16=>'게시보류'
         );
-return;
+
         $write_table = $g5['write_prefix'].$bo_table;
         $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and  a.wr_is_comment=0    order by a.wr_id asc limit 1";
         $result = sql_query($sql);
@@ -3089,18 +3143,23 @@ return;
             }
 
             //contract
-            $data['contract'][0]['start'] = G5_TIME_YMD;
-            $data['contract'][0]['end'] = '2025-12-01';
-            $data['contract'][0]['last_modify'] = G5_TIME_YMD;
-            $data['contract'][0]['contractmanager_wr_id'] = $manager_ids[rand(1,5)];
-            $data['contract'][0]['contractitem_wr_id'] = 2;
-            $data['contract'][0]['status'] = 1;
-            $data['contract'][1]['start'] = G5_TIME_YMD;
-            $data['contract'][1]['end'] = '2025-12-01';
-            $data['contract'][1]['last_modify'] = G5_TIME_YMD;
-            $data['contract'][1]['contractmanager_wr_id'] = $manager_ids[rand(1,5)];
-            $data['contract'][1]['contractitem_wr_id'] = 3;
-            $data['contract'][1]['status'] = 1;
+            $data['contract'][] = array(
+              'start' =>G5_TIME_YMD,
+              'end' =>'2025-12-01',
+              'last_modify' =>G5_TIME_YMD,
+              'contractmanager_wr_id' =>$manager_ids[rand(0,4)],
+              'contractitem_wr_id' =>2,
+              'status' =>1,
+            );
+            $data['contract'][] = array(
+              'start' =>G5_TIME_YMD,
+              'end' =>'2025-12-01',
+              'last_modify' =>G5_TIME_YMD,
+              'contractmanager_wr_id' =>$manager_ids[rand(0,4)],
+              'contractitem_wr_id' =>3,
+              'status' =>1,
+            );
+
 
 
             //biz
@@ -3132,9 +3191,9 @@ return;
                     'mb_id'=>$row['mb_id'],
                     );
                 $post['member']['is_ceo']=1;
-                wv()->store_manager->made('member')->set($post);
+//                wv()->store_manager->made('member')->set($post);
             }
-dd($data);
+
 
 
             wv()->store_manager->made('sub01_01')->set($data);
@@ -3159,19 +3218,7 @@ dd($data);
         return $row;
     }
 
-    /** 캐싱이 적용된 ext_row 조회 */
-    protected function fetch_store_row_cached($wr_id) {
-        $wr_id = (int)$wr_id;
 
-        if (isset($this->ext_cache[$wr_id])) {
-            return $this->ext_cache[$wr_id];
-        }
-
-        $row = $this->fetch_store_row($wr_id);
-        $this->ext_cache[$wr_id] = $row;
-
-        return $row;
-    }
 
     /** 캐싱이 적용된 list_part 조회 */
     protected function fetch_list_part_rows_for_wr_ids_cached($wr_ids) {

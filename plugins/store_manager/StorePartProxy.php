@@ -354,4 +354,31 @@ class StorePartProxy{
         }
         return $this->virtual_keys;
     }
+
+    /**
+     * 목록파트 특정 id 항목 접근
+     */
+    public function get_item($item_id){
+        if (!$this->is_list_part()) return null;
+        $list = $this->ensure_list_rows();
+        return isset($list[$item_id]) ? $list[$item_id] : null;
+    }
+
+    /**
+     * 목록파트 id 목록 조회
+     */
+    public function get_ids(){
+        if (!$this->is_list_part()) return array();
+        $list = $this->ensure_list_rows();
+        return array_keys($list);
+    }
+
+    /**
+     * 목록파트 개수 조회
+     */
+    public function count(){
+        if (!$this->is_list_part()) return 0;
+        $list = $this->ensure_list_rows();
+        return count($list);
+    }
 }

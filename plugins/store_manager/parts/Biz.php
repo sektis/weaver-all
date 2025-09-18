@@ -12,7 +12,7 @@ class Biz extends StoreSchemaBase implements StoreSchemaInterface{
         'is_holiday_off' => "TINYINT(1)  DEFAULT 0",
         'parking'=>'varchar(255) not null'
     );
-
+    protected $checkbox_fields = array('is_holiday_off');
     protected $parking_max_char=20;
 
     public function get_indexes(){

@@ -15,6 +15,8 @@ class Storecategory extends StoreSchemaBase{
 
     );
 
+    protected $checkbox_fields = array('use');
+
     public function get_indexes(){
         return array(
             array(

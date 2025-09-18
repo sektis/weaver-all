@@ -113,6 +113,7 @@ if($action=='render_part'){
     exit;
 }
 if($action=='update'){
+
     $manager = wv()->store_manager->made($made);
     $wr_id = $manager->set($_POST);
     $store = $manager->get($wr_id);

@@ -16,6 +16,9 @@ class Menu extends StoreSchemaBase implements StoreSchemaInterface{
         'use_eum' => "TINYINT(1) NOT NULL DEFAULT 0",
         'inline_form'=>'',
     );
+
+    protected $checkbox_fields = array('is_main','use_eum');
+
     protected $image_max_count=8;
 
     public function get_indexes(){

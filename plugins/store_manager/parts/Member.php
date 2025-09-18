@@ -32,6 +32,7 @@ class Member extends StoreSchemaBase{
         );
     }
 
+
     public function column_extend($row,$all_row=array()){
         $arr = array();
         $arr['bank_info'] = $row['bank_name'].' | '.$row['bank_account_number'];

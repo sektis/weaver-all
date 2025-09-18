@@ -22,6 +22,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
 
     );
 
+
     protected $image_max_count=8;
 
     public function get_indexes(){

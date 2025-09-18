@@ -22,6 +22,8 @@ class Contractitem extends StoreSchemaBase{
 
     );
 
+    protected $checkbox_fields = array('is_free','use_schedule','use_intro');
+
     public function get_indexes(){
         return array(
             array()
