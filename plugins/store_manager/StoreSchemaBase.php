@@ -41,6 +41,8 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
     protected $checkbox_patterns = array('is_', 'use_');
 
+    protected $ajax_data_field = array('made' ,'part' ,'fields','wr_id','size' );
+
     public function set_context($manager, $bo_table, $part_key, $plugin_theme_path = ''){
         $this->manager           = $manager;
         $this->bo_table          = (string)$bo_table;
@@ -219,7 +221,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
             }
         }
 
-
+        $ajax_data =array_intersect_key($vars, array_flip($this->ajax_data_field));
 
         $skin_id = wv_make_skin_id();
         $skin_selector = wv_make_skin_selector($skin_id);

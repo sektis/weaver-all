@@ -19,6 +19,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         'first_item_wr_id'=>'',
         'mb_name'=>'',
         'cont_form'=>'',
+        'contract_item'=>'',
 
     );
 

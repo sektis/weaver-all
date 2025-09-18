@@ -28,6 +28,7 @@ class StoreManager extends Makeable{
     protected $meta_column = array('id'  ,'ord','delete' );
     protected $file_meta_column = array('source' ,'path' ,'type','created_at' );
     protected $file_arr_key = array('name' ,'type' ,'tmp_name','error','size' );
+
     protected $colmap = array(); // ['location' => ['lat'=>'location_lat', ...], ...]
 
     protected $list_db_runtime = null; // ['enabled'=>bool,'part'=>string,'wr_id'=>int,'schema'=>object]
@@ -69,7 +70,7 @@ class StoreManager extends Makeable{
 
     /** Makeable 훅(필요 시 1회 초기화) */
     public function init_once(){
-        wv_add_qstr(array('made','fields','wr_id'));
+//        wv_add_qstr(array('made','fields','wr_id','part','wv_relation_id'));
         if(wv_is_ajax())return;
         add_javascript('<script src="'.$this->plugin_url.'/js/parts.js?ver='.G5_JS_VER.'"></script>', 9);
         add_stylesheet('<link rel="stylesheet" href="'.$this->plugin_url.'/css/parts.css?ver='.G5_CSS_VER.'">', 9);
@@ -787,6 +788,7 @@ class StoreManager extends Makeable{
         $table = $this->get_ext_table_name();
         if (!is_array($data)) $data = array();
 
+        $org_data = $data;
 
         if(!isset($data['wr_id'])){
             alert('wr_id 누락');
@@ -794,7 +796,7 @@ class StoreManager extends Makeable{
 
 
         try {
-            $this->execute_query_safe("START TRANSACTION", "transaction_start");
+            wv_execute_query_safe("START TRANSACTION", "transaction_start");
 
             // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
             $existing_wr_id = $data['wr_id'] ? (int)$data['wr_id'] : 0;
@@ -844,7 +846,7 @@ class StoreManager extends Makeable{
                         $sql = "SELECT " . implode(',', array_map(function ($c) {
                                 return '`' . $c . '`';
                             }, $sel)) . " FROM `{$t}` WHERE wr_id='{$wr}'";
-                        $rs = $this->execute_query_safe($sql);
+                        $rs = wv_execute_query_safe($sql);
                         $list_part_rows = array();
                         while ($r = sql_fetch_array($rs)) {
                             $nr = array();
@@ -902,7 +904,7 @@ class StoreManager extends Makeable{
                         $prev_decoded = wv_base64_decode_unserialize($prev_serialized);
 
 
-                        $walk_function = function (&$arr, $arr2, $node) use ($is_list_part, &$data_pkey_logical_col, &$walk_function, $data, $prev_decoded) {
+                        $walk_function = function (&$arr, $arr2, $node) use ($is_list_part, &$data_pkey_logical_col, &$walk_function, $data, $prev_decoded,$pkey,$logical_col) {
 
 
                             if (!is_array($arr)) {
@@ -995,9 +997,17 @@ class StoreManager extends Makeable{
                                     }
                                     return false;
                                 } else {
-                                    if ($is_old_file) {
+
+                                    if($int_key and is_array($arr2)){
+//                                        echo "<pre>";
+//                                        echo $parent_key;
+//                                        print_r($arr2);
+//                                        echo "</pre>";
                                         $arr = array_merge($arr2, $arr);
                                     }
+//                                    if ($is_old_file) {
+//                                        $arr = array_merge($arr2, $arr);
+//                                    }
                                 }
 
                             }
@@ -1018,9 +1028,10 @@ class StoreManager extends Makeable{
 
 
                     if ($is_list_part) {
+
                         foreach ($data_pkey_logical_col as $row) {
                             if ($row['id'] and $row['delete']) {
-                                $this->execute_query_safe("DELETE FROM `{$t}` WHERE wr_id='" . intval($wr) . "' AND id='" . intval($row['id']) . "'");
+                                wv_execute_query_safe("DELETE FROM `{$t}` WHERE wr_id='" . intval($wr) . "' AND id='" . intval($row['id']) . "'");
                                 continue;
                             }
 
@@ -1030,8 +1041,10 @@ class StoreManager extends Makeable{
                             $sets['ord'] = sql_escape_string((string)$row['ord']);
 
                             foreach ($def_cols as $col => $_u) {
+                                if ($col === 'id' or $col == 'delete'  ) continue;
 
-                                if ($col === 'id' or $col == 'delete') continue;
+                                // 핵심: $row에 실제로 존재하는 컬럼만 업데이트
+                                if (!array_key_exists($col, $row)) continue;
 
                                 if (is_array($row[$col])) {
                                     $row[$col] = wv_base64_encode_serialize($row[$col]);
@@ -1039,10 +1052,16 @@ class StoreManager extends Makeable{
                                 $sets[$col] = sql_escape_string($row[$col]);
                             }
                             if ($row['id']) {
-                                $this->execute_query_safe("UPDATE `{$t}` SET " . wv_array_to_sql_set($sets) . " WHERE id='" . intval($row['id']) . "' AND wr_id='" . intval($wr) . "'");
+                                // ✅ 개선: $sets가 비어있으면 업데이트하지 않음
+                                if (count($sets) > 0) {
+//                                    echo "<pre>";
+//                                    print_r("UPDATE `{$t}` SET " . wv_array_to_sql_set($sets) . " WHERE id='" . intval($row['id']) . "' AND wr_id='" . intval($wr) . "'");
+//                                    echo "</pre>";
+                                    wv_execute_query_safe("UPDATE `{$t}` SET " . wv_array_to_sql_set($sets) . " WHERE id='" . intval($row['id']) . "' AND wr_id='" . intval($wr) . "'");
+                                }
                             } elseif (array_filter($row)) {
                                 $sets['wr_id'] = $wr;
-                                $this->execute_query_safe("INSERT INTO `{$t}` SET " . wv_array_to_sql_set($sets));
+                                wv_execute_query_safe("INSERT INTO `{$t}` SET " . wv_array_to_sql_set($sets));
                             }
 
                         }
@@ -1065,12 +1084,49 @@ class StoreManager extends Makeable{
                 }
             }
 
+            // === 확장테이블 업서트(허용 컬럼만) ===
+//            $filtered = array('wr_id' => $wr_id);
+//            foreach ($data as $k => $v) {
+//                if (in_array($k, $this->allowed_columns)) $filtered[$k] = $v;
+//            }
+//
+//            if (count($filtered) > 1) {
+//                $cols = array();
+//                $vals = array();
+//                $updates = array();
+//                foreach ($filtered as $k => $v) {
+//                    $cols[] = "`{$k}`";
+//                    if (is_array($v)) {
+//                        $v = wv_base64_encode_serialize($v);
+//                    }
+//
+//                    if ($v === null || (is_string($v) && strtoupper($v) === 'NULL')) {
+//                        $vals[] = "''";
+//                        if ($k !== 'wr_id') $updates[] = "`{$k}`=''";
+//                    } else {
+//                        $vals[] = "'" . sql_escape_string($v) . "'";
+//                        if ($k !== 'wr_id') $updates[] = "`{$k}`=VALUES(`{$k}`)";
+//                    }
+//                }
+//
+////                $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")
+////                ON DUPLICATE KEY UPDATE " . (count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
+//                if($is_update){
+//                    $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")
+//                ON DUPLICATE KEY UPDATE " . (count($updates) ? implode(',', $updates) : "`wr_id`=`wr_id`");
+//                }else{
+//                    $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")";
+//
+//                }
+//
+//                wv_execute_query_safe($sql);
+//            }
 
             // === 확장테이블 업서트(허용 컬럼만) ===
             $filtered = array('wr_id' => $wr_id);
 
 // ✅ 수정: $data에 실제로 있는 필드만 필터링
-            $original_data_keys = array_keys($data);
+            $original_data_keys = array_keys($org_data);
             foreach ($original_data_keys as $k) {
                 if ($k === 'wr_id') continue; // wr_id는 이미 처리됨
                 if (in_array($k, $this->allowed_columns) && array_key_exists($k, $data)) {
@@ -1092,10 +1148,13 @@ class StoreManager extends Makeable{
 
                     if ($v === null || (is_string($v) && strtoupper($v) === 'NULL')) {
                         $vals[] = "''";
+                        // ✅ 수정: UPDATE 구문에서는 VALUES() 대신 실제 값 사용
                         if ($k !== 'wr_id') $updates[] = "`{$k}`=''";
                     } else {
-                        $vals[] = "'" . sql_escape_string($v) . "'";
-                        if ($k !== 'wr_id') $updates[] = "`{$k}`=VALUES(`{$k}`)";
+                        $escaped_value = "'" . sql_escape_string($v) . "'";
+                        $vals[] = $escaped_value;
+                        // ✅ 수정: UPDATE 구문에서는 VALUES() 대신 실제 값 사용
+                        if ($k !== 'wr_id') $updates[] = "`{$k}`={$escaped_value}";
                     }
                 }
 
@@ -1104,24 +1163,25 @@ class StoreManager extends Makeable{
                     // UPDATE만 실행 - $data에 있는 필드만 업데이트
                     if (count($updates) > 0) {
                         $update_sql = "UPDATE `{$table}` SET " . implode(',', $updates) . " WHERE wr_id = " . intval($wr_id);
-                        $this->execute_query_safe($update_sql, "ext_table_update");
+
+                        wv_execute_query_safe($update_sql, "ext_table_update");
                     }
                 } else {
                     // INSERT (신규 생성)
                     if (count($filtered) > 1) {
                         $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")";
-                        $this->execute_query_safe($sql, "ext_table_insert");
+                        wv_execute_query_safe($sql, "ext_table_insert");
                     }
                 }
             }
             $this->execute_after_set_hooks($data, $wr_id);
             // === 목록 파트 저장 ===
             $this->clear_cache($wr_id);
-            $this->execute_query_safe("COMMIT", "transaction_commit");
+            wv_execute_query_safe("COMMIT", "transaction_commit");
 
             return $wr_id;
         } catch (\Exception $e) {
-            $this->execute_query_safe("ROLLBACK", "transaction_rollback");
+            wv_execute_query_safe("ROLLBACK", "transaction_rollback");
             alert($e->getMessage());
             return false;
         }

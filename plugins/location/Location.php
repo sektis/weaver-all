@@ -56,7 +56,10 @@ class Location extends Plugin {
     public function wv_hook_before_header_wrapper(){
 
         wv()->location->init_script();
-        wv()->location->current(true);
+        if(!get_session('wv_location_current_set')){
+            wv()->location->current(true);
+        }
+
     }
 
     public function set($name,$info=array(),$save_cookie=false){
@@ -75,6 +78,9 @@ class Location extends Plugin {
         }
 
         if($save_cookie){
+            if($name=='current'){
+                set_session('wv_location_current_set',true);
+            }
             set_cookie("wv_location_{$name}",wv_base64_encode_serialize($info),60 * 60 * 24 * 365);
         }
 

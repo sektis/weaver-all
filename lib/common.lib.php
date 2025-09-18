@@ -213,7 +213,7 @@ if(!function_exists('wv_add_qstr')){
                     }
 
                     $$val = preg_replace($rule, "", $$val);
-                    $qstr .= '&amp;'.$val.'=' . urlencode($$val);
+                    $qstr .= '&'.$val.'=' . urlencode($$val);
                 }
 
             } else {
@@ -811,7 +811,8 @@ if(!function_exists('wv_movie_display')){
 }
 if(!function_exists('wv_page_url')){
     function wv_page_url($wv_page_id,$query='',$wvd=''){
-        $query_arr = $query;
+
+        $query_arr = html_entity_decode($query);
 
         $page_qstr = "/?";
         $page_qstr_arr = array('wv_page_id'=>$wv_page_id);
@@ -1784,6 +1785,24 @@ if(!function_exists('wv_array_rename_keys')){
         return $result;
     }
 
+}
+if(!function_exists('wv_execute_query_safe')){
+    function wv_execute_query_safe($sql, $context = '') {
+        global $g5;
+
+        $result = sql_query($sql, false); // 에러 시 die() 방지
+
+        if (!$result) {
+
+            $error = mysqli_error($g5['connect_db']);
+            $errno = mysqli_errno($g5['connect_db']);
+
+            // 상세한 에러 정보와 함께 Exception 발생
+            throw new \Exception("Database Error in {$context}: [{$errno}] {$error}\nSQL: {$sql}");
+        }
+
+        return $result;
+    }
 }
 
 

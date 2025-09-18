@@ -102,7 +102,7 @@ if($action=='render_part'){
     $store = wv()->store_manager->made($made)->get($wr_id);
 
     ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),'form',$_POST);
+    echo $store->{$part}->render_part(explode(',',$fields),'form',$_REQUEST);
     $render_content = ob_get_clean();
     $skin_data = array(
         'store'=>$store,
@@ -119,14 +119,9 @@ if($action=='update'){
     $store = $manager->get($wr_id);
     if($fields){
         ob_start();
-        echo $store->{$part}->render_part(explode(',',$fields),'form',$_POST);
+        echo $store->{$part}->render_part(explode(',',$fields),'form',$_REQUEST);
         $render_content = ob_get_clean();
-        $skin_data = array(
-            'store'=>$store,
-            'render_content' => $render_content,
-            'made'=>$made
-        );
-        echo wv_widget('store_manager_form', $skin_data);
+        echo $render_content;
         exit;
     }
     wv_json_exit(array('wr_id'=>$wr_id));

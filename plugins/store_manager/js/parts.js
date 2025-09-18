@@ -190,7 +190,6 @@ $(document).ready(function () {
 
             if ($checkbox.is(':checked')) {
                 // 삭제 체크 시 - 미리보기 제거 및 파일 input 초기화
-                resetSingleImagePreview($wrapper);
                 $wrapper.find('input[type=file]').val('');
                 $deleteLabel.addClass('active');
             } else {

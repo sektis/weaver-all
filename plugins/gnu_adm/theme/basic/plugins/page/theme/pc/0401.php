@@ -110,12 +110,19 @@ $list = $result['list'];
                                     <td class="ff-Roboto-mono"><?php echo date('Y.m.d',strtotime($cont['start']))?><?php echo $cont['end']?'~':''; ?> <?php echo date('Y.m.d',strtotime($cont['end']))?></td>
                                     <td ><?php echo $cont['end']?"D-".wv_get_days_since($cont['end']):''; ?></td>
                                     <td ><?php echo $cont['status_html'] ?></td>
-                                    <td class="ff-Roboto-mono"><?php echo date('Y.m.d',strtotime($cont['last_modify'])); ?></td>
+                                    <td class="ff-Roboto-mono"><?php echo  wv_date_empty_chk($cont['last_modify'])?date('Y.m.d',strtotime($cont['last_modify'])):''; ?></td>
                                     <td ></td>
                                     <td >
                                         <div class="hstack justify-content-center gap-[6px]">
-                                            <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=sub01_01&action=render_part&part=contract&fields=cont_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
-                                               data-wv-ajax-data='{"contract_id":"<?php echo $cont['id']?>"}'
+                                            <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php'
+                                               data-wv-ajax-data='{
+                                               "made":"sub01_01",
+                                               "part":"contract",
+                                               "action":"render_part",
+                                               "fields":"cont_form",
+                                               "wr_id":"<?php echo $list[$i]['wr_id']; ?>",
+                                               "contract_id":"<?php echo $cont['id']?>"
+                                               }'
                                                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                                         </div>
                                     </td>

@@ -494,23 +494,26 @@ $(document).ready(function () {
             input.setSelectionRange(length, length);
         });
     });
-    $(document).loaded('.wv-form-check', function() {
+    $("body").loaded('.wv-form-check', function() {
         const $skin = $(this);
-        var $btn = $("[type=submit]", $skin);
-        var $requiredFields = $("input[required], textarea[required], select[required]", $skin);
-        var $allCheckboxes = $("input[type=checkbox]", $skin); // 모든 checkbox
         var isCheckingScheduled = false;
+
+        function getFields() {
+            return {
+                $btn: $("[type=submit]", $skin),
+                $requiredFields: $("input[required], textarea[required], select[required]", $skin),
+                $allCheckboxes: $("input[type=checkbox]", $skin)
+            };
+        }
 
         function isFieldValid(field) {
             var type = field.type;
             var value = field.value;
 
-            // checkbox, radio는 required인 것만 checked 확인
             if (type === 'checkbox' || type === 'radio') {
                 return !field.hasAttribute('required') || field.checked;
             }
 
-            // 나머지는 값 확인
             return value && value.trim() !== '' && value !== '0';
         }
 
@@ -519,18 +522,34 @@ $(document).ready(function () {
 
             isCheckingScheduled = true;
             requestAnimationFrame(function() {
-                var allValid = Array.prototype.every.call($requiredFields, isFieldValid);
-                $btn.toggleClass("active", allValid);
+                var fields = getFields(); // ✅ 매번 새로 조회
+                var allValid = Array.prototype.every.call(fields.$requiredFields, isFieldValid);
+                fields.$btn.toggleClass("active", allValid);
                 isCheckingScheduled = false;
             });
         }
 
-        // required 필드에 이벤트 바인딩
-        $requiredFields.on("input change", scheduleCheck);
+        function bindEvents() {
+            var fields = getFields();
 
-        // 모든 checkbox에도 이벤트 바인딩 (전체선택 등으로 인한 변경 감지)
-        $allCheckboxes.on("change", scheduleCheck);
+            // ✅ 기존 이벤트 제거 후 재바인딩
+            $skin.off("input.wvCheck change.wvCheck");
 
+            // ✅ 이벤트 위임 방식으로 바인딩
+            $skin.on("input.wvCheck change.wvCheck", "input[required], textarea[required], select[required]", scheduleCheck);
+            $skin.on("change.wvCheck", "input[type=checkbox]", scheduleCheck);
+        }
+
+        // ✅ 모든 필드 타입에 대해 감지
+        $skin.loaded('input, textarea, select', function() {
+            setTimeout(function() { // ✅ DOM 정착 후 실행
+                bindEvents();
+                scheduleCheck();
+            }, 10);
+        });
+
+        // 초기 설정
+        bindEvents();
         scheduleCheck();
     });
 
