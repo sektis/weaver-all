@@ -20,7 +20,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         'mb_name'=>'',
         'cont_form'=>'',
         'contract_item'=>'',
-
+        'start_end'=>'',
     );
 
     protected $status_text_array = array(

@@ -12,7 +12,7 @@ $page_title = '계약 및 상품 설정';
     <div class="content-inner-wrapper">
         <div class="hstack justify-content-between">
             <p class="fs-[18/25/-0.72/600/#0D171B] ff-Pretendard">계약 담당자 관리</p>
-            <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part&part=member&fields=manager_form'
+            <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part_form&part=member&fields=manager_form'
                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"   ><i class="fa-solid fa-plus"></i> 추가하기</a>
         </div>
         <div style="background-color: #efefef;height: 1px" class="wv-mx-fit mt-[16px]"></div>
@@ -38,7 +38,7 @@ $page_title = '계약 및 상품 설정';
                                    <p class="fs-[14/17/-0.56/500/#97989C]"><?php echo $list[$i]['wr_id']; ?> (<?php echo $list[$i]['mb_id']; ?>)</p>
                                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                       class="wv-data-list-delete-btn ms-auto">[삭제]</a>
-                                   <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part&part=member&fields=manager_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                   <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part_form&part=member&fields=manager_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                                </div>
 
@@ -58,7 +58,7 @@ $page_title = '계약 및 상품 설정';
     <div class="content-inner-wrapper">
         <div class="hstack justify-content-between">
             <p class="fs-[18/25/-0.72/600/#0D171B] ff-Pretendard">계약 상품 관리</p>
-            <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=render_part&part=contractitem&fields=item_form'
+            <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=render_part_form&part=contractitem&fields=item_form'
                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"   ><i class="fa-solid fa-plus"></i> 추가하기</a>
         </div>
         <div style="background-color: #efefef;height: 1px" class="wv-mx-fit mt-[16px]"></div>
@@ -84,7 +84,7 @@ $page_title = '계약 및 상품 설정';
                                 <p class="fs-[14/17/-0.56/500/#97989C]"><?php echo $list[$i]['contractitem']['name']; ?></p>
                                 <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                    class="wv-data-list-delete-btn ms-auto">[삭제]</a>
-                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=render_part&part=contractitem&fields=item_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=contract_item&action=render_part_form&part=contractitem&fields=item_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                    data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                             </div>
 
@@ -104,7 +104,7 @@ $page_title = '계약 및 상품 설정';
     <div class="content-inner-wrapper">
         <div class="hstack justify-content-between">
             <p class="fs-[18/25/-0.72/600/#0D171B] ff-Pretendard">업종 카테고리</p>
-            <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=store_category&action=render_part&part=storecategory&fields=item_form'
+            <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=store_category&action=render_part_form&part=storecategory&fields=item_form'
                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"   ><i class="fa-solid fa-plus"></i> 추가하기</a>
         </div>
         <div style="background-color: #efefef;height: 1px" class="wv-mx-fit mt-[16px]"></div>
@@ -134,7 +134,7 @@ $page_title = '계약 및 상품 설정';
 
                                 <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=store_category&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                    class="wv-data-list-delete-btn ms-auto">[삭제]</a>
-                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=store_category&action=render_part&part=storecategory&fields=item_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=store_category&action=render_part_form&part=storecategory&fields=item_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                    data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                             </div>
 

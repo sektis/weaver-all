@@ -111,7 +111,7 @@ $list = $result['list'];
                                     <div class="hstack justify-content-center gap-[6px]">
                                         <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                            class="wv-data-list-delete-btn  ">[삭제]</a>
-                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part&part=member&fields=member_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part_form&part=member&fields=member_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
                                            data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                                     </div>
                                 </td>
