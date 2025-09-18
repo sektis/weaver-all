@@ -1071,30 +1071,8 @@ class StoreManager extends Makeable{
 
 
             // === 평면화: 일반 파트만 물리 컬럼으로 펼치고 part 키 제거(목록 파트 제외) ===
-            if (count($this->parts)) {
-                foreach ($this->parts as $key => $schema) {
-                    if (!isset($data[$key]) || !is_array($data[$key])) continue;
-                    if ($this->is_list_part_schema($schema)) continue;
-
-                    foreach ($data[$key] as $k => $v) {
-                        $phys = $this->get_physical_col($key, $k);
-                        if (!array_key_exists($phys, $data)) $data[$phys] = $v;
-                    }
-                    unset($data[$key]);
-                }
-            }
-            if (count($this->parts)) {
-                foreach ($this->parts as $key => $schema) {
-                    if (!isset($org_data[$key]) || !is_array($org_data[$key])) continue;
-                    if ($this->is_list_part_schema($schema)) continue;
-
-                    foreach ($org_data[$key] as $k => $v) {
-                        $phys = $this->get_physical_col($key, $k);
-                        if (!array_key_exists($phys, $org_data)) $org_data[$phys] = $v;
-                    }
-                    unset($org_data[$key]);
-                }
-            }
+            $this->normalize_part_data($data);
+            $this->normalize_part_data($org_data, true);
 
             // === 확장테이블 업서트(허용 컬럼만) ===
 //            $filtered = array('wr_id' => $wr_id);
@@ -3403,6 +3381,38 @@ return;
             $this->list_cache = array_slice($this->list_cache, -$max_items, null, true);
         }
     }
-}
+
+    private function normalize_part_data(&$data, $is_org_data = false) {
+        if (!count($this->parts)) return;
+
+        $processed_parts = array();
+
+        foreach ($this->parts as $key => $schema) {
+            if ($this->is_list_part_schema($schema)) continue;
+            if (!isset($data[$key]) || !is_array($data[$key])) continue;
+
+            // 이미 처리된 파트는 스킵
+            if (isset($processed_parts[$key])) continue;
+
+            $part_data = $data[$key];
+
+            // 논리키 → 물리키 변환
+            foreach ($part_data as $logical_col => $value) {
+                $physical_col = $this->get_physical_col($key, $logical_col);
+
+                // 물리키가 이미 존재하지 않을 때만 설정
+                if (!array_key_exists($physical_col, $data)) {
+                    $data[$physical_col] = $value;
+                } elseif ($is_org_data) {
+                    // org_data의 경우 기존값 우선 유지
+                    continue;
+                }
+            }
+
+            // 파트 키 제거
+            unset($data[$key]);
+            $processed_parts[$key] = true;
+        }
+    }}
 
 StoreManager::getInstance();
