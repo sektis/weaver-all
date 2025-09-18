@@ -1,4 +1,4 @@
-<input type="text" name="mb_name" id="mb_name"
+<input type="text" name="" id=""
        class="form-control "
     readonly value="<?php echo $row['mb_mb_name']; ?>"
        placeholder="매장운영자" autocomplete="new-password">

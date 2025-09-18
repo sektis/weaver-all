@@ -2,7 +2,7 @@
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 global $g5;
 $vars['form_selector']=$skin_selector;
-
+ 
 ?>
 <style>
     <?php echo $skin_selector?> {}
@@ -42,12 +42,14 @@ $vars['form_selector']=$skin_selector;
                 </div>
             </div>
 
+            <?php if($contract_id){ ?>
             <div class="hstack align-items-start" >
                     <p class="text1 w-[75px] " style="line-height: var(--wv-31)">계약 상태</p>
                 <div class="col">
                     <div class="col"><?php echo $this->store->contract->render_part('status','form',$vars); ?></div>
                 </div>
             </div>
+            <?php } ?>
 
             <div class="hstack">
                 <p class="text1 w-[75px]" style="line-height: var(--wv-31)">계약상품</p>
@@ -69,6 +71,15 @@ $vars['form_selector']=$skin_selector;
                     <div class="col"><?php echo $this->store->contract->render_part('contractmanager_wr_id','form',$vars); ?></div>
                 </div>
             </div>
+
+            <?php if($contract_id){ ?>
+            <a href="#"  class="wv-flex-box border h-[39px]" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' data-wv-ajax-option="replace_with:<?php echo $skin_selector; ?>"
+               data-wv-ajax-data='<?php echo json_encode($ajax_data); ?>'
+               data-wv-ajax-data-add='{"action":"render_part"}'>
+                <i class="fa-solid fa-plus"></i>
+                <p class="fs-[14/17/-0.56/500/#0D171B]">계약추가</p>
+            </a>
+            <?php } ?>
 
         </div>
     </div>

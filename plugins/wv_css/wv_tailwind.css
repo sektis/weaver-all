@@ -129,6 +129,9 @@
   .list-item {
     display: list-item !important;
   }
+  .h-\[39px\] {
+    height: var(--wv-39) !important;
+  }
   .h-\[40px\] {
     height: var(--wv-40) !important;
   }
@@ -363,6 +366,13 @@
     letter-spacing: -0.04em !important;
     font-weight: 500 !important;
     color: #97989C !important;
+  }
+  .fs-\[14\/17\/-0\.56\/500\/\#0D171B\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #0D171B !important;
   }
   .fs-\[14\/17\/-0\.56\/500\/\#97989C\] {
     font-size: var(--wv-14) !important;
