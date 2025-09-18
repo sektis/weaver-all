@@ -138,6 +138,9 @@
   .h-\[43px\] {
     height: var(--wv-43) !important;
   }
+  .h-\[46px\] {
+    height: var(--wv-46) !important;
+  }
   .h-\[54px\] {
     height: var(--wv-54) !important;
   }
@@ -201,6 +204,9 @@
   .w-\[84px\] {
     width: var(--wv-84) !important;
   }
+  .w-\[125px\] {
+    width: var(--wv-125) !important;
+  }
   .w-\[140px\] {
     width: var(--wv-140) !important;
   }
@@ -246,6 +252,12 @@
   .resize {
     resize: both !important;
   }
+  .items-center {
+    align-items: center !important;
+  }
+  .justify-center {
+    justify-content: center !important;
+  }
   .gap-\[4px\] {
     gap: var(--wv-4) !important;
   }
@@ -278,6 +290,9 @@
   }
   .border-\[\#EFEFEF\] {
     border-color: #EFEFEF !important;
+  }
+  .border-\[\#FC5555\] {
+    border-color: #FC5555 !important;
   }
   .bg-\[\#29cc6a\] {
     background-color: #29cc6a !important;
@@ -312,6 +327,9 @@
   .px-\[12px\] {
     padding-inline: var(--wv-12) !important;
   }
+  .px-\[19px\] {
+    padding-inline: var(--wv-19) !important;
+  }
   .px-\[20px\] {
     padding-inline: var(--wv-20) !important;
   }
@@ -323,6 +341,9 @@
   }
   .py-\[8px\] {
     padding-block: var(--wv-8) !important;
+  }
+  .py-\[10px\] {
+    padding-block: var(--wv-10) !important;
   }
   .py-\[12px\] {
     padding-block: var(--wv-12) !important;
@@ -342,6 +363,13 @@
   .fs-\[11\/15\/-0\.44\/500\/\#97989C\] {
     font-size: var(--wv-11) !important;
     line-height: var(--wv-15) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #97989C !important;
+  }
+  .fs-\[11\/17\/-0\.44\/500\/\#97989C\] {
+    font-size: var(--wv-11) !important;
+    line-height: var(--wv-17) !important;
     letter-spacing: -0.04em !important;
     font-weight: 500 !important;
     color: #97989C !important;
@@ -415,6 +443,13 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0d171b !important;
+  }
+  .fs-\[14\/20\/-0\.56\/600\/\#FC5555\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-20) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #FC5555 !important;
   }
   .fs-\[16\/22\/-0\.64\/600\/\#0D171B\] {
     font-size: var(--wv-16) !important;

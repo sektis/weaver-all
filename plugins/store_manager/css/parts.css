@@ -76,6 +76,26 @@
     align-items: center;
 
 }
+label:has([name$='[delete]'])>span{
+    all:revert;
+    height: 100%;
+    display: flex;
+    gap: var(--wv-4);
+    color:#fc5555;
+    align-items: center;
+    cursor: pointer;
+}
+label:has([name$='[delete]'])>span:before{
+    content: "\f056";
+    font-weight: 900;
+    font-family: "Font Awesome 6 Free";
+    -webkit-font-smoothing: antialiased;
+    font-style: normal;
+    font-variant: normal;
+    line-height: 1;
+    text-rendering: auto;
+
+}
 
 .wv-ps-image {
     position: relative;

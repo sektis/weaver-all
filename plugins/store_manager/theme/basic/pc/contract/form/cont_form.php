@@ -11,8 +11,8 @@ $vars['form_selector']=$skin_selector;
     <?php echo $skin_selector?> .text2{font-size: var(--wv-14);font-weight: 500;color:#97989C;width: var(--wv-60)}
     <?php echo $skin_selector?> input, <?php echo $skin_selector?> select{height: var(--wv-39)}
 </style>
-<input type="hidden" name="contract[<?php echo $contract_id; ?>][id]" value="<?php echo $row['id']; ?>">
-<div class="vstack h-100 wmember-form" id="<?php echo $skin_id; ?>">
+<input type="hidden" name="<?php echo str_replace('[cont_form]','',$field_name); ?>[id]" value="<?php echo $row['id']; ?>">
+<div class="vstack h-100 " id="<?php echo $skin_id; ?>">
     <div class="wv-offcanvas-header col-auto">
         <div class="row align-items-center">
 
@@ -55,7 +55,7 @@ $vars['form_selector']=$skin_selector;
             <div class="hstack">
                 <p class="text1 w-[75px]" style="line-height: var(--wv-31)">계약상품</p>
                 <div class="col">
-                    <?php echo $this->store->contract->render_part('contract_item','form',$vars); ?>
+                    <?php echo $this->store->contract->render_part('contractitem_wr_id','form',$vars); ?>
                 </div>
             </div>
 
@@ -89,7 +89,21 @@ $vars['form_selector']=$skin_selector;
         </div>
     </div>
 
-    <div class="mt-auto pb-[50px]">
-        <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition mt-[22px]" style="border:0;border-radius: var(--wv-4)">확인</button>
+    <div class="mt-auto col-auto pb-[50px] hstack gap-[6px]">
+        <?php
+        $post_data=array(
+            'wr_id'=>$row['wr_id'],
+        );
+        $post_data['contract'][$contract_id]['delete']=1;
+        $post_data['contract'][$contract_id]['id']=$cont['id'];
+        ?>
+        <a href="#" class="w-[125px] h-[46px] px-[19px] py-[10px] flex justify-center items-center gap-[4px] rounded-[4px] border-[1px] border-solid border-[#FC5555] fs-[14/20/-0.56/600/#FC5555]"
+           data-wv-ajax-data='{
+                                               "made":"sub01_01",
+                                               "part":"contract",
+                                               "action":"update",
+                                               }'
+           data-wv-ajax-data-add='<?php echo json_encode($post_data); ?>'>계약 해지</a>
+        <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition " style="border:0;border-radius: var(--wv-4)">확인</button>
     </div>
 </div>

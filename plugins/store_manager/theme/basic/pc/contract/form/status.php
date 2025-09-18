@@ -14,8 +14,8 @@ $cont =  $row['contract'][$contract_id];
     <div class="mt-[18px]">
         <?php
         $post_data=array(
-            'wr_id'=>$row['wr_id'],
-            'contract_id'=>$contract_id
+            'contract_id'=>$contract_id,
+            'contract_id'=>$row['wr_id']
         );
         $post_data['contract'][$contract_id]['status']=$this->status_change_value_array[$cont['status']];
         $post_data['contract'][$contract_id]['id']=$cont['id'];
@@ -28,8 +28,8 @@ $cont =  $row['contract'][$contract_id];
                                                "part":"contract",
                                                "action":"update",
                                                "fields":"status",
-                                               "wr_id":"<?php echo $list[$i]['wr_id']; ?>",
-                                               "contract_id":"<?php echo $cont['id']?>"
+                                               "wr_id":"<?php echo $row['wr_id']; ?>"
+
                                                }'
         data-wv-ajax-data-add='<?php echo json_encode($post_data); ?>'>
 

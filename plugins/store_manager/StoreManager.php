@@ -801,13 +801,14 @@ class StoreManager extends Makeable{
             // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
             $existing_wr_id = $data['wr_id'] ? (int)$data['wr_id'] : 0;
             $is_update = $existing_wr_id > 0;
-            $this->execute_before_set_hooks($data, $existing_wr_id);
+            $this->execute_before_set_hooks($data);
 
 
             if ($existing_wr_id <= 0) {
                 if (!isset($data['wr_subject']) || !strlen(trim($data['wr_subject']))) {
                     $data['wr_subject'] = '/';
                 }
+
                 $wr_id = $this->create_post_stub_and_get_wr_id($data);
                 $data['wr_id'] = $wr_id;
                 $existing_wr_id = $wr_id;
@@ -986,7 +987,6 @@ class StoreManager extends Makeable{
 
 
                                 if ($is_delete) {
-
                                     wv_walk_by_ref_diff($arr, function (&$arr, $arr2, $node) {
                                         if (wv_array_has_all_keys($this->file_meta_column, $arr2)) {
                                             $this->delete_physical_paths_safely(array($arr2['path']));
@@ -1168,7 +1168,7 @@ class StoreManager extends Makeable{
                     }
                 }
             }
-            $this->execute_after_set_hooks($data, $wr_id);
+            $this->execute_after_set_hooks($data);
             // === 목록 파트 저장 ===
             $this->clear_cache($wr_id);
             wv_execute_query_safe("COMMIT", "transaction_commit");
@@ -1181,22 +1181,6 @@ class StoreManager extends Makeable{
         }
     }
 
-    private function execute_query_safe($sql, $context = '') {
-        global $g5;
-
-        $result = sql_query($sql, false); // 에러 시 die() 방지
-
-        if (!$result) {
-
-            $error = mysqli_error($g5['connect_db']);
-            $errno = mysqli_errno($g5['connect_db']);
-
-            // 상세한 에러 정보와 함께 Exception 발생
-            throw new \Exception("Database Error in {$context}: [{$errno}] {$error}\nSQL: {$sql}");
-        }
-
-        return $result;
-    }
 
     /** 삭제 */
     public function delete($wr_id){
@@ -1215,7 +1199,7 @@ class StoreManager extends Makeable{
         $table = $this->get_ext_table_name();
 
         foreach ($result['list'] as $row){
-            $this->execute_before_delete_hooks($row, $row['wr_id']);
+            $this->execute_before_delete_hooks($row);
             if (is_array($this->parts) && count($this->parts)) {
                 foreach ($this->parts as $pkey => $schema) {
                     $arr = $arr2 = $row[$pkey];
@@ -1234,7 +1218,7 @@ class StoreManager extends Makeable{
                 }
             }
             wv_delete_board_row($this->bo_table,$row['wr_id']);
-            $this->execute_after_delete_hooks($row, $row['wr_id']);
+            $this->execute_after_delete_hooks($row);
         }
         $write_table = $this->get_write_table_name();
         // 게시판의 글 수
@@ -1266,7 +1250,7 @@ class StoreManager extends Makeable{
 
     }
 
-    protected function execute_before_set_hooks(&$data, $wr_id) {
+    protected function execute_before_set_hooks(&$data) {
         if (!is_array($this->parts) || !count($this->parts)) {
             return;
         }
@@ -1278,7 +1262,7 @@ class StoreManager extends Makeable{
 
             try {
                 // before_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->before_set($data, $wr_id, $part_key, $this);
+                $schema->before_set($data);
 
                 // 로그 (선택사항)
                 if (function_exists('write_log')) {
@@ -1294,7 +1278,7 @@ class StoreManager extends Makeable{
     /**
      * After Set 훅 실행
      */
-    protected function execute_after_set_hooks($data,$wr_id) {
+    protected function execute_after_set_hooks($data) {
         if (!is_array($this->parts) || !count($this->parts)) {
             return;
         }
@@ -1306,7 +1290,7 @@ class StoreManager extends Makeable{
 
             try {
                 // after_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->after_set($data, $wr_id, $part_key, $this);
+                $schema->after_set($data);
 
                 // 로그 (선택사항)
                 if (function_exists('write_log')) {
@@ -1324,7 +1308,7 @@ class StoreManager extends Makeable{
     }
 
 
-    protected function execute_before_delete_hooks(&$data, $wr_id) {
+    protected function execute_before_delete_hooks(&$data) {
         if (!is_array($this->parts) || !count($this->parts)) {
             return;
         }
@@ -1336,7 +1320,7 @@ class StoreManager extends Makeable{
 
             try {
                 // before_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->before_delete($data, $wr_id, $part_key, $this);
+                $schema->before_delete($data);
 
                 // 로그 (선택사항)
                 if (function_exists('write_log')) {
@@ -1358,7 +1342,7 @@ class StoreManager extends Makeable{
         }
     }
 
-    protected function execute_after_delete_hooks($data,$wr_id) {
+    protected function execute_after_delete_hooks($data) {
         if (!is_array($this->parts) || !count($this->parts)) {
             return;
         }
@@ -1370,7 +1354,7 @@ class StoreManager extends Makeable{
 
             try {
                 // after_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->after_delete($data, $wr_id, $part_key, $this);
+                $schema->after_delete($data);
 
                 // 로그 (선택사항)
                 if (function_exists('write_log')) {

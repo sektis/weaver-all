@@ -136,7 +136,7 @@
                                     <div class="wv-ps-box ms-3">
                                         <label class="h-100">
                                             <input type="checkbox" class="d-none" name="menu[<?php echo $k; ?>][prices][<?php echo $pk; ?>][delete]" value="1">
-                                            <span class="btn btn-danger text-nowrap h-100 d-flex-center">삭제</span>
+                                            <span class=" ">삭제</span>
                                         </label>
                                     </div>
                                 </div>
@@ -201,7 +201,7 @@
                         <div class=" wv-ps-box ">
                             <label class=" ">
                                 <input type="checkbox" class="d-none" name="menu[<?php echo $k; ?>][delete]" value="1">
-                                <span class="btn w-100 border btn-danger">삭제</span>
+                                <span class=" ">삭제</span>
                             </label>
                         </div>
                     </div>

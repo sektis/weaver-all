@@ -504,24 +504,42 @@ function resetControl($el){
 }
 
 // 새 행에 인덱스를 부여하고 값 초기화
+// 새 행에 인덱스를 부여하고 값 초기화
 function reindexRow($row, pos, nextIndex){
+    // 1) name 속성 처리
     $row.find(':input[name]').each(function(){
         var $f = $(this);
         var oldName = $f.attr('name') || '';
 
         var newName = replaceRowIndexInName(oldName, pos, nextIndex);
         if (newName !== oldName) $f.attr('name', newName);
-// console.log(newName)
+
         // 값 초기화
         resetControl($f);
 
         // 보조 필드 규칙
         if (/\[id\]$/.test(newName))     $f.val('');             // 신규 id 비움
         if (/\[delete\]$/.test(newName)) $f.prop('checked', false).val('');
-        // if (/\[ord\]$/.test(newName))    $f.val(nextIndex + 1);  // 필요 시 정책 변경
+    });
+
+    // 2) id 속성 처리 - input, select, textarea 등
+    $row.find('[id]').each(function(){
+        var $el = $(this);
+        var oldId = $el.attr('id') || '';
+
+        var newId = replaceRowIndexInName(oldId, pos, nextIndex);
+        if (newId !== oldId) $el.attr('id', newId);
+    });
+
+    // 3) label for 속성 처리
+    $row.find('label[for]').each(function(){
+        var $label = $(this);
+        var oldFor = $label.attr('for') || '';
+
+        var newFor = replaceRowIndexInName(oldFor, pos, nextIndex);
+        if (newFor !== oldFor) $label.attr('for', newFor);
     });
 }
-
 function renumberPsList($ps_list){
     var n = 1;
 

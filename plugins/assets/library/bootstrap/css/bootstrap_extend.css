@@ -74,6 +74,10 @@
   .offcanvas-nested .offcanvas-backdrop {
     background-color: transparent !important;
   }
+  /*.wv-offcanvas-body{overflow-y: auto;overflow-x: hidden}*/
+  /*.offcanvas-body:has(.wv-offcanvas-body){*/
+  /*  overflow-y: hidden!important;*/
+  /*}*/
 }
 :root{--wv-form-select-required-icon: url(require.png);}
 /*html{overflow-y:revert-layer!important;}*/

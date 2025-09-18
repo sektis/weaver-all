@@ -1,11 +1,13 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 global $g5;
+
 ?>
 <style>
     <?php echo $skin_selector?> {}
 
 </style>
+
 <div class="vstack h-100 " id="<?php echo $skin_id; ?>">
     <div class="wv-offcanvas-header col-auto">
         <div class="row align-items-center">

@@ -248,7 +248,12 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
             }
         }
 
-        if ($is_list_item_mode && $item_id !== null) {
+        if ($this->is_list_part()) {
+
+            if($item_id === null){
+
+                $item_id =-5;//임시번호
+            }
             // 목록 파트 아이템 모드: part_key[item_id][column]
             $field_name = $this->part_key . '[' . $item_id . '][' . $column . ']';
         } else {

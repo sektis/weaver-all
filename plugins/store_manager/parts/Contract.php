@@ -77,5 +77,25 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
 
     public function before_set(&$data,  $wr_id,$pkey,$manager ) {
 
+        if (isset($data['memo']) && is_array($data['memo'])) {
+            $current_date = date('Y-m-d');
+
+            foreach ($data['memo'] as $k => $v) {
+                // 배열이 아니면 스킵
+                if (!is_array($v)) continue;
+
+                // 삭제 플래그가 있으면 스킵
+                if (isset($v['delete']) && $v['delete']) continue;
+
+                // text 값이 있고 (새로 입력된 것)
+                if (isset($v['text']) && !empty($v['text'])) {
+                    // id가 없거나 -1이면 새로운 항목으로 간주
+                    if (!isset($v['id']) || empty($v['id']) || $v['id'] == -1 || $v['id'] === '') {
+                        // date 키에 현재 날짜 추가
+                        $data['memo'][$k]['date'] = $current_date;
+                    }
+                }
+            }
+        }
     }
 }

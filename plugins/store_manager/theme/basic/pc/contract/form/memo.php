@@ -12,6 +12,7 @@ $this->make_array($row['memo']);
             <div class="wv-ps-each w-full <?php echo $demo_class; ?>">
                 <!-- 필수 hidden -->
                 <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]"  value="<?php echo $v['id']; ?>">
+                <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][date]"  value="<?php echo $v['date']; ?>">
                 <div class="d-flex justify-content-between  ">
 
                         <input
@@ -24,11 +25,12 @@ $this->make_array($row['memo']);
                             value="<?php echo $v['text']; ?>">
                         <label for="<?php echo $field_name; ?>[<?php echo $k; ?>][text]" class="visually-hidden">메모</label>
 
+                    <p class="fs-[11/17/-0.44/500/#97989C]"><?php echo $v['date']; ?></p>
 
                     <div class=" wv-ps-box ms-3  col-auto ">
                         <label class="h-100 ">
                             <input type="checkbox" class="d-none" name="<?php echo $field_name; ?>[<?php echo $k; ?>][delete]" value="1">
-                            <span class="btn w-100 h-100 border btn-danger d-flex-center">삭제</span>
+                            <span> 삭제</span>
                         </label>
                     </div>
                 </div>

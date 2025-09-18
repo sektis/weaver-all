@@ -3305,7 +3305,7 @@ if(!function_exists('wv_write_board')){
             return('w 값이 제대로 넘어오지 않았습니다.');
         }
 
-        if ($w='' and (!isset($post['wr_subject']) || !trim($post['wr_subject'])))
+        if ($w=='' and (!isset($post['wr_subject']) || !trim($post['wr_subject'])))
             return ('제목을 입력하여 주십시오.');
 
 
