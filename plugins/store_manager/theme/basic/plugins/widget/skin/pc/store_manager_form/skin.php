@@ -1,6 +1,7 @@
 <?php
 include_once '_common.php';
 global $g5;
+
 ?>
 <div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative h-100 flex-nowrap bg-white" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
     <style>

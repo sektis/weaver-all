@@ -201,18 +201,23 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
         $row = (isset($vars['row']) && is_array($vars['row'])) ? $vars['row'] : array();
 
+        // ===== 목록 파트 특수 처리 시작 =====
+        $item_id = null;
+        $is_list_item_mode = false;
+
+
+
+        // ===== 목록 파트 특수 처리 끝 =====
+
         // 기본: 논리키
-        $value = isset($row[$column]) ? $row[$column] : '';
+//        $value = isset($row[$column]) ? $row[$column] : '';
 
         // 논리키가 비면 물리키도 시도 (역호환/안전망)
-        if ($value === '' && $this->manager && method_exists($this->manager, 'get_physical_col') && strlen($this->part_key)) {
-            $physical = $this->manager->get_physical_col($this->part_key, $column);
-            if (isset($row[$physical])) $value = $row[$physical];
-        }
+//        if ($value === '' && $this->manager && method_exists($this->manager, 'get_physical_col') && strlen($this->part_key)) {
+//            $physical = $this->manager->get_physical_col($this->part_key, $column);
+//            if (isset($row[$physical])) $value = $row[$physical];
+//        }
 
-        $field_name = $this->part_key . '[' . $column . ']';
-        $part_key = $this->part_key;
-        $bo_table = $this->bo_table;
 
 
         if (is_array($vars) && count($vars)) {
@@ -220,6 +225,38 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
                 $$__k = $__v;
             }
         }
+
+        if ($this->is_list_part()) {
+            // {part_key}_id 변수 체크 (예: menu_id, store_id)
+            $id_key = $this->part_key . '_id';
+            if (isset($vars[$id_key]) && $vars[$id_key] !== '') {
+                $item_id = $vars[$id_key];
+                $is_list_item_mode = true;
+
+                // 해당 아이템을 $row에 직접 설정 (일반 파트처럼 접근 가능)
+                if (isset($vars['list']) && is_array($vars['list']) && isset($vars['list'][$item_id])) {
+
+                    // list에서 해당 아이템을 가져와서 $row에 병합
+                    $list_item = $vars['list'][$item_id];
+
+                    if (is_array($list_item)) {
+                        $wewe=1;
+                        $row = array_merge($row, $list_item);
+
+                    }
+                }
+            }
+        }
+
+        if ($is_list_item_mode && $item_id !== null) {
+            // 목록 파트 아이템 모드: part_key[item_id][column]
+            $field_name = $this->part_key . '[' . $item_id . '][' . $column . ']';
+        } else {
+            // 기본 모드: part_key[column]
+            $field_name = $this->part_key . '[' . $column . ']';
+        }
+        $part_key = $this->part_key;
+        $bo_table = $this->bo_table;
 
         $ajax_data =array_intersect_key($vars, array_flip($this->ajax_data_field));
 

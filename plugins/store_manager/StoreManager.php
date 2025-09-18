@@ -824,9 +824,12 @@ class StoreManager extends Makeable{
 
 
             // === 일반 파트: 배열/파일 필드 공통 처리 ===
-            if (is_array($this->parts) && count($this->parts)) {
-                foreach ($this->parts as $pkey => $schema) {
+            if (is_array($data) && count($data)) {
+                foreach ($data as $pkey => $part_data) {
 
+                    if (!isset($this->parts[$pkey])) continue;
+
+                    $schema = $this->parts[$pkey];
                     $allowed = $schema->get_allowed_columns();
                     $is_list_part = $this->is_list_part_schema($schema);
                     if ($is_list_part) {
