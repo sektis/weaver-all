@@ -44,6 +44,8 @@ class StoreManager extends Makeable{
     /** @var array list_part 캐시 */
     protected $list_cache = array();
 
+    protected $current_store=array();
+
     /**
      * ($id, $bo_table, array $schema_parts) 시그니처
      * - Basic 파트는 항상 먼저 바인딩
@@ -61,8 +63,6 @@ class StoreManager extends Makeable{
                 if (!in_array($key, $this->bound_schema_parts)) $this->bind_schema($key);
             }
         }
-
-
 
     }
 
@@ -801,7 +801,7 @@ class StoreManager extends Makeable{
             // 기존 wr_id가 있으면 이전 확장로우를 미리 읽어둠(일반 파트 b64 병합/보존용)
             $existing_wr_id = $data['wr_id'] ? (int)$data['wr_id'] : 0;
             $is_update = $existing_wr_id > 0;
-            $this->execute_before_set_hooks($data);
+            $this->execute_hook('before_set',$data);
 
 
             if ($existing_wr_id <= 0) {
@@ -969,6 +969,29 @@ class StoreManager extends Makeable{
 
                             }
 
+                            $get_hook_logical_col = function() use ($is_list_part, $logical_col, $pkey, $node) {
+                                // 기본값
+                                $hook_logical_col = $logical_col;
+
+                                // 목록파트이고 logical_col이 빈값일 때만 처리
+                                if ($is_list_part && empty($logical_col) && is_array($node) && count($node) > 0) {
+                                    if (isset($this->parts[$pkey])) {
+                                        $schema = $this->parts[$pkey];
+                                        if (method_exists($schema, 'get_allowed_columns')) {
+                                            $allowed_columns = $schema->get_allowed_columns();
+
+                                            foreach ($node as $node_item) {
+                                                if (is_string($node_item) && in_array($node_item, $allowed_columns)) {
+                                                    $hook_logical_col = $node_item;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                return $hook_logical_col;
+                            };
 
                             if ($is_new) {
 
@@ -982,11 +1005,13 @@ class StoreManager extends Makeable{
 
                                 if (!$is_list_part or (($is_list_part and count($node) < 2) === false)) {
                                     $arr['id'] = uniqid() . $parent_key;
+                                    $this->execute_hook('is_new',$arr,$pkey,$get_hook_logical_col());
                                 }
                             } else {
 
 
                                 if ($is_delete) {
+                                    $this->execute_hook('is_delete',$arr,$pkey,$get_hook_logical_col());
                                     wv_walk_by_ref_diff($arr, function (&$arr, $arr2, $node) {
                                         if (wv_array_has_all_keys($this->file_meta_column, $arr2)) {
                                             $this->delete_physical_paths_safely(array($arr2['path']));
@@ -998,10 +1023,11 @@ class StoreManager extends Makeable{
 
                                         @eval("$combined;");
                                     }
+
                                     return false;
                                 } else {
-
-                                    if($int_key and is_array($arr2)){
+                                    $this->execute_hook('is_update',$arr,$pkey,$get_hook_logical_col());
+                                    if(($int_key and is_array($arr2)) or $is_old_file){
 //                                        echo "<pre>";
 //                                        echo $parent_key;
 //                                        print_r($arr2);
@@ -1168,7 +1194,7 @@ class StoreManager extends Makeable{
                     }
                 }
             }
-            $this->execute_after_set_hooks($data);
+            $this->execute_hook('after_set',$data);
             // === 목록 파트 저장 ===
             $this->clear_cache($wr_id);
             wv_execute_query_safe("COMMIT", "transaction_commit");
@@ -1199,7 +1225,8 @@ class StoreManager extends Makeable{
         $table = $this->get_ext_table_name();
 
         foreach ($result['list'] as $row){
-            $this->execute_before_delete_hooks($row);
+            wv_execute_query_safe("START TRANSACTION", "transaction_start");
+            $this->execute_hook('before_delete',$row);
             if (is_array($this->parts) && count($this->parts)) {
                 foreach ($this->parts as $pkey => $schema) {
                     $arr = $arr2 = $row[$pkey];
@@ -1211,14 +1238,15 @@ class StoreManager extends Makeable{
                     $is_list_part = $this->is_list_part_schema($schema);
                     if ($is_list_part) {
                         $t   = $this->get_list_table_name($pkey);
-                        sql_query("DELETE FROM `{$t}` WHERE wr_id='{$row['wr_id']}'");
+                        wv_execute_query_safe("DELETE FROM `{$t}` WHERE wr_id='{$row['wr_id']}'");
                     }else{
-                        sql_query("DELETE FROM `{$table}` WHERE wr_id='{$row['wr_id']}'");
+                        wv_execute_query_safe("DELETE FROM `{$table}` WHERE wr_id='{$row['wr_id']}'");
                     }
                 }
             }
             wv_delete_board_row($this->bo_table,$row['wr_id']);
-            $this->execute_after_delete_hooks($row);
+            $this->execute_hook('after_delete',$row);
+            wv_execute_query_safe("COMMIT", "transaction_commit");
         }
         $write_table = $this->get_write_table_name();
         // 게시판의 글 수
@@ -1250,127 +1278,54 @@ class StoreManager extends Makeable{
 
     }
 
-    protected function execute_before_set_hooks(&$data) {
+    protected function execute_hook($hook_name, &$data, $pkey = '', $col = '') {
         if (!is_array($this->parts) || !count($this->parts)) {
             return;
         }
 
-        foreach ($this->parts as $part_key => $schema) {
-            if (!is_object($schema) || !method_exists($schema, 'before_set')) {
+        // $pkey가 지정된 경우 해당 파트만 처리
+        if (!empty($pkey)) {
+            if (!isset($this->parts[$pkey])) {
+                return;
+            }
+            $parts_to_process = array($pkey => $this->parts[$pkey]);
+        } else {
+            // 전체 파트 처리
+            $parts_to_process = $this->parts;
+        }
+
+        foreach ($parts_to_process as $part_key => $schema) {
+            if (!is_object($schema) || !method_exists($schema, $hook_name)) {
                 continue;
             }
 
             try {
-                // before_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->before_set($data);
+                // 훅 메서드 호출 - 파라미터 개수에 따라 다르게 호출
+                $schema->{$hook_name}($data, $pkey, $col);
 
                 // 로그 (선택사항)
                 if (function_exists('write_log')) {
-                    write_log("StoreManager: {$part_key} before_set executed", G5_DATA_PATH . '/log/store_hooks.log');
-                }
-
-            } catch (\Exception $e) {
-
-            }
-        }
-    }
-
-    /**
-     * After Set 훅 실행
-     */
-    protected function execute_after_set_hooks($data) {
-        if (!is_array($this->parts) || !count($this->parts)) {
-            return;
-        }
-
-        foreach ($this->parts as $part_key => $schema) {
-            if (!is_object($schema) || !method_exists($schema, 'after_set')) {
-                continue;
-            }
-
-            try {
-                // after_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->after_set($data);
-
-                // 로그 (선택사항)
-                if (function_exists('write_log')) {
-                    write_log("StoreManager: {$part_key} after_set executed", G5_DATA_PATH . '/log/store_hooks.log');
-                }
-
-            } catch (\Exception $e) {
-                // 에러 처리 (after_set은 보통 중단하지 않음)
-                $error_msg = "StoreManager after_set error in {$part_key}: " . $e->getMessage();
-                if (function_exists('write_log')) {
-                    write_log($error_msg, G5_DATA_PATH . '/log/store_errors.log');
-                }
-            }
-        }
-    }
-
-
-    protected function execute_before_delete_hooks(&$data) {
-        if (!is_array($this->parts) || !count($this->parts)) {
-            return;
-        }
-
-        foreach ($this->parts as $part_key => $schema) {
-            if (!is_object($schema) || !method_exists($schema, 'before_delete')) {
-                continue;
-            }
-
-            try {
-                // before_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->before_delete($data);
-
-                // 로그 (선택사항)
-                if (function_exists('write_log')) {
-                    write_log("StoreManager: {$part_key} before_set executed", G5_DATA_PATH . '/log/store_hooks.log');
+                    write_log("StoreManager: {$part_key} {$hook_name} executed", G5_DATA_PATH . '/log/store_hooks.log');
                 }
 
             } catch (\Exception $e) {
                 // 에러 처리
-                $error_msg = "StoreManager before_set error in {$part_key}: " . $e->getMessage();
+                $error_msg = "StoreManager {$hook_name} error in {$part_key}: " . $e->getMessage();
                 if (function_exists('write_log')) {
                     write_log($error_msg, G5_DATA_PATH . '/log/store_errors.log');
                 }
 
-                // 필요시 에러로 중단
-                if (method_exists($schema, 'is_before_set_critical') && $schema->is_before_set_critical()) {
-                    $this->error($error_msg);
+                // before_* 훅의 경우 critical 체크하여 중단 여부 결정
+                if (strpos($hook_name, 'before_') === 0) {
+                    $critical_method = 'is_' . $hook_name . '_critical';
+                    if (method_exists($schema, $critical_method) && $schema->{$critical_method}()) {
+                        $this->error($error_msg);
+                    }
                 }
+                // after_* 훅은 보통 중단하지 않음
             }
         }
     }
-
-    protected function execute_after_delete_hooks($data) {
-        if (!is_array($this->parts) || !count($this->parts)) {
-            return;
-        }
-
-        foreach ($this->parts as $part_key => $schema) {
-            if (!is_object($schema) || !method_exists($schema, 'after_delete')) {
-                continue;
-            }
-
-            try {
-                // after_set(데이터, 수정여부, wr_id, 파트키, 매니저)
-                $schema->after_delete($data);
-
-                // 로그 (선택사항)
-                if (function_exists('write_log')) {
-                    write_log("StoreManager: {$part_key} after_set executed", G5_DATA_PATH . '/log/store_hooks.log');
-                }
-
-            } catch (\Exception $e) {
-                // 에러 처리 (after_set은 보통 중단하지 않음)
-                $error_msg = "StoreManager after_set error in {$part_key}: " . $e->getMessage();
-                if (function_exists('write_log')) {
-                    write_log($error_msg, G5_DATA_PATH . '/log/store_errors.log');
-                }
-            }
-        }
-    }
-
 
 
     /** 단건 조회 → Store 객체 (write + ext row 동시 보유) */
@@ -1599,6 +1554,7 @@ class StoreManager extends Makeable{
             'page'       => 1,
             'rows'       => 20,
             'where'      => array(),
+            'where_default'      => array('w.wr_is_comment=0'),
             'select_w'   => 'w.*',
             'select_s'   => 'auto',
             'order_by'   => 'w.wr_id DESC',
@@ -1633,6 +1589,7 @@ class StoreManager extends Makeable{
 
         // WHERE 생성(공통/개별 write/base)
         $where_all = array();
+        $opts['where'] = array_filter(array_merge((array)$opts['where'], $opts['where_default']));
 
         if($opts['where']){
             if(is_array($opts['where'])){
@@ -1668,7 +1625,8 @@ class StoreManager extends Makeable{
                                 return false;
                             }
                             $physical_col = $this->get_physical_col($pkey, $parent_key);
-                            $arr ="($physical_col {$arr})";
+                            // 🔧 수정: 개별 조건에서 괄호 제거
+                            $arr ="{$physical_col} {$arr}";
                             return false;
                         }
 
@@ -1679,14 +1637,22 @@ class StoreManager extends Makeable{
                         }
 
                         if(in_array($parent_key,array('and','or'))){
-                            $arr = implode(" {$parent_key} ",$arr);
+                            // 🔧 and/or 그룹에서만 괄호 적용
+                            $wrapped = array_map(function($item) {
+                                return "($item)";
+                            }, $arr);
+                            $arr = implode(" {$parent_key} ", $wrapped);
                             return false;
                         }else{
-
-                            $arr = implode(" and ",array_filter($arr));
-
+                            // 🔧 숫자 키나 기타 키는 처리하지 않고 그대로 두기
+                            if(is_numeric($parent_key) || $parent_key === ''){
+                                // 숫자 인덱스는 그대로 두기 (배열의 첫 번째 요소만 사용)
+                                $arr = reset($arr);
+                            }else{
+                                // 기타 키는 기존 방식으로 and 연결
+                                $arr = implode(" and ",array_filter($arr));
+                            }
                         }
-
                         return false;
 
                     };
@@ -2519,12 +2485,13 @@ class StoreManager extends Makeable{
     }
 
     protected function apply_list_part_column_extend(&$row, $schema, $part_key, $all_rows = array()) {
+//    protected function apply_list_part_column_extend($row, $schema, $part_key, $all_rows = array()) {
         if (!is_object($schema) || !method_exists($schema, 'column_extend')) {
             return;
         }
 
         try {
-            $extended = $schema->column_extend($row, $all_rows);
+            $extended = $schema->column_extend(array_map('wv_base64_decode_unserialize',$row), $all_rows);
 
             if (is_array($extended) && count($extended)) {
                 foreach($extended as $key => $value) {
@@ -3139,7 +3106,7 @@ return;
         );
 
         $write_table = $g5['write_prefix'].$bo_table;
-        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and  a.wr_is_comment=0    order by a.wr_id asc limit 1";
+        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and a.wv_com!=1 and  a.wr_is_comment=0    order by a.wr_id asc limit 1000";
         $result = sql_query($sql);
 
 
@@ -3205,7 +3172,7 @@ return;
             //biz
             $data['biz']['parking']=get_text($row['wr_6']);
 
-            $sql2 = "select * from $write_table where wr_is_comment=1 and wr_parent='{$row['wr_id']}' order by wr_id asc, wr_order asc";
+            $sql2 = "select * from $write_table where wr_is_comment=1 and wr_parent='{$row['wr_id']}'  order by wr_id asc, wr_order asc";
 
             $result2 = sql_query($sql2);
             $i=0;
@@ -3218,11 +3185,14 @@ return;
 
                 $i++;
             }
+
             //menu
             if($row['mb_id']!='admin'){
                 $member_fetch = sql_fetch("select * from g5_write_member where mb_id='{$row['mb_id']}'");
                 if(!$member_fetch['wr_id']){
-                    alert($row['mb_id']);
+                    sql_query("update {$write_table} set wv_com = 1 where wr_id='{$row['wr_id']}'");
+                    continue;
+//                    alert($row['mb_id']);
                 }
                 $post = array(
                     'wr_subject'=>'/',
@@ -3231,7 +3201,7 @@ return;
                     'mb_id'=>$row['mb_id'],
                     );
                 $post['member']['is_ceo']=1;
-//                wv()->store_manager->made('member')->set($post);
+                wv()->store_manager->made('member')->set($post);
             }
 
 
@@ -3402,6 +3372,73 @@ return;
             unset($data[$key]);
             $processed_parts[$key] = true;
         }
-    }}
+    }
+
+
+
+    public function set_current_store($wr_id){
+        global $member;
+        $res = $this->get($wr_id);
+        if($member['mb_id']!=$res->mb_id){
+            alert('자신의 매장만 관리할 수 있습니다.');
+        }
+        $arr = array(
+            'wr_id'=>$res->wr_id,
+            'name'=>$res->store->name
+        );
+
+        $this->current_store = $arr;
+        set_cookie("wv_store_manager_current_store",wv_base64_encode_serialize($arr),60 * 60 * 24 * 365);
+
+
+    }
+
+
+
+    public function get_current_store(){
+        global $member;
+        $arr = $this->current_store;
+        if(count($arr)){
+            return $arr;
+        }
+
+
+        $arr = wv_base64_decode_unserialize(get_cookie('wv_store_manager_current_store'));
+
+        if(array_filter($arr)){
+            $this->current_store = $arr;
+            return $arr;
+        }
+
+        $get_list_option = array(
+            'where'=>"w.mb_id='{$member['mb_id']}'",
+
+            'where_location' =>    array(
+                'and'=>array(
+                    array('lat'=>"<>''"),
+                    array('lng'=>"<>''"),
+                )
+            ),
+            'rows'=>1,
+        );
+        $result = wv()->store_manager->made('sub01_01')->get_list($get_list_option);
+
+        if(count($result['list'])){
+            $row = $result['list'][0];
+            $arr = array(
+                'wr_id'=>$row['wr_id'],
+                'name'=>$row['store']['name']
+            );
+            $this->current_store = $arr;
+            set_cookie("wv_store_manager_current_store",wv_base64_encode_serialize($arr),60 * 60 * 24 * 365);
+            return $arr;
+        }
+
+        return false;
+
+    }
+}
+
+
 
 StoreManager::getInstance();
