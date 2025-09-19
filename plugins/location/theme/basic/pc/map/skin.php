@@ -58,14 +58,15 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
     </button>
 
     <!-- 카카오맵 API 및 클러스터링 라이브러리 로드 -->
-<!--    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=--><?php //echo $this->kakao_js_apikey?><!--&libraries=clusterer,services"></script>-->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<?php echo $config['cf_kakao_js_apikey']?>&libraries=clusterer,services"></script>
 
     <!-- 카카오맵 컨테이너 -->
     <div id="<?php echo $map_id; ?>" class="kakao-map"></div>
 
     <!-- 매장 정보 패널 -->
-    <div class="store-info-panel"  >
+    <div class="store-info-panel">
         <div class="store-info-content"></div>
+        <button type="button" class="store-info-panel-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 18px; cursor: pointer;">&times;</button>
     </div>
     <a href="" class="store-list-btn"><i class="fa-solid fa-bars"></i><span>목록으로 보기</span></a>
 
@@ -74,6 +75,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
         function checkKakaoLibraries() {
 
             if (typeof kakao !== 'undefined' && kakao.maps && typeof kakao.maps.MarkerClusterer === 'function') {
+
                 return true;
             } else {
                 return false;
@@ -110,7 +112,6 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                 if ($heightWrapper.length) {
                     var wrapperHeight = $heightWrapper.outerHeight();
                     var currentHeight = wrapperHeight > 0 ? wrapperHeight : 400;
-                    console.log('height', currentHeight + 'px')
                     $skin.css('height', currentHeight + 'px');
                 }
             }
@@ -157,9 +158,36 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                         clusterer = new kakao.maps.MarkerClusterer({
                             map: map,
                             averageCenter: true,
-                            minLevel: Math.max(minLevel + 2, 6)
+                            minLevel: Math.max(minLevel + 2, 6),
+                            disableClickZoom: true,  // 기본 클릭 줌 비활성화
+                            calculator: [10, 30, 50],
                         });
+                        kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
+                            var clusterMarkers = cluster.getMarkers();
+                            if (clusterMarkers.length > 0) {
+                                var bounds = new kakao.maps.LatLngBounds();
 
+                                // 클러스터 내 모든 마커의 위치를 포함하는 영역 계산
+                                for (var i = 0; i < clusterMarkers.length; i++) {
+                                    bounds.extend(clusterMarkers[i].getPosition());
+                                }
+
+                                // 영역 중심점 계산
+                                var centerLat = (bounds.getNorthEast().getLat() + bounds.getSouthWest().getLat()) / 2;
+                                var centerLng = (bounds.getNorthEast().getLng() + bounds.getSouthWest().getLng()) / 2;
+                                var clusterCenter = new kakao.maps.LatLng(centerLat, centerLng);
+
+                                // 현재 줌 레벨보다 1-2 단계 확대
+                                var currentLevel = map.getLevel();
+                                var newLevel = Math.max(currentLevel - 2, minLevel + 1);
+
+                                // 부드러운 이동과 줌 조정
+                                map.panTo(clusterCenter);
+                                setTimeout(function() {
+                                    map.setLevel(newLevel);
+                                }, 300);  // 이동 후 줌 조정
+                            }
+                        });
                     } else {
                         isClusterEnabled = false;
                         clusterer = null;
@@ -172,19 +200,30 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
 
             // 지도 이벤트 설정
             function setupMapEvents() {
-                // 지도 이동 완료 이벤트
-                kakao.maps.event.addListener(map, 'idle', function() {
-                    triggerMapChangeEvent();
-                });
+                var mapChangeTimeout;
 
-                // 지도 줌 변경 이벤트
-                kakao.maps.event.addListener(map, 'zoom_changed', function() {
-                    triggerMapChangeEvent();
-                });
+                // 지도 변경 이벤트를 지연 처리하는 함수
+                function scheduleMapEvent() {
+                    clearTimeout(mapChangeTimeout);
+                    closeStoreInfoPanel();
+                    clearSelectedMarkers();  // 마커 선택 해제 추가
+                    mapChangeTimeout = setTimeout(function() {
+                        triggerMapEvent();
+                    }, 300);
+                }
+
+                // 지도 중심 변경과 줌 변경 이벤트 모두 동일한 함수 사용
+                kakao.maps.event.addListener(map, 'center_changed', scheduleMapEvent);
+                kakao.maps.event.addListener(map, 'zoom_changed', scheduleMapEvent);
+
+                // 기존 idle 이벤트는 제거 (중복 방지)
+                // kakao.maps.event.addListener(map, 'idle', function() {
+                //     triggerMapChangeEvent();
+                // });
             }
 
             // 지도 변경 이벤트 발생
-            function triggerMapChangeEvent() {
+            function triggerMapEvent() {
                 var bounds = map.getBounds();
                 var center = map.getCenter();
                 var level = map.getLevel();
@@ -223,7 +262,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                         var lng = position.coords.longitude;
                         var moveLatLng = new kakao.maps.LatLng(lat, lng);
 
-                        map.setCenter(moveLatLng);
+                        map.panTo(moveLatLng);
                         showLoading(false);
                     }, function(error) {
                         showLoading(false);
@@ -256,7 +295,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
 
             // 매장 데이터 업데이트 이벤트 리스닝
             $(document).on('wv_location_place_updated', function(event, data) {
-                // console.log('매장 데이터 업데이트:', data);
+                console.log('매장 데이터 업데이트:', data);
 
                 // 카테고리 아이콘 래핑 이미지 경로 저장
                 if (data.category_icon_wrap) {
@@ -383,13 +422,54 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             function updateStoreMarkers(lists, response) {
                 if (!map) return;
 
-                // 기존 마커 제거
-                clearAllMarkers();
+                // 새로운 매장 목록에서 wr_id 추출
+                var newStoreIds = lists.map(function(place) {
+                    return place.wr_id;
+                });
 
+                // 기존 마커들에서 wr_id 추출
+                var existingStoreIds = markers.map(function(marker) {
+                    return marker.storeData ? marker.storeData.wr_id : null;
+                }).filter(function(id) { return id !== null; });
+
+                // 1. 제거할 마커들 (기존에 있지만 새 목록에 없는 것들)
+                var markersToRemove = markers.filter(function(marker) {
+                    return marker.storeData && newStoreIds.indexOf(marker.storeData.wr_id) === -1;
+                });
+
+                // 2. 추가할 매장들 (새 목록에 있지만 기존에 없는 것들)
+                var storesToAdd = lists.filter(function(place) {
+                    return existingStoreIds.indexOf(place.wr_id) === -1;
+                });
+
+                // 3. 제거할 마커들 처리
+                markersToRemove.forEach(function(marker) {
+                    if (isClusterEnabled && clusterer) {
+                        try {
+                            clusterer.removeMarker(marker);
+                        } catch (error) {
+                            marker.setMap(null);
+                        }
+                    } else {
+                        marker.setMap(null);
+                    }
+
+                    // markers 배열에서 제거
+                    var index = markers.indexOf(marker);
+                    if (index > -1) {
+                        markers.splice(index, 1);
+                    }
+                });
+
+                // 4. 새로운 마커들 추가
                 var processedMarkers = 0;
-                var totalMarkers = lists.length;
+                var totalNewMarkers = storesToAdd.length;
 
-                lists.forEach(function(place, index) {
+                if (totalNewMarkers === 0) {
+                    return; // 추가할 마커가 없으면 종료
+                }
+
+                storesToAdd.forEach(function(place, index) {
                     if (!place.location.lat || !place.location.lng) {
                         processedMarkers++;
                         return;
@@ -427,7 +507,6 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                             try {
                                 clusterer.addMarker(marker);
                             } catch (error) {
-                                console.warn('클러스터에 마커 추가 실패:', error);
                                 marker.setMap(map);
                             }
                         } else {
@@ -437,18 +516,18 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                         markers.push(marker);
                         processedMarkers++;
 
-                        // 모든 마커 처리 완료 시
-                        if (processedMarkers === totalMarkers) {
-                            // console.log('마커 업데이트 완료:', markers.length + '개');
+                        // 모든 새 마커 처리 완료 시
+                        if (processedMarkers === totalNewMarkers) {
+                            // 처리 완료
                         }
                     });
                 });
             }
-
             /**
              * 마커 클릭 처리 함수
              */
             function handleMarkerClick(clickedMarker, place, response) {
+
                 // 기존 선택 해제
                 clearSelectedMarkers();
 
@@ -467,7 +546,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                 }
 
                 // 매장 정보 패널 표시
-                showStoreInfoPanel(place, response);
+                showStoreInfoPanel(place);
             }
 
             /**
@@ -475,7 +554,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
              */
             function clearSelectedMarkers() {
                 markers.forEach(function(marker) {
-                    if (marker.isSelected && marker.markerId !== selectedMarkerId) {
+                    if (marker.isSelected) {  // 조건 수정: 모든 선택된 마커 해제
                         marker.isSelected = false;
                         // 원래 이미지로 복원 (비선택 상태)
                         createCustomMarkerImage(marker.categoryIcon, false, function(originalImage) {
@@ -512,38 +591,36 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             /**
              * 매장 정보 패널 표시
              */
-            var $bot_info = $('.store-info-panel',$skin);
+            var $bot_info = $('.store-info-panel', $skin);
             function showStoreInfoPanel(place) {
+                if (place.store && place.store.list_each) {
+                    console.log($bot_info);
+                    $(".store-info-content", $bot_info).html(place.store.list_each);
+                    $bot_info.addClass('active');
+                } else {
+                    // list_each가 없으면 기본 정보로 표시
+                    var storeName = place.name || (place.store && place.store.name) || '매장명 없음';
+                    var storeAddress = (place.location && place.location.address_name) || '주소 정보 없음';
+                    var storeCategory = (place.store && place.store.category_text) || '';
 
-                if (place.store.list_each) {
+                    var basicHtml = '<div class="store-info-card">' +
+                        '<h4>' + storeName + '</h4>' +
+                        (storeCategory ? '<p class="category">' + storeCategory + '</p>' : '') +
+                        '<p class="address">' + storeAddress + '</p>' +
+                        '</div>';
 
-                    console.log($bot_info)
-                    $(".store-info-content",$bot_info).html(place.store.list_each)
+                    $(".store-info-content", $bot_info).html(basicHtml);
                     $bot_info.addClass('active');
                 }
             }
+
             function closeStoreInfoPanel() {
-
-                $bot_info.removeClass('active')
+                $bot_info.removeClass('active');
             }
-            $(".store-info-panel-close",$skin).click(function () {
-                closeStoreInfoPanel()
-            })
 
-            /**
-             * 매장 정보 HTML 생성
-             */
-            function generateStoreInfoHtml(place) {
-                var storeName = place.name || place.store.name || '매장명 없음';
-                var storeAddress = place.location.address_name || '주소 정보 없음';
-                var storeCategory = place.store.category_text || '';
-
-                return '<div class="store-info-card">' +
-                    '<h4>' + storeName + '</h4>' +
-                    (storeCategory ? '<p class="category">' + storeCategory + '</p>' : '') +
-                    '<p class="address">' + storeAddress + '</p>' +
-                    '</div>';
-            }
+            $(".store-info-panel-close", $skin).click(function() {
+                closeStoreInfoPanel();
+            });
 
             // 초기화 실행
             initMap();

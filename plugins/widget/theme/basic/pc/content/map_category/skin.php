@@ -128,22 +128,22 @@ $rows = $result['list'];
 
             const swiperElement = document.querySelector("<?php echo $skin_selector?>-swiper");
 
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            swiper.autoplay.start();
-                        } else {
-                            swiper.autoplay.stop();
-                        }
-                    });
-                },
-                {
-                    threshold: 0.5, // 슬라이더의 50% 이상이 보여야 동작
-                }
-            );
-
-            observer.observe(swiperElement);
+            // const observer = new IntersectionObserver(
+            //     (entries) => {
+            //         entries.forEach((entry) => {
+            //             if (entry.isIntersecting) {
+            //                 swiper.autoplay.start();
+            //             } else {
+            //                 swiper.autoplay.stop();
+            //             }
+            //         });
+            //     },
+            //     {
+            //         threshold: 0.5, // 슬라이더의 50% 이상이 보여야 동작
+            //     }
+            // );
+            //
+            // observer.observe(swiperElement);
 
             function slide_first_ready(swiper){
                 var $slide = $(swiper.slides[swiper.activeIndex]);

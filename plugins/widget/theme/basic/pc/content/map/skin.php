@@ -80,6 +80,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                             ne_lat: data.bounds.ne_lat,
                             ne_lng: data.bounds.ne_lng,
                             curr_coords: data.center,
+                            where:<?php echo json_encode($data['where'])?>
                         },
                         success: function(response) {
 

@@ -191,6 +191,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                     // 통합 timeout으로 중복 호출 방지
                     var mapChangeTimeout;
 
+
                     function scheduleMapEvent() {
                         clearTimeout(mapChangeTimeout);closeStoreInfoPanel()
                         mapChangeTimeout = setTimeout(function() {
@@ -201,7 +202,6 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                     // 두 이벤트 모두 동일한 함수 사용
                     kakao.maps.event.addListener(map, 'center_changed', scheduleMapEvent);
                     kakao.maps.event.addListener(map, 'zoom_changed', scheduleMapEvent);
-
                     showLoading(false);
                     triggerMapEvent();
 

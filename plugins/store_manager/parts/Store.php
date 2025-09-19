@@ -43,7 +43,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         $arr['main_image'] =  $first_image['path'];
         if(isset($row['list_each'])){
             $row['wr_id'] = $all_row['wr_id'];
-            $arr['list_each'] =  $this->manager->store->render_part('list_each','view',array('row'=>$row));
+            $arr['list_each'] =  $this->manager->get($row['wr_id'])->store->render_part('list_each','view');
         }
         if(isset($row['list_main'])){
             $row['wr_id'] = $all_row['wr_id'];
