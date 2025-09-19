@@ -87,8 +87,8 @@ if($action == 'get_stores_by_bounds'){
         'content' => array(
             'count' => $result['total_count'],
             'lists' => $result['list'],
-            'category_icon_wrap'=>wv()->store_manager->made('sub01_01')->plugin_url.'/img/category_list/small/category_icon_wrap.png',
-            'category_icon_wrap_on'=>wv()->store_manager->made('sub01_01')->plugin_url.'/img/category_list/small/category_icon_wrap_on.png',
+            'category_icon_wrap'=>wv()->store_manager->made('sub01_01')->plugin_url.'/img/category_icon_wrap.png',
+            'category_icon_wrap_on'=>wv()->store_manager->made('sub01_01')->plugin_url.'/img//category_icon_wrap_on.png',
 
             'timestamp' => time()
         )

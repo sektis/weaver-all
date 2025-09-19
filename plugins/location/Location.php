@@ -40,7 +40,7 @@ class Location extends Plugin {
         );
 
         if(!wv_is_ajax()){
-            add_javascript('<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey='.$this->kakao_js_apikey.'&libraries=services"></script>');
+            add_javascript('<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey='.$this->kakao_js_apikey.'&libraries=services,clusterer"></script>');
         }
 
         $this->ajax_url = wv_path_replace_url(dirname(__FILE__)).'/ajax.php';

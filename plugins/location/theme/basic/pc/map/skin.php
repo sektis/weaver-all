@@ -5,7 +5,7 @@
  *
  * 카카오맵 + 클러스터링 기능
  * 현재위치부터 시작, wv_location_map_changeed 이벤트 발송
- * category_icon 커스텀 마커 표시
+ * category_icon 커스텀 마커 표시 + category_icon_wrap 배경 적용
  */
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
@@ -36,7 +36,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                                         padding: var(--wv-8) var(--wv-18);
                                         justify-content: center;
                                         align-items: center;
-                                    font-size: var(--wv-12);font-weight: 500;background-color: #0d171b;color:#fff;
+                                        font-size: var(--wv-12);font-weight: 500;background-color: #0d171b;color:#fff;
                                         position:absolute; left:50%;bottom:var(--wv-17); ;border-top:1px solid #ddd; ;z-index:1000;transform: translateX(-50%);
                                     }
 
@@ -58,7 +58,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
     </button>
 
     <!-- 카카오맵 API 및 클러스터링 라이브러리 로드 -->
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<?php echo $config['cf_kakao_js_apikey']?>&libraries=clusterer,services"></script>
+<!--    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=--><?php //echo $this->kakao_js_apikey?><!--&libraries=clusterer,services"></script>-->
 
     <!-- 카카오맵 컨테이너 -->
     <div id="<?php echo $map_id; ?>" class="kakao-map"></div>
@@ -70,6 +70,16 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
     <a href="" class="store-list-btn"><i class="fa-solid fa-bars"></i><span>목록으로 보기</span></a>
 
     <script>
+        // 카카오맵 라이브러리 로드 확인
+        function checkKakaoLibraries() {
+
+            if (typeof kakao !== 'undefined' && kakao.maps && typeof kakao.maps.MarkerClusterer === 'function') {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         $(document).ready(function(){
             var $skin = $("<?php echo $skin_selector?>");
             var mapId = '<?php echo $map_id; ?>';
@@ -80,35 +90,106 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             var map, clusterer;
             var isClusterEnabled = <?php echo $enable_clustering ? 'true' : 'false'; ?>;
             var markers = [];
+            var selectedMarkerId = null;
 
-            /**
-             * 높이 업데이트 함수
-             */
-            function updateMapHeight() {
-                var $target = $(heightSelector);
-                if ($target.length > 0) {
-                    var targetHeight = $target.height();
-                    if (targetHeight > 0) {
-                        $skin.height(targetHeight);
-                        if (map) {
-                            map.relayout();
-                        }
-                    }
+            // 카테고리 아이콘 래핑 이미지 경로 (전역 변수)
+            var categoryIconWrap = '';
+            var categoryIconWrapOn = '';
+
+            var bounds = new kakao.maps.LatLngBounds();
+
+            // 카카오맵 라이브러리 상태 확인
+            var clustererAvailable = checkKakaoLibraries();
+            if (!clustererAvailable && isClusterEnabled) {
+                isClusterEnabled = false;
+            }
+
+            // 지도 높이 설정
+            function setMapHeight() {
+                var $heightWrapper = $(heightSelector);
+                if ($heightWrapper.length) {
+                    var wrapperHeight = $heightWrapper.outerHeight();
+                    var currentHeight = wrapperHeight > 0 ? wrapperHeight : 400;
+                    console.log('height', currentHeight + 'px')
+                    $skin.css('height', currentHeight + 'px');
                 }
             }
 
-            /**
-             * 지도 변경 이벤트 발생 (통합)
-             */
-            function triggerMapEvent() {
-                if (!map) return;
+            // 지도 초기화
+            function initMap() {
+                setMapHeight();
 
+                var mapContainer = $skin.find('.kakao-map')[0];
+                var mapOption = {
+                    center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심점
+                    level: initialLevel,
+                    minLevel: minLevel,
+                    maxLevel: maxLevel
+                };
+
+                map = new kakao.maps.Map(mapContainer, mapOption);
+
+                // 클러스터러 초기화 (안전한 방식)
+                initClusterer();
+
+                // 지도 이벤트 리스너 등록
+                setupMapEvents();
+
+                // 현재 위치 버튼 이벤트
+                setupCurrentLocationButton();
+
+                // 초기 위치 설정
+                getCurrentLocationAndSetMap();
+            }
+
+            // 클러스터러 안전 초기화
+            function initClusterer() {
+                if (!isClusterEnabled) {
+                    return;
+                }
+
+                try {
+                    // 카카오맵 클러스터러 로드 확인
+                    if (typeof kakao !== 'undefined' &&
+                        kakao.maps &&
+                        typeof kakao.maps.MarkerClusterer === 'function') {
+
+                        clusterer = new kakao.maps.MarkerClusterer({
+                            map: map,
+                            averageCenter: true,
+                            minLevel: Math.max(minLevel + 2, 6)
+                        });
+
+                    } else {
+                        isClusterEnabled = false;
+                        clusterer = null;
+                    }
+                } catch (error) {
+                    isClusterEnabled = false;
+                    clusterer = null;
+                }
+            }
+
+            // 지도 이벤트 설정
+            function setupMapEvents() {
+                // 지도 이동 완료 이벤트
+                kakao.maps.event.addListener(map, 'idle', function() {
+                    triggerMapChangeEvent();
+                });
+
+                // 지도 줌 변경 이벤트
+                kakao.maps.event.addListener(map, 'zoom_changed', function() {
+                    triggerMapChangeEvent();
+                });
+            }
+
+            // 지도 변경 이벤트 발생
+            function triggerMapChangeEvent() {
                 var bounds = map.getBounds();
                 var center = map.getCenter();
+                var level = map.getLevel();
 
                 var eventData = {
-                    mapId: mapId,
-                    timestamp: new Date().getTime(),
                     bounds: {
                         sw_lat: bounds.getSouthWest().getLat(),
                         sw_lng: bounds.getSouthWest().getLng(),
@@ -117,112 +198,45 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                     },
                     center: {
                         lat: center.getLat(),
-                        lng: center.getLng(),
-                    }
+                        lng: center.getLng()
+                    },
+                    level: level
                 };
 
                 $(document).trigger('wv_location_map_changeed', [eventData]);
             }
 
-            /**
-             * 카카오맵 초기화
-             */
-            function initKakaoMap() {
-                if (!window.kakao || !window.kakao.maps) {
-                    setTimeout(initKakaoMap, 100);
-                    return;
-                }
+            // 현재 위치 버튼 설정
+            function setupCurrentLocationButton() {
+                $('#btn-current-location-' + mapId).on('click', function() {
+                    getCurrentLocationAndSetMap();
+                });
+            }
 
+            // 현재 위치 가져오기 및 지도 설정
+            function getCurrentLocationAndSetMap() {
                 showLoading(true);
 
-                try {
-                    if (typeof wv_get_current_location === 'function') {
-                        wv_get_current_location(function(result) {
-                            var lat = result && result.lat ? result.lat : 37.5665;
-                            var lng = result && result.lng ? result.lng : 126.9780;
-                            createMap(lat, lng, initialLevel);
-                        });
-                    } else {
-                        createMap(37.5665, 126.9780, initialLevel);
-                    }
-                } catch (error) {
-                    createMap(37.5665, 126.9780, initialLevel);
-                }
-            }
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+                        var moveLatLng = new kakao.maps.LatLng(lat, lng);
 
-            /**
-             * 지도 생성
-             */
-            /**
-             * 지도 생성
-             */
-            function createMap(lat, lng, level) {
-                level = level || initialLevel;
-
-                try {
-                    updateMapHeight();
-
-                    var container = document.getElementById(mapId);
-                    var options = {
-                        center: new kakao.maps.LatLng(lat, lng),
-                        level: level,
-                        minLevel: minLevel,
-                        maxLevel: maxLevel
-                    };
-
-                    map = new kakao.maps.Map(container, options);
-
-                    // 클러스터링 설정
-                    if (isClusterEnabled) {
-                        if (typeof kakao.maps.MarkerClusterer !== 'undefined') {
-                            clusterer = new kakao.maps.MarkerClusterer({
-                                map: map,
-                                averageCenter: true,
-                                minLevel: Math.max(minLevel + 2, 6)
-                            });
-                            console.log('클러스터링 초기화 완료');
-                        } else {
-                            console.warn('MarkerClusterer가 로드되지 않았습니다.');
-                            isClusterEnabled = false;
-                        }
-                    }
-
-                    // === 🔧 이벤트 중복 문제 해결 ===
-                    // 통합 timeout으로 중복 호출 방지
-                    var mapChangeTimeout;
-
-                    function scheduleMapEvent() {
-                        clearTimeout(mapChangeTimeout);closeStoreInfoPanel()
-                        mapChangeTimeout = setTimeout(function() {
-                            triggerMapEvent();
-                        }, 300);
-                    }
-
-                    // 두 이벤트 모두 동일한 함수 사용
-                    kakao.maps.event.addListener(map, 'center_changed', scheduleMapEvent);
-                    kakao.maps.event.addListener(map, 'zoom_changed', scheduleMapEvent);
-
-                    showLoading(false);
-                    triggerMapEvent();
-
-                } catch (error) {
-                    showLoading(false);
-                    alert('지도 로딩 중 오류가 발생했습니다: ' + error.message);
-                }
-            }
-            /**
-             * 현재 위치로 이동
-             */
-            function moveToCurrentLocationManual() {
-                if (typeof wv_get_current_location === 'function') {
-                    wv_get_current_location(function(result) {
-                        if (result && result.lat && result.lng) {
-                            var moveLatLng = new kakao.maps.LatLng(result.lat, result.lng);
-                            map.setCenter(moveLatLng);
-                            map.setLevel(Math.max(minLevel + 1, 5));
-                            triggerMapEvent();
-                        } else {
-                            alert('현재 위치를 가져올 수 없습니다.');
+                        map.setCenter(moveLatLng);
+                        showLoading(false);
+                    }, function(error) {
+                        showLoading(false);
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                console.log("사용자가 위치 정보 제공을 거부했습니다.");
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                console.log("위치 정보를 사용할 수 없습니다.");
+                                break;
+                            case error.TIMEOUT:
+                                console.log("위치 정보 요청 시간이 초과되었습니다.");
+                                break;
                         }
                     });
                 } else {
@@ -230,9 +244,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                 }
             }
 
-            /**
-             * 로딩 표시
-             */
+            // 로딩 표시
             function showLoading(show) {
                 var $loading = $('#loading-overlay-' + mapId);
                 if (show) {
@@ -242,11 +254,17 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                 }
             }
 
-            /**
-             * 매장 데이터 업데이트 이벤트 리스닝
-             */
+            // 매장 데이터 업데이트 이벤트 리스닝
             $(document).on('wv_location_place_updated', function(event, data) {
                 // console.log('매장 데이터 업데이트:', data);
+
+                // 카테고리 아이콘 래핑 이미지 경로 저장
+                if (data.category_icon_wrap) {
+                    categoryIconWrap = data.category_icon_wrap;
+                }
+                if (data.category_icon_wrap_on) {
+                    categoryIconWrapOn = data.category_icon_wrap_on;
+                }
 
                 if (data.lists && Array.isArray(data.lists)) {
                     updateStoreMarkers(data.lists, data);
@@ -254,22 +272,89 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             });
 
             /**
-             * 커스텀 마커 이미지 생성
+             * 이미지 합성 함수 - 배경 위에 카테고리 아이콘을 올려서 새로운 마커 이미지 생성
              */
-            function createCustomMarkerImage(categoryIcon, isSelected) {
+            function createCompositeMarkerImage(backgroundImageUrl, categoryIconUrl, isSelected, callback) {
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                var loadedImages = 0;
+                var totalImages = 2;
+
+                // 캔버스 크기 설정 (마커 크기)
+                canvas.width = 36;
+                canvas.height = 36;
+
+                var backgroundImg = new Image();
+                var categoryImg = new Image();
+
+                function onImageLoad() {
+                    loadedImages++;
+                    if (loadedImages === totalImages) {
+                        // 모든 이미지가 로드되면 합성
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        // 배경 이미지 그리기 (전체 크기)
+                        ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+                        // 카테고리 아이콘 그리기 (중앙 위치, 조금 작게)
+                        var iconSize = 20; // 카테고리 아이콘 크기
+                        var iconX = (canvas.width - iconSize) / 2;
+                        var iconY = (canvas.height - iconSize) / 2;
+                        ctx.drawImage(categoryImg, iconX, iconY, iconSize, iconSize);
+
+                        // Canvas를 데이터 URL로 변환
+                        var dataUrl = canvas.toDataURL('image/png');
+
+                        // 마커 이미지 생성
+                        var size = new kakao.maps.Size(36, 36);
+                        var option = { offset: new kakao.maps.Point(18, 36) };
+                        var markerImage = new kakao.maps.MarkerImage(dataUrl, size, option);
+
+                        callback(markerImage);
+                    }
+                }
+
+                backgroundImg.onload = onImageLoad;
+                categoryImg.onload = onImageLoad;
+
+                backgroundImg.onerror = function() {
+                    // 배경 이미지 로드 실패시 기본 마커 사용
+                    callback(createDefaultMarkerImage(isSelected));
+                };
+
+                categoryImg.onerror = function() {
+                    // 카테고리 이미지 로드 실패시 기본 마커 사용
+                    callback(createDefaultMarkerImage(isSelected));
+                };
+
+                backgroundImg.src = backgroundImageUrl;
+                categoryImg.src = categoryIconUrl;
+            }
+
+            /**
+             * 커스텀 마커 이미지 생성 (수정된 버전)
+             */
+            function createCustomMarkerImage(categoryIcon, isSelected, callback) {
+                // 카테고리 아이콘과 래핑 이미지가 모두 있는 경우 합성 마커 생성
+                if (categoryIcon && categoryIconWrap && categoryIconWrapOn) {
+                    var backgroundImageUrl = isSelected ? categoryIconWrapOn : categoryIconWrap;
+                    createCompositeMarkerImage(backgroundImageUrl, categoryIcon, isSelected, callback);
+                } else {
+                    // 기본 마커 사용
+                    callback(createDefaultMarkerImage(isSelected));
+                }
+            }
+
+            /**
+             * 기본 마커 이미지 생성
+             */
+            function createDefaultMarkerImage(isSelected) {
                 var size = new kakao.maps.Size(36, 36);
                 var option = { offset: new kakao.maps.Point(18, 36) };
-
-                if (categoryIcon) {
-                    // category_icon이 있으면 해당 이미지 사용
-                    return new kakao.maps.MarkerImage(categoryIcon, size, option);
-                } else {
-                    // category_icon이 없으면 기본 마커 사용
-                    var defaultIcon = isSelected ?
-                        'data:image/svg+xml;base64,' + btoa(getDefaultSelectedMarkerSvg()) :
-                        'data:image/svg+xml;base64,' + btoa(getDefaultMarkerSvg());
-                    return new kakao.maps.MarkerImage(defaultIcon, size, option);
-                }
+                var defaultIcon = isSelected ?
+                    'data:image/svg+xml;base64,' + btoa(getDefaultSelectedMarkerSvg()) :
+                    'data:image/svg+xml;base64,' + btoa(getDefaultMarkerSvg());
+                return new kakao.maps.MarkerImage(defaultIcon, size, option);
             }
 
             /**
@@ -293,61 +378,96 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             }
 
             /**
-             * 매장 마커 업데이트
+             * 매장 마커 업데이트 (수정된 버전)
              */
             function updateStoreMarkers(lists, response) {
                 if (!map) return;
 
-
                 // 기존 마커 제거
                 clearAllMarkers();
 
-                lists.forEach(function(place) {
+                var processedMarkers = 0;
+                var totalMarkers = lists.length;
 
-                    if (!place.location.lat || !place.location.lng) return;
-
-                    var position = new kakao.maps.LatLng(place.location.lat, place.location.lng);
-
-                    // 커스텀 마커 이미지 생성
-                    var markerImage = createCustomMarkerImage(place.store.category_item.icon.path, true);
-
-                    // 마커 생성
-                    var marker = new kakao.maps.Marker({
-                        position: position,
-                        title: place.name,
-                        image: markerImage
-                    });
-
-                    // 마커에 place 정보와 원본 이미지 저장
-                    marker.storeData = place;
-                    marker.originalImage = markerImage;
-
-                    marker.selectedImage = createCustomMarkerImage(place.store.category_item.icon.path, true);
-
-                    // 마커 클릭 이벤트
-                    kakao.maps.event.addListener(marker, 'click', function() {
-                        // 기존 선택 해제
-                        clearSelectedMarkers();
-
-                        // 현재 마커 선택 표시
-                        marker.isSelected = true;
-                        marker.setImage(marker.selectedImage);
-
-                        // 매장 정보 패널 표시
-                        showStoreInfoPanel(place, response);
-                    });
-
-                    // 클러스터링 적용 또는 개별 마커 표시
-                    if (isClusterEnabled && clusterer) {
-                        clusterer.addMarker(marker);
-                    } else {
-                        marker.setMap(map);
+                lists.forEach(function(place, index) {
+                    if (!place.location.lat || !place.location.lng) {
+                        processedMarkers++;
+                        return;
                     }
 
-                    markers.push(marker);
-                });
+                    var position = new kakao.maps.LatLng(place.location.lat, place.location.lng);
+                    var categoryIcon = place.store.category_item && place.store.category_item.icon ? place.store.category_item.icon.path : null;
 
-                // console.log('마커 업데이트 완료:', markers.length + '개');
+                    // 커스텀 마커 이미지 생성 (비동기)
+                    createCustomMarkerImage(categoryIcon, false, function(markerImage) {
+                        // 마커 생성
+                        var marker = new kakao.maps.Marker({
+                            position: position,
+                            title: place.name || place.store.name,
+                            image: markerImage
+                        });
+
+                        // 마커에 place 정보와 이미지 정보 저장
+                        marker.storeData = place;
+                        marker.categoryIcon = categoryIcon;
+                        marker.markerId = 'marker_' + place.wr_id;
+
+                        // 선택된 마커 이미지 미리 생성
+                        createCustomMarkerImage(categoryIcon, true, function(selectedMarkerImage) {
+                            marker.selectedImage = selectedMarkerImage;
+                        });
+
+                        // 마커 클릭 이벤트
+                        kakao.maps.event.addListener(marker, 'click', function() {
+                            handleMarkerClick(marker, place, response);
+                        });
+
+                        // 클러스터링 적용 또는 개별 마커 표시
+                        if (isClusterEnabled && clusterer) {
+                            try {
+                                clusterer.addMarker(marker);
+                            } catch (error) {
+                                console.warn('클러스터에 마커 추가 실패:', error);
+                                marker.setMap(map);
+                            }
+                        } else {
+                            marker.setMap(map);
+                        }
+
+                        markers.push(marker);
+                        processedMarkers++;
+
+                        // 모든 마커 처리 완료 시
+                        if (processedMarkers === totalMarkers) {
+                            // console.log('마커 업데이트 완료:', markers.length + '개');
+                        }
+                    });
+                });
+            }
+
+            /**
+             * 마커 클릭 처리 함수
+             */
+            function handleMarkerClick(clickedMarker, place, response) {
+                // 기존 선택 해제
+                clearSelectedMarkers();
+
+                // 현재 마커 선택 표시
+                selectedMarkerId = clickedMarker.markerId;
+                clickedMarker.isSelected = true;
+
+                // 선택된 마커 이미지로 변경
+                if (clickedMarker.selectedImage) {
+                    clickedMarker.setImage(clickedMarker.selectedImage);
+                } else {
+                    // 선택된 이미지가 아직 준비되지 않은 경우 새로 생성
+                    createCustomMarkerImage(clickedMarker.categoryIcon, true, function(selectedMarkerImage) {
+                        clickedMarker.setImage(selectedMarkerImage);
+                    });
+                }
+
+                // 매장 정보 패널 표시
+                showStoreInfoPanel(place, response);
             }
 
             /**
@@ -355,26 +475,38 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
              */
             function clearSelectedMarkers() {
                 markers.forEach(function(marker) {
-                    if (marker.isSelected) {
+                    if (marker.isSelected && marker.markerId !== selectedMarkerId) {
                         marker.isSelected = false;
-                        marker.setImage(marker.originalImage);
+                        // 원래 이미지로 복원 (비선택 상태)
+                        createCustomMarkerImage(marker.categoryIcon, false, function(originalImage) {
+                            marker.setImage(originalImage);
+                        });
                     }
                 });
+                selectedMarkerId = null;
             }
 
             /**
              * 모든 마커 제거
              */
             function clearAllMarkers() {
-                if (clusterer) {
-                    clusterer.clear();
+                if (isClusterEnabled && clusterer) {
+                    try {
+                        clusterer.clear();
+                    } catch (error) {
+                        console.warn('클러스터러 제거 중 오류:', error);
+                        // 클러스터러 오류 시 개별 마커 제거로 대체
+                        markers.forEach(function(marker) {
+                            marker.setMap(null);
+                        });
+                    }
+                } else {
+                    markers.forEach(function(marker) {
+                        marker.setMap(null);
+                    });
                 }
-
-                markers.forEach(function(marker) {
-                    marker.setMap(null);
-                });
-
                 markers = [];
+                selectedMarkerId = null;
             }
 
             /**
@@ -399,65 +531,30 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             })
 
             /**
-             * 외부에서 호출 가능한 메서드들
+             * 매장 정보 HTML 생성
              */
-            window['wv_location_map_' + mapId] = {
-                getMap: function() { return map; },
-                getClusterer: function() { return clusterer; },
-                clearMarkers: function() { clearAllMarkers(); },
-                moveToLocation: function(lat, lng, level) {
-                    if (map) {
-                        map.setCenter(new kakao.maps.LatLng(lat, lng));
-                        if (level) map.setLevel(level);
-                    }
-                },
-                refresh: function() {
-                    if (map) {
-                        updateMapHeight();
-                        map.relayout();
-                    }
-                },
-                // 특정 매장으로 이동하는 메서드 추가
-                moveToStore: function(storeId) {
-                    var targetMarker = markers.find(function(marker) {
-                        return marker.storeData && marker.storeData.wr_id == storeId;
-                    });
+            function generateStoreInfoHtml(place) {
+                var storeName = place.name || place.store.name || '매장명 없음';
+                var storeAddress = place.location.address_name || '주소 정보 없음';
+                var storeCategory = place.store.category_text || '';
 
-                    if (targetMarker) {
-                        map.setCenter(targetMarker.getPosition());
-                        map.setLevel(Math.max(minLevel + 1, 5));
-
-                        // 마커 선택 효과
-                        clearSelectedMarkers();
-                        targetMarker.isSelected = true;
-                        targetMarker.setImage(targetMarker.selectedImage);
-
-                        // 매장 정보 패널 표시
-                        // showStoreInfoPanel 호출을 위해 response 데이터가 필요하므로
-                        // 이 부분은 필요에 따라 구현
-                    }
-                }
-            };
-
-            // 현재 위치 버튼 이벤트
-            $('#btn-current-location-' + mapId).on('click', moveToCurrentLocationManual);
-
-            // 윈도우 리사이즈 이벤트
-            $(window).on('resize', function() {
-                updateMapHeight();
-            });
-
-            // 카카오맵 초기화 실행
-            if (window.kakao && window.kakao.maps) {
-                initKakaoMap();
-            } else {
-                var checkKakao = setInterval(function() {
-                    if (window.kakao && window.kakao.maps) {
-                        clearInterval(checkKakao);
-                        initKakaoMap();
-                    }
-                }, 100);
+                return '<div class="store-info-card">' +
+                    '<h4>' + storeName + '</h4>' +
+                    (storeCategory ? '<p class="category">' + storeCategory + '</p>' : '') +
+                    '<p class="address">' + storeAddress + '</p>' +
+                    '</div>';
             }
+
+            // 초기화 실행
+            initMap();
+
+            // 윈도우 리사이즈 시 지도 높이 재조정
+            $(window).on('resize', function() {
+                setMapHeight();
+                if (map) {
+                    map.relayout();
+                }
+            });
         });
     </script>
 </div>
