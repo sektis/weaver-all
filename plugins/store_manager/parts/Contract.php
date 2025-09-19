@@ -56,18 +56,24 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
 
     public function get_indexes(){
         return array(
-            array()
+            array(
+                'name' => 'unique_cont',
+                'type' => 'UNIQUE',
+                'cols' => array('wr_id','contractitem_wr_id')
+            )
         );
     }
 
     public function column_extend($row,$all_row=array()){
 
         $arr = array();
+
 //        dd(wv()->store_manager->made('member')->get($row['contractmanager_wr_id'])->wr_id);
         $arr['manager_name'] =  wv()->store_manager->made('member')->get($row['contractmanager_wr_id'])->mb_name;
         $arr['item_name'] =  wv()->store_manager->made('contract_item')->get($row['contractitem_wr_id'])->contractitem->name;
         $arr['status_text'] =  $this->status_text_array[$row['status']];
         $arr['status_html'] =  '<div class="fs-[14/22/-0.56/500/] wv-flex-box" style="height:var(--wv-31);padding:0 var(--wv-10);color:#fff;border-radius:var(--wv-4);'.$this->status_style_array[$row['status']].'">'.$arr['status_text'].'</div>';
+        $arr['memo_list'] =  implode('<br>',array_column($row['memo'],'text'));
 
 
 
@@ -75,27 +81,10 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         return $arr;
     }
 
-    public function before_set(&$data,  $wr_id,$pkey,$manager ) {
-
-        if (isset($data['memo']) && is_array($data['memo'])) {
-            $current_date = date('Y-m-d');
-
-            foreach ($data['memo'] as $k => $v) {
-                // 배열이 아니면 스킵
-                if (!is_array($v)) continue;
-
-                // 삭제 플래그가 있으면 스킵
-                if (isset($v['delete']) && $v['delete']) continue;
-
-                // text 값이 있고 (새로 입력된 것)
-                if (isset($v['text']) && !empty($v['text'])) {
-                    // id가 없거나 -1이면 새로운 항목으로 간주
-                    if (!isset($v['id']) || empty($v['id']) || $v['id'] == -1 || $v['id'] === '') {
-                        // date 키에 현재 날짜 추가
-                        $data['memo'][$k]['date'] = $current_date;
-                    }
-                }
-            }
+    public function is_new(&$data,$pkey,$col) {
+        if($col=='memo'){
+            $data['date']=date('Y-m-d h:i:s');
         }
+
     }
 }

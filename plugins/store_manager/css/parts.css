@@ -76,7 +76,7 @@
     align-items: center;
 
 }
-label:has([name$='[delete]'])>span{
+label:not(.position-absolute):has([name$='[delete]'])>span{
     all:revert;
     height: 100%;
     display: flex;
@@ -84,8 +84,9 @@ label:has([name$='[delete]'])>span{
     color:#fc5555;
     align-items: center;
     cursor: pointer;
+    white-space: nowrap;
 }
-label:has([name$='[delete]'])>span:before{
+label:not(.position-absolute):has([name$='[delete]'])>span:before{
     content: "\f056";
     font-weight: 900;
     font-family: "Font Awesome 6 Free";

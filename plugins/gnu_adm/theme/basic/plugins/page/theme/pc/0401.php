@@ -36,19 +36,17 @@ $get_list_option = array(
 );
 $result = wv()->store_manager->made('sub01_01')->get_list($get_list_option);
 $list = $result['list'];
-
+$cont_list_table = (wv()->store_manager->made('sub01_01')->get_list_table_name('contract'));
+$cont_list_table_row = sql_fetch("select count(*) as cnt from {$cont_list_table}");
 ?>
 <div class="wv-vstack">
 
     <div class="page-top-menu">
-        <a href="<?php echo wv_page_url('0201_c'); ?>" class="top-menu-btn"><i class="fa-solid fa-plus"></i> 신규등록</a>
+        <a href="<?php echo wv_page_url($wv_page_id); ?>" class="top-menu-btn"><i class="fa-solid fa-plus"></i> 신규등록</a>
     </div>
 
     <div class="hstack justify-content-between">
-        <div class="fw-600 hstack fs-[14//-0.56/600/#0D171B]" style="gap:var(--wv-10)">
-            <p>총 개수 (<?php echo number_format($result['total_count']); ?>)</p>
-        </div>
-
+        <div></div>
         <form method="get" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
             <input type="hidden" name="wv_page_id" value="0102">
 
@@ -72,6 +70,9 @@ $list = $result['list'];
 
             <button type="submit" class="btn border h-100 btn-dark">검색</button>
         </form>
+    </div>
+    <div class="fw-600 hstack fs-[14//-0.56/600/#0D171B]" style="gap:var(--wv-10)">
+        <p>총 개수 (<?php echo number_format($cont_list_table_row['cnt']); ?>)</p>
     </div>
 
     <div class="content-inner-wrapper">
@@ -98,9 +99,10 @@ $list = $result['list'];
                             $row_span = count($list[$i]['contract']);
                             ?>
                             <tr>
-                                <td rowspan="<?php echo $row_span?>"><?php echo $list[$i]['store']['name']; ?></td>
+                                <td rowspan="<?php echo $row_span?$row_span:''?>"><?php echo $list[$i]['store']['name']; ?></td>
+                            <?php if($row_span){ ?>
                                 <?php $j=0; foreach($list[$i]['contract'] as $k =>$cont){
-
+//dd($list[$i]);
                                     ?>
                                     <?php if($j>0){ ?>
                                     </tr><tr>
@@ -111,7 +113,7 @@ $list = $result['list'];
                                     <td ><?php echo wv_date_empty_chk($cont['end'])?"D-".wv_get_days_since($cont['end']):''; ?></td>
                                     <td ><?php echo $cont['status_html'] ?></td>
                                     <td class="ff-Roboto-mono"><?php echo  wv_date_empty_chk($cont['last_modify'])?date('Y.m.d',strtotime($cont['last_modify'])):''; ?></td>
-                                    <td ></td>
+                                    <td ><div class="wv-line-clamp"><?php echo  $cont['memo_list'] ?></div></td>
                                     <td >
                                         <div class="hstack justify-content-center gap-[6px]">
                                             <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php'
@@ -127,6 +129,23 @@ $list = $result['list'];
                                         </div>
                                     </td>
                                 <?php $j++;}?>
+                        <?php }else{ ?>
+                                <td colspan="7">계약이 없습니다.</td>
+                                d<td colspan="7">
+                                    <div class="hstack justify-content-center gap-[6px]">
+                                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php'
+                                       data-wv-ajax-data='{
+                                               "made":"sub01_01",
+                                               "part":"contract",
+                                               "action":"render_part_form",
+                                               "fields":"cont_form",
+                                               "wr_id":"<?php echo $list[$i]['wr_id']; ?>",
+                                               "contract_id":"<?php echo $cont['id']?>"
+                                               }'
+                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-add-btn">[추가]</a>
+                                    </div>
+                                </td>
+                        <?php } ?>
                             </tr>
 
 

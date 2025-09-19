@@ -212,7 +212,7 @@ $(function(){
 
         }
 
-        if(settings.reload==true){
+        if(isset(settings.reload) && settings.reload!='false' ){
             location.reload();
         }
 

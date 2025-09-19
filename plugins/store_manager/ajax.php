@@ -139,8 +139,29 @@ if($action=='update'){
 }
 if($action=='delete'){
     $wr_id = wv()->store_manager->made($made)->delete(array('wr_id'=>$wr_id));
-    wv_json_exit(array('wr_id'=>$wr_id));
+    exit;
 }
+if($action=='get_current_store'){
 
+
+    $arr = wv()->store_manager->made('sub01_01')->get_current_store();
+    echo $arr['name'];
+
+    exit;
+}
+if($action=='set_current_store'){
+    $arr = wv()->store_manager->made('sub01_01')->set_current_store($wr_id);
+    exit;
+}
+if($action=='init_current_store'){
+    $arr = wv()->store_manager->made('sub01_01')->init_current_store();
+    exit;
+}
+if($action=='widget'){
+
+
+    echo wv_widget($widget, $_REQUEST);
+    exit;
+}
 // 잘못된 action
 alert('잘못된 요청입니다.');

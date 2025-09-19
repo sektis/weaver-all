@@ -46,7 +46,7 @@ class Member extends StoreSchemaBase{
 
 
 
-    public function before_set(&$data,  $wr_id,$pkey,$manager ) {
+    public function before_set(&$data) {
         // 좌표 유효성 검사
         global $config;
 
@@ -65,8 +65,8 @@ class Member extends StoreSchemaBase{
                 $chk = sql_fetch("select wr_id from $write_table where mb_id='{$mb['mb_id']}'");
 
                 if($chk['wr_id']){
-                    alert('이미 존재하는 아이디입니다.');
-//                    $data['wr_id'] = $wr_id= $chk['wr_id'];
+//                    alert('이미 존재하는 아이디입니다.');
+                    $data['wr_id'] = $wr_id= $chk['wr_id'];
                 }
 
             }
@@ -93,7 +93,7 @@ class Member extends StoreSchemaBase{
         $data['wr_password']=$mb['mb_password'];
 
 
-        $write_row = $manager->fetch_write_row($wr_id);
+        $write_row = $this->manager->fetch_write_row($wr_id);
         if($wr_id and ($data['mb_id']!=$write_row['mb_id'])){
             alert('id는 변경할 수 없습니다.');
         }
@@ -102,7 +102,7 @@ class Member extends StoreSchemaBase{
 
     }
 
-    public function before_delete(&$data,  $wr_id,$pkey,$manager ) {
+    public function before_delete(&$data) {
         member_delete($data['mb_id']);
     }
 }

@@ -295,6 +295,10 @@ class Plugin extends Weaver{
         $this->made_instances[$id] = $array;
     }
 
+    public function ajax_url(){
+        return $this->ajax_url;
+    }
+
     final public function __get($name) {
 
         if (method_exists($this, '_custom_get')){

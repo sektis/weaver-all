@@ -103,9 +103,7 @@ class Location extends Plugin {
         return false;
     }
 
-    public function ajax_url(){
-        return $this->ajax_url;
-    }
+
 
     public function display_text($arr){
 

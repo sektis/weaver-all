@@ -119,7 +119,6 @@ function parseWvAjaxOptions(options) {
                 processedOptions.append = option.substring(7).trim();
             }
             else if (option.indexOf('replace:') === 0) {
-                alert(1)
                 processedOptions.replace = option.substring(8).trim();
             }
             else if (option.indexOf('replace_with:') === 0) {
@@ -283,6 +282,14 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
     // ajax_option으로 기본값 오버라이딩
     if (processedOptions.ajax) {
         $.extend(defaultAjaxSettings, processedOptions.ajax);
+        // ✅ 커스텀 속성들을 settings에 직접 설정
+        if (processedOptions.ajax.reload !== undefined) {
+            defaultAjaxSettings.reload = processedOptions.ajax.reload;
+        }
+        if (processedOptions.ajax.use_redirect !== undefined) {
+            defaultAjaxSettings.use_redirect = processedOptions.ajax.use_redirect;
+        }
+
     }
 
     $.ajax(defaultAjaxSettings);

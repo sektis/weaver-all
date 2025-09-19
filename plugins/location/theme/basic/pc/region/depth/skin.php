@@ -199,10 +199,11 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                 var $favoriteWrap = $root.find('.favorite-towns');
 
                 list.forEach(function (row) {
-                    var addr = row && row.address ? row.address : {};
+                    var addr = row;
                     var d1 = (addr.region_1depth_name || '').trim();
                     var d2 = normalizeD2Name(addr.region_2depth_name);
                     var d3 = (addr.region_3depth_name || '').trim();
+
                     if (!d1 || !d3) return;
 
                     // 중복 방지

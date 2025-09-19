@@ -6,6 +6,7 @@ include_once(G5_LIB_PATH.'/latest.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$wv_page_skin_url.'/page.css?ver='.G5_CSS_VER.'">', 11);
 add_javascript('<script src="'.$wv_page_skin_url.'/page.js?ver='.G5_JS_VER.'"></script>',11);
 
+@include_once wv('page')->plugin_theme_path.'/config.php';
 ob_start();
 include wv('page')->get_page_path();
 $page_content = ob_get_contents();

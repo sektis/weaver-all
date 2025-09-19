@@ -35,7 +35,7 @@ class Contractitem extends StoreSchemaBase{
 
         return $arr;
     }
-    public function before_set(&$data,  $wr_id,$pkey,$manager ) {
+    public function before_set(&$data) {
 //        dd($data);
     }
 

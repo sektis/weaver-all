@@ -19,7 +19,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         'list_each'=>'',
         'service'=>'',
         'list_main'=>'',
-
+        'ceo_main'=>'',
     );
 
 
