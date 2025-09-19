@@ -35,8 +35,10 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
     public function column_extend($row,$all_row=array()){
 
         $arr = array();
-        $arr['category_text'] = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory->name;
-        $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';
+        $cate_item = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory;
+
+        $arr['category_item'] = $cate_item->row;
+//        $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';
         $first_image = reset($row['image']);
         $arr['main_image'] =  $first_image['path'];
         if(isset($row['list_each'])){

@@ -10,11 +10,12 @@ $options = array(
 );
 
 $saved_favo_towns = wv()->location->get('favorite');
+
 foreach ($saved_favo_towns as $k=> $v){
     $options['where_location']['or'][]['and'] = array(
-        'region_1depth_name'=> "='{$v['address']['region_1depth_name']}'",
-        'region_2depth_name'=> "='{$v['address']['region_2depth_name']}'",
-        'region_3depth_name'=> "='{$v['address']['region_3depth_name']}'",
+        'region_1depth_name'=> "='".wv_trans_sido($v['region_1depth_name'],1)."'",
+        'region_2depth_name'=> "='".wv_trans_sido($v['region_2depth_name'],1)."'",
+        'region_3depth_name'=> "='".wv_trans_sido($v['region_3depth_name'],1)."'",
     );
 }
 
@@ -22,9 +23,10 @@ $distance_options = wv_make_current_location_distance_options(  wv()->location->
 
 
 
-$options = array_merge($options, $distance_options);
+//$options = array_merge($options, $distance_options);
 
 $result = wv()->store_manager->made('sub01_01')->get_list($options);
+
 $list = $result['list'];
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative d-flex-center flex-nowrap"  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >

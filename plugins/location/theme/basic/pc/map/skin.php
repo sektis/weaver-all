@@ -309,7 +309,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                     var position = new kakao.maps.LatLng(place.location.lat, place.location.lng);
 
                     // 커스텀 마커 이미지 생성
-                    var markerImage = createCustomMarkerImage(place.store.category_icon, false);
+                    var markerImage = createCustomMarkerImage(place.store.category_item.icon.path, true);
 
                     // 마커 생성
                     var marker = new kakao.maps.Marker({
@@ -321,7 +321,8 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                     // 마커에 place 정보와 원본 이미지 저장
                     marker.storeData = place;
                     marker.originalImage = markerImage;
-                    marker.selectedImage = createCustomMarkerImage(place.store.category_icon, true);
+
+                    marker.selectedImage = createCustomMarkerImage(place.store.category_item.icon.path, true);
 
                     // 마커 클릭 이벤트
                     kakao.maps.event.addListener(marker, 'click', function() {

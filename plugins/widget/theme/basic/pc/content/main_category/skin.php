@@ -37,11 +37,12 @@ $rows = $result['list'];
                 <!-- 정기휴무 목록 -->
                 <div class="row row-cols-5" style="--bs-gutter-x: var(--wv-14);--bs-gutter-y: var(--wv-12)">
                     <div class="col">
-                        <div class="text-center vstack justify-content-center" style="row-gap: var(--wv-2)">
+                        <div class="text-center vstack justify-content-center position-relative" style="row-gap: var(--wv-2)">
                             <div class="w-[54px] h-[54px]">
                                 <img src="<?php echo $manager->plugin_url; ?>/img/category_list/all.png" class="wh-100 object-fit-contain" alt="">
                             </div>
                             <p class="fs-[11/140%//500/] text-nowrap">전체</p>
+                            <a href="#" class="stretched-link"></a>
                         </div>
                     </div>
                     <?php
@@ -49,21 +50,23 @@ $rows = $result['list'];
 
                         ?>
                         <div class="col">
-                            <div class="text-center vstack justify-content-center " style="row-gap: var(--wv-2)">
+                            <div class="text-center vstack justify-content-center position-relative" style="row-gap: var(--wv-2)">
                                 <div class="w-[54px] h-[54px]">
                                     <img src="<?php echo $cate['storecategory']['icon_main']['path']; ?>" class="wh-100 object-fit-contain" alt="">
                                 </div>
-                                <p class="fs-[11/140%//500/] text-nowrap"><?php echo $this->category_arr[$i]; ?></p>
+                                <p class="fs-[11/140%//500/] text-nowrap"><?php echo $cate['storecategory']['name']; ?></p>
+                                <a href="#" class="stretched-link"></a>
                             </div>
                         </div>
                         <?php
                     } ?>
                     <div class="col">
-                        <div class="text-center vstack justify-content-center" style="row-gap: var(--wv-2)">
+                        <div class="text-center vstack justify-content-cente position-relative" style="row-gap: var(--wv-2)">
                             <div class="w-[54px] h-[54px]">
                                 <img src="<?php echo $manager->plugin_url; ?>/img/category_list/other.png" class="wh-100 object-fit-contain" alt="">
                             </div>
                             <p class="fs-[11/140%//500/] text-nowrap">기타</p>
+                            <a href="#" class="stretched-link"></a>
                         </div>
                     </div>
                 </div>
