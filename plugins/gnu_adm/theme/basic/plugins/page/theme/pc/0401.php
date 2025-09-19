@@ -3,18 +3,17 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 $page_title = '계약상품 현황';
 $sfl_options = array(
-    'jm_mb_id'    => '아이디',
-    'jm_mb_name'  => '대표자이름',
+    'jm.mb_id'    => '아이디',
+    'jm.mb_name'  => '대표자이름',
+    'store_name'  => '매장이름',
 );
 $sfl_whitelist = array_keys($sfl_options);
 
-$sfl = isset($_GET['sfl']) && in_array($_GET['sfl'], $sfl_whitelist) ? $_GET['sfl'] : 'mb_id';
-$stx = isset($_GET['stx']) ? trim($_GET['stx']) : '';
 
 $get_list_where = array();
-if($stx !== ''){
+if($stx !== '') {
     $stx_esc = sql_escape_string($stx);
-    if($sfl && in_array($sfl, $sfl_whitelist)){
+    if ($sfl && in_array($sfl, $sfl_whitelist)) {
         $get_list_where[] = "   {$sfl} LIKE '%{$stx_esc}%' ";
     }
 }
@@ -47,8 +46,7 @@ $cont_list_table_row = sql_fetch("select count(*) as cnt from {$cont_list_table}
 
     <div class="hstack justify-content-between">
         <div></div>
-        <form method="get" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
-            <input type="hidden" name="wv_page_id" value="0102">
+        <form method="post" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
 
             <div class="form-floating" style="min-width:180px;">
                 <select name="sfl" id="sfl" required class="form-select" aria-label="검색필드 선택">

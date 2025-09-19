@@ -110,7 +110,7 @@ $page_title = '계약 및 상품 설정';
         <div style="background-color: #efefef;height: 1px" class="wv-mx-fit mt-[16px]"></div>
         <div class="pt-[16px]">
             <?php
-            $result = wv()->store_manager->made('store_category')->get_list(array('where_member'=>array('is_manager'=>"=1"),  'order_by'   => 'w.wr_id asc',));
+            $result = wv()->store_manager->made('store_category')->get_list(array(  'order_by'   => 'w.wr_id asc',));
             $list = $result['list'];
 
             ?>

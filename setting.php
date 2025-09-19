@@ -4,7 +4,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 wv()->load(array('wv_css','theme','adm_bbs','location','parsing'));
 wv('assets')->add_library(array('weaver','weaver_ajax','weaver_bf_file','bootstrap','hc_sticky','font_awesome','swiper11','animate_css'));
-wv('assets')->add_font(array('pretendard','roboto_mono'));
+wv('assets')->add_font(array('pretendard','roboto_mono','montserrat'));
 wv('layout')->set_theme_dir('basic');
 wv('layout')->set_use_header_footer(true);
 wv('layout')->set_must_add_site_wrapper(true);

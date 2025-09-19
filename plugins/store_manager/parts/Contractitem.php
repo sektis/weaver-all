@@ -14,7 +14,7 @@ class Contractitem extends StoreSchemaBase{
         'desc_option' => "TEXT DEFAULT NULL",
         'desc_list' => "VARCHAR(255) DEFAULT NULL",
         'call_num'=>"VARCHAR(255) DEFAULT NULL",
-        'color_type'=>"",
+        'color_type'=>"VARCHAR(255) DEFAULT NULL",
         'use_intro' => "TINYINT(1) NOT NULL DEFAULT 0",
 
         'intro'=>'TEXT DEFAULT NULL',

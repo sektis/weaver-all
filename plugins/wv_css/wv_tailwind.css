@@ -132,6 +132,9 @@
   .list-item {
     display: list-item !important;
   }
+  .h-\[33px\] {
+    height: var(--wv-33) !important;
+  }
   .h-\[39px\] {
     height: var(--wv-39) !important;
   }
@@ -188,6 +191,9 @@
   }
   .w-\[38px\] {
     width: var(--wv-38) !important;
+  }
+  .w-\[42px\] {
+    width: var(--wv-42) !important;
   }
   .w-\[50px\] {
     width: var(--wv-50) !important;
@@ -288,6 +294,9 @@
   .rounded-\[4px\] {
     border-radius: var(--wv-4) !important;
   }
+  .rounded-\[6px\] {
+    border-radius: var(--wv-6) !important;
+  }
   .rounded-\[10px\] {
     border-radius: var(--wv-10) !important;
   }
@@ -321,6 +330,9 @@
   .bg-\[\#FC5555\] {
     background-color: #FC5555 !important;
   }
+  .bg-\[\#f6f6f6\] {
+    background-color: #f6f6f6 !important;
+  }
   .bg-\[\#f9f9f9\] {
     background-color: #f9f9f9 !important;
   }
@@ -339,6 +351,9 @@
   .p-\[20px\] {
     padding: var(--wv-20) !important;
   }
+  .px-\[9px\] {
+    padding-inline: var(--wv-9) !important;
+  }
   .px-\[12px\] {
     padding-inline: var(--wv-12) !important;
   }
@@ -351,8 +366,14 @@
   .px-\[20px\] {
     padding-inline: var(--wv-20) !important;
   }
+  .px-\[88px\] {
+    padding-inline: var(--wv-88) !important;
+  }
   .px-\[99px\] {
     padding-inline: var(--wv-99) !important;
+  }
+  .py-\[4px\] {
+    padding-block: var(--wv-4) !important;
   }
   .py-\[6px\] {
     padding-block: var(--wv-6) !important;
@@ -427,6 +448,13 @@
     font-weight: 500 !important;
     color: #97989C !important;
   }
+  .fs-\[13\/19\/-0\.13\/500\/\#0D171B\] {
+    font-size: var(--wv-13) !important;
+    line-height: var(--wv-19) !important;
+    letter-spacing: -0.01em !important;
+    font-weight: 500 !important;
+    color: #0D171B !important;
+  }
   .fs-\[14\/17\/-0\.56\/500\/\#0D171B\] {
     font-size: var(--wv-14) !important;
     line-height: var(--wv-17) !important;
@@ -497,6 +525,13 @@
     font-weight: 600 !important;
     color: #0D171B !important;
   }
+  .fs-\[16\/22\/-0\.64\/700\/\#0D171B\] {
+    font-size: var(--wv-16) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
+    color: #0D171B !important;
+  }
   .fs-\[18\/25\/-0\.72\/600\/\#0D171B\] {
     font-size: var(--wv-18) !important;
     line-height: var(--wv-25) !important;
@@ -531,6 +566,12 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0D171B !important;
+  }
+  .fs-\[12\/17\/-0\.48\/500\/\] {
+    font-size: var(--wv-12) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
   }
   .fs-\[14\/17\/-0\.56\/600\/\] {
     font-size: var(--wv-14) !important;

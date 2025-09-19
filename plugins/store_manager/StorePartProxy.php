@@ -188,7 +188,10 @@ class StorePartProxy{
         // 가상 파생키 허용
         $virtual = $this->get_virtual_keys();
         $row = $this->ensure_rows();
+        if ($name === 'row' ) {
 
+            return $row;
+        }
         if (isset($row[$name])) {
 
 

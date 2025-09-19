@@ -28,6 +28,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         '2'=>'일시중지',
         '3'=>'종료',
     );
+
     protected $status_style_array = array(
         '1'=>'background: #09f;',
         '2'=>'background: #fc5555;',
@@ -53,6 +54,12 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         '2'=>1,
         '3'=>1,
     );
+    protected $status_service_text_array = array(
+        '1'=>'제공 중',
+        '2'=>'일시중지',
+        '3'=>'미제공',
+    );
+
 
     public function get_indexes(){
         return array(
@@ -67,12 +74,18 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
     public function column_extend($row,$all_row=array()){
 
         $arr = array();
+        $cont_item = wv()->store_manager->made('contract_item')->get($row['contractitem_wr_id'])->contractitem;
 
 //        dd(wv()->store_manager->made('member')->get($row['contractmanager_wr_id'])->wr_id);
         $arr['manager_name'] =  wv()->store_manager->made('member')->get($row['contractmanager_wr_id'])->mb_name;
-        $arr['item_name'] =  wv()->store_manager->made('contract_item')->get($row['contractitem_wr_id'])->contractitem->name;
+        $arr['item_name'] =  str_replace('DUM','<span class="ff-montserrat">DUM</span> ',$cont_item->name);
+        $arr['item'] =  $cont_item->row;
         $arr['status_text'] =  $this->status_text_array[$row['status']];
         $arr['status_html'] =  '<div class="fs-[14/22/-0.56/500/] wv-flex-box" style="height:var(--wv-31);padding:0 var(--wv-10);color:#fff;border-radius:var(--wv-4);'.$this->status_style_array[$row['status']].'">'.$arr['status_text'].'</div>';
+        $arr['status_service_html'] =  '<div class="flex px-[9px] py-[4px] justify-center items-center gap-[10px] rounded-[4px] fs-[12/17/-0.48/500/]"
+ style="height:var(--wv-25);padding:var(--wv-4) var(--wv-9);border-radius:var(--wv-4);
+ color:'.($row['status']==1?$cont_item->row['color_type']['text']:'#97989C').';
+ background-color:'.($row['status']==1?$cont_item->row['color_type']['bg']:'#f9f9f9').'" >'.$this->status_service_text_array[$row['status']].'</div>';
         $arr['memo_list'] =  implode('<br>',array_column($row['memo'],'text'));
 
 

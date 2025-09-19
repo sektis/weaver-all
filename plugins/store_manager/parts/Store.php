@@ -20,6 +20,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         'service'=>'',
         'list_main'=>'',
         'ceo_main'=>'',
+        'category_list'=>'',
     );
 
 
@@ -32,6 +33,7 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
     }
 
     public function column_extend($row,$all_row=array()){
+
         $arr = array();
         $arr['category_text'] = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory->name;
         $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';

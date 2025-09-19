@@ -9,7 +9,8 @@
     font-size: var(--wv-14);
     --wv-ini-width:360;
     --wv-ini-max:1.5;
-    --wv-site-wrapper-width:var(--wv-360)
+    --wv-site-wrapper-width:var(--wv-360);
+    --bs-border-color:#efefef;
 }
 
 

@@ -15,7 +15,6 @@ $cont =  $row['contract'][$contract_id];
         <?php
         $post_data=array(
             'contract_id'=>$contract_id,
-            'contract_id'=>$row['wr_id']
         );
         $post_data['contract'][$contract_id]['status']=$this->status_change_value_array[$cont['status']];
         $post_data['contract'][$contract_id]['id']=$cont['id'];

@@ -77,7 +77,7 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
                             <p class=" "><?php echo implode(' | ',array_column($store->contract->list, 'item_name')) ; ?></p>
                         </div>
                     </div>
-                    <?php echo $store->contract->render_part('first_item_wr_id','form');; ?>
+
                 <?php }else{ ?>
                     <?php echo $store->store->render_part('mb_id','form');; ?>
                     <?php echo $store->contract->render_part('first_manager_wr_id','form');; ?>
