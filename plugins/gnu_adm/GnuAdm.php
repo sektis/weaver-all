@@ -15,7 +15,7 @@ class GnuAdm extends Plugin {
 
              wv_must_login();
              wv_never_register();
-             add_event('wv_hook_eval_action_before',array($this,'wv_hook_eval_action_before'));
+             add_event('wv_hook_eval_action_before',array($this,'wv_hook_eval_action_before'),-1);
 
          }
     }

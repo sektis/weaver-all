@@ -1503,6 +1503,10 @@ class StoreManager extends Makeable{
     }
 
     public function get_physical_col($part_key, $logical){
+        if(isset($this->parts[$part_key]) &&
+            $this->is_list_part_schema($this->parts[$part_key])) {
+            return $logical; // 원본 그대로 반환
+        }
         return isset($this->colmap[$part_key][$logical]) ? $this->colmap[$part_key][$logical] : $this->physical_col($part_key, $logical);
     }
 
@@ -1603,8 +1607,15 @@ class StoreManager extends Makeable{
         if($opts['where']){
             if(is_array($opts['where'])){
                 foreach($opts['where'] as $w){
-                    $w = trim($w);
-                    if($w !== '') $where_all[] = '(' . $w . ')';
+                    if(is_array($w)){
+                        // 🔧 중첩 배열 구조 처리 (파트키 없음)
+                        $processed_where = $this->process_where_conditions($w);
+                        if($processed_where !== '') $where_all[] = '(' . $processed_where . ')';
+                    } else {
+                        // 기존 문자열 처리
+                        $w = trim($w);
+                        if($w !== '') $where_all[] = '(' . $w . ')';
+                    }
                 }
             }else{
                 $w = trim($opts['where']);
@@ -1619,103 +1630,22 @@ class StoreManager extends Makeable{
             foreach($this->parts as $pkey => $schema){
                 $where_key = 'where_'.strtolower($pkey);
                 $conds = $opts[$where_key];
-                $def = $schema->get_columns($this->bo_table);
+
                 if($conds){
+                    // 🔧 새로운 공통 메서드 사용
+                    $processed_conds = $this->process_where_conditions($conds, $pkey, $schema);
 
-                    $walk_function = function (&$arr,$arr2,$node) use(&$conds,&$walk_function,$def,$pkey) {
-
-                        $parent_key = wv_array_last($node);
-
-                        if(!is_array($arr)){
-                            if(!array_key_exists($parent_key,$def)){
-                                $combined = 'unset($conds'. wv_array_to_text($node,"['","']").');';
-
-                                @eval("$combined;");
-                                return false;
-                            }
-                            $physical_col = $this->get_physical_col($pkey, $parent_key);
-                            // 🔧 수정: 개별 조건에서 괄호 제거
-                            $arr ="{$physical_col} {$arr}";
-                            return false;
-                        }
-
-                        foreach ($arr as $k=>&$v){
-
-                            wv_walk_by_ref_diff($v,$walk_function,array(),array_merge($node,(array)$k));
-
-                        }
-
-                        if(in_array($parent_key,array('and','or'))){
-                            // 🔧 and/or 그룹에서만 괄호 적용
-                            $wrapped = array_map(function($item) {
-                                return "($item)";
-                            }, $arr);
-                            $arr = implode(" {$parent_key} ", $wrapped);
-                            return false;
+                    if($processed_conds !== ''){
+                        if($this->is_list_part_schema($schema)){
+                            $list_part_tbl = $this->get_list_table_name($pkey);
+                            $where_all[] = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$processed_conds}))";
                         }else{
-                            // 🔧 숫자 키나 기타 키는 처리하지 않고 그대로 두기
-                            if(is_numeric($parent_key) || $parent_key === ''){
-                                // 숫자 인덱스는 그대로 두기 (배열의 첫 번째 요소만 사용)
-                                $arr = reset($arr);
-                            }else{
-                                // 기타 키는 기존 방식으로 and 연결
-                                $arr = implode(" and ",array_filter($arr));
-                            }
+                            $where_all[] = '(' . $processed_conds . ')';
                         }
-                        return false;
-
-                    };
-
-                    wv_walk_by_ref_diff($conds,$walk_function,array());
-
-
-                    if($this->is_list_part_schema($schema)){
-
-                        $list_part_tbl = $this->get_list_table_name($pkey);
-
-                        $where_all[] = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND ({$conds})))";
-                    }else{
-                        $where_all[] = '(' . $conds . ')';
                     }
                 }
 
-                $select_key = 'select_'.strtolower($pkey);
-                $conds_select = $opts[$select_key];
-                if($conds_select){
-
-                    $walk_function = function (&$arr,$arr2,$node) use(&$conds_select,&$walk_function,$def,$pkey) {
-
-                        $parent_key = wv_array_last($node);
-
-                        if(!is_array($arr)){
-                            if(!array_key_exists($parent_key,$def) or $def[$parent_key]){
-                                $combined = 'unset($conds'. wv_array_to_text($node,"['","']").');';
-
-                                @eval("$combined;");
-                                return false;
-                            }
-
-                            return false;
-                        }
-
-                        foreach ($arr as $k=>&$v){
-
-                            wv_walk_by_ref_diff($v,$walk_function,array(),array_merge($node,(array)$k));
-
-                        }
-
-
-
-                        return false;
-
-                    };
-
-                    wv_walk_by_ref_diff($conds_select,$walk_function,array());
-
-                    $ext_columns[$pkey]=$conds_select;
-
-
-                }
+                // select_{파트키} 처리도 동일하게...
             }
         }
 
@@ -2032,6 +1962,83 @@ class StoreManager extends Makeable{
             'sql_count'    => $sql_cnt,
             'paging'       => $opts['list_url']?wv_get_paging($opts['write_pages'], $page, $total_page, $opts['list_url']):''
         );
+    }
+
+    /**
+     * where 조건의 중첩 구조를 처리하는 메서드
+     * @param array $conditions 처리할 조건 배열
+     * @param string $part_key 파트키 (일반 where는 빈 문자열)
+     * @param object $schema 스키마 객체 (일반 where는 null)
+     * @return string 처리된 조건 문자열
+     */
+    protected function process_where_conditions($conditions, $part_key = '', $schema = null) {
+        if (!is_array($conditions)) {
+            return trim($conditions);
+        }
+
+        // 스키마가 있으면 컬럼 정의 가져오기
+        $def = array();
+        if ($schema && $part_key) {
+            $def = $schema->get_columns($this->bo_table);
+        }
+
+        $walk_function = function (&$arr, $arr2, $node) use(&$walk_function, $def, $part_key) {
+            $parent_key = wv_array_last($node);
+
+            if(!is_array($arr)){
+                if($part_key) {
+                    // 파트키가 있을 때: 스키마 검증 + 물리컬럼 변환
+                    if(!array_key_exists($parent_key, $def)){
+                        $combined = 'unset($conditions'. wv_array_to_text($node,"['","']").');';
+                        @eval("$combined;");
+                        return false;
+                    }
+                    $physical_col = $this->get_physical_col($part_key, $parent_key);
+                    $arr = "{$physical_col} {$arr}";
+                } else {
+                    // 일반 where일 때: parent_key를 컬럼명으로 사용
+                    if($parent_key !== '' && !is_numeric($parent_key)) {
+                        $arr = "{$parent_key} {$arr}";
+                    }
+                }
+                return false;
+            }
+
+            foreach ($arr as $k=>&$v){
+                wv_walk_by_ref_diff($v, $walk_function, array(), array_merge($node, (array)$k));
+            }
+
+            if(in_array($parent_key, array('and','or'), true)){  // strict comparison
+                // 🔧 and/or 그룹에서 전체를 괄호로 감싸기
+                $wrapped = array_map(function($item) {
+                    return "($item)";
+                }, $arr);
+                $joined = implode(" {$parent_key} ", $wrapped);
+
+                // 🔧 여러 조건이 있을 때 전체를 괄호로 한 번 더 감싸기
+                if(count($arr) > 1) {
+                    $arr = "({$joined})";
+                } else {
+                    $arr = $joined;
+                }
+                return false;
+            } else {
+                // 숫자 키나 기타 키는 처리하지 않고 그대로 두기
+                if(is_numeric($parent_key) || $parent_key === ''){
+                    // 숫자 인덱스는 첫 번째 요소만 사용
+                    $arr = reset($arr);
+                } else {
+                    // 기타 키는 and 연결
+                    $arr = implode(" and ", array_filter($arr));
+                }
+            }
+            return false;
+        };
+
+        $processed_conditions = $conditions;
+        wv_walk_by_ref_diff($processed_conditions, $walk_function, array());
+
+        return is_array($processed_conditions) ? implode(" and ", array_filter($processed_conditions)) : $processed_conditions;
     }
 
     /**

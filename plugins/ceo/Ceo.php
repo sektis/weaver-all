@@ -17,7 +17,7 @@ class Ceo extends Plugin {
 
 
 
-             add_event('wv_hook_eval_action_before',array($this,'wv_hook_eval_action_before'));
+             add_event('wv_hook_eval_action_before',array($this,'wv_hook_eval_action_before'),-1);
 
 
          }
