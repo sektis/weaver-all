@@ -12,7 +12,6 @@ class Ceo extends Plugin {
 
          if($wv_dir_var==$this->dir_var){
 
-             $this->injection_theme_use();
              wv_must_login();
              wv_never_register();
 
@@ -46,6 +45,8 @@ class Ceo extends Plugin {
         );
 
         wv('menu')->made('fixed_bottom')->setMenu($wv_main_menu_array,true);
+
+        $this->injection_theme_use();
     }
 
 }

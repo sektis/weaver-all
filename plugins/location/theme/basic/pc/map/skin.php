@@ -41,6 +41,115 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                                     }
 
         @keyframes wv-map-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* 매장 목록 패널 스타일 */
+        <?php echo $skin_selector?> .store-list {
+                                        position: absolute;
+                                        top: 0;
+                                        left: 0;
+                                        width: 100%;
+                                        height: 100%;
+                                        background-color: rgba(255, 255, 255, 0.95);
+                                        z-index: 2001;
+                                        overflow-y: auto;
+                                        backdrop-filter: blur(4px);
+                                    }
+
+        <?php echo $skin_selector?> .store-list-header {
+                                        position: sticky;
+                                        top: 0;
+                                        background-color: white;
+                                        padding: var(--wv-20);
+                                        border-bottom: 1px solid #ddd;
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                    }
+
+        <?php echo $skin_selector?> .store-list-header h3 {
+                                        margin: 0;
+                                        font-size: var(--wv-18);
+                                        font-weight: 600;
+                                        color: #333;
+                                    }
+
+        <?php echo $skin_selector?> .store-list-close {
+                                        background: none;
+                                        border: none;
+                                        font-size: var(--wv-24);
+                                        cursor: pointer;
+                                        color: #666;
+                                        width: var(--wv-40);
+                                        height: var(--wv-40);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        border-radius: 50%;
+                                        transition: all 0.2s;
+                                    }
+
+        <?php echo $skin_selector?> .store-list-close:hover {
+                                        background-color: #f0f0f0;
+                                        color: #333;
+                                    }
+
+        <?php echo $skin_selector?> .store-list-content {
+                                        padding: var(--wv-20);
+                                    }
+         <?php echo $skin_selector?> .store-list {
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background-color: rgba(255, 255, 255, 0.95);
+             z-index: 2001;
+             overflow-y: auto;
+             backdrop-filter: blur(4px);
+         }
+
+        <?php echo $skin_selector?> .store-list-header {
+                                        position: sticky;
+                                        top: 0;
+                                        background-color: white;
+                                        padding: var(--wv-20);
+                                        border-bottom: 1px solid #ddd;
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                    }
+
+        <?php echo $skin_selector?> .store-list-header h3 {
+                                        margin: 0;
+                                        font-size: var(--wv-18);
+                                        font-weight: 600;
+                                        color: #333;
+                                    }
+
+        <?php echo $skin_selector?> .store-list-close {
+                                        background: none;
+                                        border: none;
+                                        font-size: var(--wv-24);
+                                        cursor: pointer;
+                                        color: #666;
+                                        width: var(--wv-40);
+                                        height: var(--wv-40);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        border-radius: 50%;
+                                        transition: all 0.2s;
+                                    }
+
+        <?php echo $skin_selector?> .store-list-close:hover {
+                                        background-color: #f0f0f0;
+                                        color: #333;
+                                    }
+
+        <?php echo $skin_selector?> .store-list-content {
+                                        padding: var(--wv-20);
+                                    }
         @media (max-width: 991.98px) {
         <?php echo $skin_selector?> .current-location-btn { bottom: 15px; right: 15px; width: 40px; height: 40px; }
         <?php echo $skin_selector?> .current-location-btn i { font-size: 16px; }
@@ -68,6 +177,17 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
         <div class="store-info-content"></div>
         <button type="button" class="store-info-panel-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 18px; cursor: pointer;">&times;</button>
     </div>
+
+    <div class="store-list" style="display: none;">
+        <div class="store-list-header">
+            <h3>매장 목록</h3>
+            <button type="button" class="store-list-close">&times;</button>
+        </div>
+        <div class="store-list-content">
+            <!-- AJAX로 로드될 내용 -->
+        </div>
+    </div>
+
     <a href="" class="store-list-btn"><i class="fa-solid fa-bars"></i><span>목록으로 보기</span></a>
 
     <script>
@@ -138,6 +258,9 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
 
                 // 현재 위치 버튼 이벤트
                 setupCurrentLocationButton();
+
+                // 매장 목록 버튼 이벤트 설정 (새로 추가)
+                setupStoreListButton();
 
                 // 초기 위치 설정
                 getCurrentLocationAndSetMap();
@@ -621,6 +744,55 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
             $(".store-info-panel-close", $skin).click(function() {
                 closeStoreInfoPanel();
             });
+
+            // 매장 목록 버튼 이벤트 설정
+            function setupStoreListButton() {
+                // 기존 이벤트 제거 후 재바인딩
+                $('.store-list-btn', $skin).off('click').on('click', function(e) {
+                    e.preventDefault();
+                    console.log('목록 버튼 클릭됨'); // 디버그용
+                    showStoreList();
+                });
+
+                $('.store-list-close', $skin).off('click').on('click', function() {
+                    hideStoreList();
+                });
+            }
+
+// 매장 목록 표시
+            function showStoreList() {
+                var currentBounds = map.getBounds();
+                var currentCenter = map.getCenter();
+                var currentLevel = map.getLevel();
+
+                var requestData = {
+                    action: 'widget',
+                    bounds: {
+                        sw_lat: currentBounds.getSouthWest().getLat(),
+                        sw_lng: currentBounds.getSouthWest().getLng(),
+                        ne_lat: currentBounds.getNorthEast().getLat(),
+                        ne_lng: currentBounds.getNorthEast().getLng()
+                    },
+                    center: {
+                        lat: currentCenter.getLat(),
+                        lng: currentCenter.getLng()
+                    },
+                    widget:'content/map_list',
+                    level: currentLevel
+                };
+
+                // AJAX로 매장 목록 로드 (올바른 옵션명 사용)
+                wv_ajax('<?php echo wv()->store_manager->ajax_url(); ?>', {
+                    replace: '.store-list-content'  // ✅ replace_width → replace로 수정
+                }, requestData);
+
+                // 매장 목록 패널 표시
+                $('.store-list', $skin).fadeIn(300);
+            }
+// 매장 목록 숨기기
+            function hideStoreList() {
+                $('.store-list', $skin).fadeOut(300);
+            }
 
             // 초기화 실행
             initMap();

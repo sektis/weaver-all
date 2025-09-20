@@ -85,13 +85,20 @@ class StoreManager extends Makeable{
         $this->bo_table = $bo_table;
         $this->board    = $row;
     }
+//
+//    public function get_bo_table(){
+//        return $this->bo_table;
+//    }
+//
+//    public function get_board(){
+//        return $this->board;
+//    }
 
-    public function get_bo_table(){
-        return $this->bo_table;
-    }
-
-    public function get_board(){
-        return $this->board;
+    /** 게시판 테이블명: */
+    public function get_write_table_name(){
+        global $g5;
+        $write_table = isset($g5['write_prefix']) ? $g5['write_prefix'].$this->bo_table : G5_TABLE_PREFIX.'write_'.$this->bo_table;
+        return $write_table;
     }
 
     /** 확장 테이블명: {prefix}store_{bo_table} */
@@ -99,6 +106,12 @@ class StoreManager extends Makeable{
         $prefix = isset($this->table_prefix) ? $this->table_prefix : 'wv_';
         return $prefix . 'store_' . $this->bo_table;
     }
+
+    /** 목록 테이블명: {prefix}store_{bo_table}_{part} */
+    public function get_list_table_name($part_key){
+        return $this->get_ext_table_name().'_'.strtolower($part_key);
+    }
+
 
     /** wr_id만 PK인 베이스 테이블 생성 */
     public function ensure_base_table(){
@@ -1411,11 +1424,7 @@ class StoreManager extends Makeable{
         return (int)$wr_id;
     }
 
-    public function get_write_table_name(){
-        global $g5;
-        $write_table = isset($g5['write_prefix']) ? $g5['write_prefix'].$this->bo_table : G5_TABLE_PREFIX.'write_'.$this->bo_table;
-        return $write_table;
-    }
+
 
 // StoreManager.php - 완성된 버전
     public function fetch_write_row($wr_id, $join_member = true){
@@ -1661,7 +1670,9 @@ class StoreManager extends Makeable{
 
 
                     if($this->is_list_part_schema($schema)){
+
                         $list_part_tbl = $this->get_list_table_name($pkey);
+
                         $where_all[] = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND ({$conds})))";
                     }else{
                         $where_all[] = '(' . $conds . ')';
@@ -1897,8 +1908,9 @@ class StoreManager extends Makeable{
           {$join_sql}
           WHERE {$where_sql} {$order_sql} {$limit_sql} ";
 
-        $q = sql_query($sql);
+        $q = sql_query($sql,1);
         if(!$q){
+
             alert('get_list실패');
         }
         $list = array();
@@ -2233,10 +2245,6 @@ class StoreManager extends Makeable{
         return false;
     }
 
-    // {ext_table}_{part}
-    public function get_list_table_name($part_key){
-        return $this->get_ext_table_name().'_'.strtolower($part_key);
-    }
 
     // 기존 ensure_array_table → rename & 그대로 사용
     protected function ensure_list_table($part_key, $schema = null){

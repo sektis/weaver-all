@@ -12,11 +12,10 @@ class GnuAdm extends Plugin {
 
          if($wv_dir_var==$this->dir_var){
 
-             $this->injection_theme_use();
+
              wv_must_login();
              wv_never_register();
-
-             add_event('wv_hook_eval_action_before',array($this,'wv_hook_eval_action_before'),-1);
+             add_event('wv_hook_eval_action_before',array($this,'wv_hook_eval_action_before'));
 
          }
     }
@@ -65,6 +64,7 @@ class GnuAdm extends Plugin {
         wv()->page->set_page_index_id('0101');
 
         wv('menu')->make('left_menu')->setMenu($wv_main_menu_array,true);
+        $this->injection_theme_use();
     }
 
 

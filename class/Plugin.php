@@ -60,17 +60,21 @@ class Plugin extends Weaver{
             $this->error("{$theme_dir}테마를 찾을 수 없습니다.",2);
             return false;
         }
+        if($this->plugon_theme_dir==$theme_dir){
+            return true;
+        }
 
         if($make_skin_once){
-
             self::$plugins_props->set($this->plugin_name,'plugin_theme_dir_once',$theme_dir);
         }else{
             self::$plugins_props->set($this->plugin_name,'plugin_theme_dir',$theme_dir);
             self::$plugins_props->set($this->plugin_name,'plugin_theme_path',$this->get_theme_path($theme_dir));
             self::$plugins_props->set($this->plugin_name,'plugin_theme_url',$this->get_theme_url($theme_dir));
             self::$plugins_props->set($this->plugin_name,'injection_plugins',$this->get_jnjection_plugins());
+            $this->theme_injection();
+            $this->skin_injection();
         }
-        run_event("{$this->plugin_name}_theme_change",$this->plugin_name);
+//        run_event("{$this->plugin_name}_theme_change",$this->plugin_name);
     }
 
     public function get_theme_path($theme_dir='',$device=''){
@@ -213,7 +217,7 @@ class Plugin extends Weaver{
 
     private function skin_injection_each($path){
         $other_plugin_name = basename($path);
-        add_event("{$other_plugin_name}_theme_change",array($this,'injection_plugin_theme_changed'),0,1);
+//        add_event("{$other_plugin_name}_theme_change",array($this,'injection_plugin_theme_changed'),0,1);
         if(!wv_plugin_exists($other_plugin_name)){
             $this->error("theme_injection {$other_plugin_name} 플러그인이 존재하지 않습니다.",2);
         };

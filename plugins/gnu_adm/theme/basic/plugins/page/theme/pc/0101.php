@@ -46,8 +46,8 @@ $list = $result['list'];
             <p>종료 회원 수(<?php echo number_format($left_count); ?>명)</p>
         </div>
 
-        <form method="get" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
-            <input type="hidden" name="wv_page_id" value="0101">
+        <form method="post" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
+
 
             <div class="form-floating" style="min-width:180px;">
                 <select name="sfl" id="sfl" class="form-select" required aria-label="검색필드 선택">
