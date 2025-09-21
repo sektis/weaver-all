@@ -44,7 +44,11 @@ class StoreManager extends Makeable{
     /** @var array list_part 캐시 */
     protected $list_cache = array();
 
+    protected static $table_columns_cache = array();
+
     protected $current_store=array();
+
+    protected $member_table_as = 'mb';
 
     /**
      * ($id, $bo_table, array $schema_parts) 시그니처
@@ -1354,6 +1358,7 @@ class StoreManager extends Makeable{
         // write/ext 먼저 로드
         $write_row = $this->fetch_write_row_cached($wr_id);
         $ext_row   = $this->fetch_store_row_cached($wr_id);
+
         if (!isset($write_row['wr_id'])) $write_row['wr_id'] = $wr_id;
         if (!isset($ext_row['wr_id']))   $ext_row['wr_id']   = $wr_id;
 
@@ -1373,6 +1378,7 @@ class StoreManager extends Makeable{
             }
             $store->$pkey = $proxy;
         }
+
         $this->store_cache[$wr_id] = $store;
 
         return $store;
@@ -1436,46 +1442,23 @@ class StoreManager extends Makeable{
         $write_table = $this->get_write_table_name();
         $member_table = $g5['member_table'];
 
+
         if ($join_member) {
+
+            $member_selects = $this->build_aliased_select_columns($member_table, 'mb');
+            $member_select_sql = implode(",\n        ", $member_selects);
+
             $sql = "
-            SELECT 
-                w.*,
-                mb.mb_id AS mb_mb_id,
-                mb.mb_name AS mb_mb_name,
-                mb.mb_nick AS mb_mb_nick,  
-                mb.mb_email AS mb_mb_email,
-                mb.mb_hp AS mb_mb_hp,
-                mb.mb_level AS mb_mb_level,
-                mb.mb_point AS mb_mb_point,
-                mb.mb_datetime AS mb_mb_datetime,
-                mb.mb_certify AS mb_mb_certify,
-                mb.mb_adult AS mb_mb_adult,
-                mb.mb_dupinfo AS mb_mb_dupinfo,
-                mb.mb_zip1 AS mb_mb_zip1,
-                mb.mb_zip2 AS mb_mb_zip2,
-                mb.mb_addr1 AS mb_mb_addr1,
-                mb.mb_addr2 AS mb_mb_addr2,
-                mb.mb_addr3 AS mb_mb_addr3,
-                mb.mb_addr_jibeon AS mb_mb_addr_jibeon,
-                mb.mb_signature AS mb_mb_signature,
-                mb.mb_profile AS mb_mb_profile,
-                mb.mb_today_login AS mb_mb_today_login,
-                mb.mb_login_ip AS mb_mb_login_ip,
-                mb.mb_mailling AS mb_mb_mailling,
-                mb.mb_sms AS mb_mb_sms,
-                mb.mb_open AS mb_mb_open,
-                mb.mb_memo AS mb_mb_memo,
-                mb.mb_leave_date AS mb_mb_leave_date,
-                mb.mb_intercept_date AS mb_mb_intercept_date
-            FROM `{$write_table}` w
-            LEFT JOIN `{$member_table}` mb ON w.mb_id = mb.mb_id
-            WHERE w.wr_id = {$wr_id} 
-            LIMIT 1
-        ";
+        SELECT 
+            w.*,
+            {$member_select_sql}
+        FROM `{$write_table}` w
+        LEFT JOIN `{$member_table}` mb ON w.mb_id = mb.mb_id
+        WHERE w.wr_id = {$wr_id} 
+        LIMIT 1";
         } else {
             $sql = "SELECT * FROM `{$write_table}` WHERE wr_id = {$wr_id} LIMIT 1";
         }
-
         $row = sql_fetch($sql);
         return $row ? $row : array();
     }
@@ -1577,9 +1560,8 @@ class StoreManager extends Makeable{
             'join_member'  =>  array(
                 'table'  => $g5['member_table'],
                 'on'     => 'mb_id',
-                'select' => 'jm.mb_name, jm.mb_level, jm.mb_datetime',
+                'select' => '*',
                 'type'   => 'LEFT',
-                'as'     => 'jm'
             ),
             'list_url'=>'',
             'write_pages'=>5,
@@ -1588,6 +1570,8 @@ class StoreManager extends Makeable{
         foreach($defaults as $k=>$v){
             if(!isset($opts[$k])) $opts[$k] = $v;
         }
+
+        $opts['join_member']['as'] = $this->member_table_as;//member_table as는 고정
 
         $page     = (int)$opts['page']; if($page < 1) $page = 1;
         $rows     = (int)$opts['rows']; if($rows < 1) $rows = 20;
@@ -1645,7 +1629,36 @@ class StoreManager extends Makeable{
                     }
                 }
 
-                // select_{파트키} 처리도 동일하게...
+                $select_key = 'select_'.strtolower($pkey);
+                $conds_select = $opts[$select_key];
+                if($conds_select){
+
+                    $walk_function = function (&$arr,$arr2,$node) use(&$conds_select,&$walk_function,$def,$pkey) {
+
+                        $parent_key = wv_array_last($node);
+
+                        if(!is_array($arr)){
+                            if(!array_key_exists($parent_key,$def) or $def[$parent_key]){
+                                $combined = 'unset($conds'. wv_array_to_text($node,"['","']").');';
+
+                                @eval("$combined;");
+                                return false;
+                            }
+                            return false;
+                        }
+
+                        foreach ($arr as $k=>&$v){
+                            wv_walk_by_ref_diff($v,$walk_function,array(),array_merge($node,(array)$k));
+                        }
+                        return false;
+
+                    };
+
+                    wv_walk_by_ref_diff($conds_select,$walk_function,array());
+
+                    $ext_columns[$pkey]=$conds_select;
+
+                }
             }
         }
 
@@ -1673,7 +1686,7 @@ class StoreManager extends Makeable{
         $join_alias_count = 0;
 
         // 캐시
-        static $join_columns_cache = array();
+
 
         foreach($joins as $j){
             $join_alias_count++;
@@ -1707,19 +1720,8 @@ class StoreManager extends Makeable{
 
                 // 1) '*' 단독이면 컬럼을 전개하면서 alias_col 로 별칭
                 if ($sel === '*') {
-                    if (!isset($join_columns_cache[$j_table])) {
-                        $cols = array();
-                        $rs = sql_query("SHOW COLUMNS FROM {$j_table}");
-                        while ($c = sql_fetch_array($rs)) {
-                            if (isset($c['Field'])) $cols[] = $c['Field'];
-                            else if (isset($c[0]))   $cols[] = $c[0];
-                        }
-                        $join_columns_cache[$j_table] = $cols;
-                    }
-                    $cols = $join_columns_cache[$j_table];
-                    foreach ($cols as $_c) {
-                        $join_selects[] = $j_as.'.'.$_c.' AS '.$j_as.'_'.$_c;
-                    }
+                    $aliased_selects = $this->build_aliased_select_columns($j_table, $j_as);
+                    $join_selects = array_merge($join_selects, $aliased_selects);
 
                 } else if (strpos($sel, ',') !== false) {
                     // 2) 콤마 구분 나열이면 각 토큰을 안전하게 전개
@@ -1857,7 +1859,10 @@ class StoreManager extends Makeable{
         }
 
         while ($r = sql_fetch_array($q)) {
+            $write_row = $ext_row = array();
             $row = $r;
+            $write_row = $r;
+            $ext_row['wr_id'] = $r['wr_id'];
 
             // 1) 평면 → 중첩 (목록 파트는 제외)
             if ($nest && is_array($this->parts) && count($this->parts)) {
@@ -1870,9 +1875,13 @@ class StoreManager extends Makeable{
 
                     foreach ($allowed as $lname) {
                         $pname = $this->get_physical_col($pkey, $lname);
+
                         if (array_key_exists($pname, $row)) {
+                            $ext_row[$pname] = $row[$pname];
+
                             $row[$pkey][$lname] = $row[$pname];
                             unset($row[$pname]); // 상위 평면 키 제거
+                            unset($write_row[$pname]);
                         }
                     }
                 }
@@ -1890,13 +1899,14 @@ class StoreManager extends Makeable{
                         if (is_string($_v) && $_v !== '' && method_exists($this, 'decode_b64s')) {
                             $try = $this->decode_b64s($_v);
                             if (is_array($try)) $row[$pkey][$_k] = $try;
+
                         }
 
                     }
                 }
             }
-
-            $this->inject_value_maps_into_row($row);
+            $this->apply_column_extend_to_row($row, $store, $write_row, $ext_row);
+            $this->inject_value_maps_into_row($write_row,$ext_row);
 
             $list[] = $row;
 
@@ -1963,7 +1973,33 @@ class StoreManager extends Makeable{
             'paging'       => $opts['list_url']?wv_get_paging($opts['write_pages'], $page, $total_page, $opts['list_url']):''
         );
     }
+    protected function apply_column_extend_to_row(&$row, $store, $write_row, $ext_row) {
+        if (!is_array($this->parts) || !count($this->parts)) return;
 
+        foreach($this->parts as $pkey => $schema) {
+            if ($this->is_list_part_schema($schema)) continue;
+
+            // ✅ 임시 프록시 생성 (Store에 설정하지 않음)
+            $temp_proxy = new \weaver\store_manager\StorePartProxy($this, $row['wr_id'], $schema, $ext_row, $pkey);
+
+            // ✅ column_extend가 있으면 호출
+            if (method_exists($schema, 'column_extend')) {
+                $proxy_row = $temp_proxy->ensure_rows();
+                $extended = $schema->column_extend($proxy_row, array());
+
+                if (is_array($extended) && count($extended)) {
+                    // ✅ 확장된 값들을 중첩 구조로 추가
+                    if (!isset($row[$pkey]) || !is_array($row[$pkey])) {
+                        $row[$pkey] = array();
+                    }
+
+                    foreach($extended as $key => $value) {
+                        $row[$pkey][$key] = $value;
+                    }
+                }
+            }
+        }
+    }
     /**
      * where 조건의 중첩 구조를 처리하는 메서드
      * @param array $conditions 처리할 조건 배열
@@ -2141,16 +2177,23 @@ class StoreManager extends Makeable{
 //        }
 //    }
 
-    protected function inject_value_maps_into_row(&$row){
+    protected function inject_value_maps_into_row(&$write_row,&$ext_row){
         if (!is_array($this->parts) || !count($this->parts)) return;
+        $wr_id = $write_row['wr_id'];
+        $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         foreach($this->parts as $pkey => $schema){
+            $schema->set_store($store);
+
             if ($this->is_list_part_schema($schema)) continue;
-            if (!isset($row[$pkey]) || !is_array($row[$pkey])) continue;
 
             // ✅ StorePartProxy 로직 재사용
-            $proxy = new \weaver\store_manager\StorePartProxy($this, 0, $schema, array(), $pkey);
-            $proxy->apply_value_maps($row[$pkey],$row);
+            $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $ext_row, $pkey);
+//            dd($pkey);
+
+            $proxy->ensure_rows();
+
+            $store->$pkey=$proxy;
         }
     }
 
@@ -2327,73 +2370,6 @@ class StoreManager extends Makeable{
         return $cols;
     }
 
-// StoreManager.php에서 기존 메서드 수정
-
-//    protected function fetch_list_part_rows_for_wr_ids($wr_ids, $ext_columns = array(), $target_parts = null) {
-//        $out = array();
-//        if(!is_array($this->parts) || !count($this->parts)) return $out;
-//        if(!is_array($wr_ids) || !count($wr_ids)) return $out;
-//
-//        $ids = array();
-//        foreach($wr_ids as $id){ $id = (int)$id; if($id>0) $ids[] = $id; }
-//        if(!count($ids)) return $out;
-//        $in = implode(',', $ids);
-//
-//        // target_parts가 지정되면 해당 파트들만, 아니면 모든 목록파트
-//        $parts_to_process = array();
-//        if (is_array($target_parts) && count($target_parts)) {
-//            // 지정된 파트들만
-//            foreach($target_parts as $pkey) {
-//                if(isset($this->parts[$pkey]) && $this->is_list_part_schema($this->parts[$pkey])) {
-//                    $parts_to_process[$pkey] = $this->parts[$pkey];
-//                }
-//            }
-//        } else {
-//            // 기존 방식: 모든 목록파트
-//            foreach($this->parts as $pkey => $schema) {
-//                if($this->is_list_part_schema($schema)) {
-//                    $parts_to_process[$pkey] = $schema;
-//                }
-//            }
-//        }
-//
-//        foreach($parts_to_process as $pkey => $schema) {
-//            $t = $this->get_list_table_name($pkey);
-//            $def = $schema->get_columns($this->bo_table);
-//            $cols = array('id','wr_id');
-//            foreach($def as $cname => $_ddl){ $cols[] = $cname; }
-//            $cols = array_unique($cols);
-//
-//            $existing = array();
-//            $rs = sql_query("SHOW COLUMNS FROM `{$t}`");
-//            while($c = sql_fetch_array($rs)){
-//                $existing[] = isset($c['Field']) ? $c['Field'] : $c[0];
-//            }
-//            $emap = array(); foreach($existing as $_c){ $emap[$_c]=true; }
-//            $sel = array(); foreach($cols as $_c){ if(isset($emap[$_c])) $sel[] = '`'.$_c.'`'; }
-//            if(!count($sel)) continue;
-//
-//            $sql = "SELECT ".implode(',', $sel)." FROM `{$t}` WHERE wr_id IN ({$in}) ORDER BY wr_id ASC, ord ASC, id ASC";
-//            $qry = sql_query($sql);
-//
-//            while($r = sql_fetch_array($qry)){
-//                $wid = (int)$r['wr_id'];
-//                $row = array();
-//                if (isset($r['id']))  $row['id']  = (int)$r['id'];
-//                if (isset($r['ord'])) $row['ord'] = (int)$r['ord'];
-//                foreach($def as $cname => $_ddl){
-//                    if(isset($r[$cname])) $row[$cname] = wv_base64_decode_unserialize($r[$cname]);
-//                }
-//                if(isset($ext_columns[$pkey])) {
-//                    foreach ($ext_columns[$pkey] as $ex_k=>$ex_v){
-//                        $row[$ex_k]=$ex_v;
-//                    }
-//                }
-//                $out[$pkey][$wid][] = $row;
-//            }
-//        }
-//        return $out;
-//    }
 
 // StoreManager.php에 추가
     protected function fetch_list_part_rows_for_wr_ids($wr_ids, $ext_columns = array(), $target_parts = null) {
@@ -2526,7 +2502,7 @@ class StoreManager extends Makeable{
         if($wr_id <= 0) return array();
 
         // fetch_list_part_rows_for_wr_ids 재사용
-        $all_data = $this->fetch_list_part_rows_for_wr_ids(array($wr_id));
+        $all_data = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
 
         // 해당 part_key와 wr_id의 데이터 반환
         return isset($all_data[$part_key][$wr_id]) ? $all_data[$part_key][$wr_id] : array();
@@ -3243,7 +3219,19 @@ return;
         return $row;
     }
 
+    /** 캐싱이 적용된 ext_row 조회 */
+    protected function fetch_store_row_cached($wr_id) {
+        $wr_id = (int)$wr_id;
 
+        if (isset($this->ext_cache[$wr_id])) {
+            return $this->ext_cache[$wr_id];
+        }
+
+        $row = $this->fetch_store_row($wr_id);
+        $this->ext_cache[$wr_id] = $row;
+
+        return $row;
+    }
 
     /** 캐싱이 적용된 list_part 조회 */
     protected function fetch_list_part_rows_for_wr_ids_cached($wr_ids) {
@@ -3389,6 +3377,40 @@ return;
         }
     }
 
+    protected function get_table_columns_cached($table_name) {
+        if (!isset(self::$table_columns_cache[$table_name])) {
+            $cols = array();
+            $rs = sql_query("SHOW COLUMNS FROM {$table_name}");
+            while ($c = sql_fetch_array($rs)) {
+                if (isset($c['Field'])) $cols[] = $c['Field'];
+                else if (isset($c[0]))   $cols[] = $c[0];
+            }
+            self::$table_columns_cache[$table_name] = $cols;
+        }
+        return self::$table_columns_cache[$table_name];
+    }
+
+    /**
+     * 테이블 컬럼들을 alias와 함께 SELECT 문자열로 생성
+     * @param string $table_name 테이블명
+     * @param string $alias 테이블 alias
+     * @param array $exclude_columns 제외할 컬럼명 배열 (옵션)
+     * @return array SELECT용 문자열 배열
+     */
+    protected function build_aliased_select_columns($table_name, $alias, $exclude_columns = array()) {
+        $cols = $this->get_table_columns_cached($table_name);
+        $select_parts = array();
+        $exclude_map = array_flip($exclude_columns);
+
+        foreach ($cols as $col) {
+            if (isset($exclude_map[$col])) continue;
+            $select_parts[] = $alias.'.'.$col.' AS '.$alias.'_'.$col;
+        }
+
+        return $select_parts;
+    }
+
+
 
 
     public function set_current_store($wr_id){
@@ -3452,6 +3474,8 @@ return;
         return false;
 
     }
+
+
 }
 
 

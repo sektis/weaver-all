@@ -111,20 +111,23 @@ class StorePartProxy{
     }
 
     /** write/ext 최신 로우 병합 (일반 파트 기준; 목록 파트는 list 별도) */
-    protected function ensure_rows()
+    public function ensure_rows($name='')
     {
-        if (count($this->merged_row)) return $this->merged_row;
+        if (count($this->merged_row) and ($name and isset($this->merged_row[$name]))) {
+            return $this->merged_row;
+        }
 
         // 1) 원본 로딩
+
         if ($this->wr_id > 0) {
-            if ($this->manager && method_exists($this->manager, 'fetch_write_row')) {
-                $this->write_row = $this->manager->fetch_write_row($this->wr_id);
+            if ($this->manager && method_exists($this->manager, 'fetch_write_row_cached')) {
+                $this->write_row = $this->manager->fetch_write_row_cached($this->wr_id);
             }
             // ext_row가 skeletal이면 갱신
             $need_ext = (!is_array($this->ext_row) || !count($this->ext_row) ||
                 (isset($this->ext_row['wr_id']) && count($this->ext_row) === 1));
-            if ($need_ext && $this->manager && method_exists($this->manager, 'fetch_store_row')) {
-                $this->ext_row = $this->manager->fetch_store_row($this->wr_id);
+            if ($need_ext && $this->manager && method_exists($this->manager, 'fetch_store_row_cached')) {
+                $this->ext_row = $this->manager->fetch_store_row_cached($this->wr_id);
             }
         }
 
@@ -167,6 +170,11 @@ class StorePartProxy{
             $merged['wr_id'] = $this->wr_id;
         }
 
+        if($name){
+            $merged[$name]='';
+        }
+
+
         // 5) 값 맵핑 적용 (가상 파생키 생성)
         $this->apply_value_maps($merged);
 
@@ -177,6 +185,7 @@ class StorePartProxy{
     /** 체인 접근 */
     public function __get($name)
     {
+
         if (!preg_match('/^[A-Za-z0-9_]+$/', $name)) return null;
 
         // 목록 파트의 list 바로 접근 허용
@@ -185,16 +194,17 @@ class StorePartProxy{
             return $this->ensure_list_rows();
         }
 
+
         // 가상 파생키 허용
         $virtual = $this->get_virtual_keys();
-        $row = $this->ensure_rows();
-        if ($name === 'row' ) {
 
+
+        $row = $this->ensure_rows($name);
+
+        if ($name === 'row' ) {
             return $row;
         }
         if (isset($row[$name])) {
-
-
             return $row[$name];
         }
 
@@ -328,10 +338,11 @@ class StorePartProxy{
 //        $this->virtual_keys = array_keys($virt);
 //    }
 
-    public function apply_value_maps(&$row,$all_row=array())
+    public function apply_value_maps(&$row)
     {
         if (is_object($this->part) && method_exists($this->part, 'column_extend')) {
-            $extended = $this->part->column_extend($row,$all_row);
+
+            $extended = $this->part->column_extend($row);
 
             if (is_array($extended)) {
                 foreach($extended as $key => $value) {

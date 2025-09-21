@@ -10,7 +10,6 @@ class Demo extends StoreSchemaBase implements StoreSchemaInterface{
         'name' => "VARCHAR(255) DEFAULT NULL",
         'image'=>'TEXT DEFAULT NULL',
         'is_on' => "TINYINT(1)  DEFAULT 0",
-
         'form' => "",
     );
 
@@ -34,9 +33,7 @@ class Demo extends StoreSchemaBase implements StoreSchemaInterface{
 
     public function column_extend($row,$all_row=array()){
         $arr = array();
-        $arr['category_text'] = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory->name;
-
-
+        $arr['image_first'] = '';
         return $arr;
     }
 

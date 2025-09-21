@@ -32,8 +32,9 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         );
     }
 
-    public function column_extend($row,$all_row=array()){
+    public function column_extend($row){
 
+dd($row);
         $arr = array();
         $cate_item = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory;
 
@@ -42,12 +43,10 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         $first_image = reset($row['image']);
         $arr['main_image'] =  $first_image['path'];
         if(isset($row['list_each'])){
-            $row['wr_id'] = $all_row['wr_id'];
-            $arr['list_each'] =  $this->manager->get($row['wr_id'])->store->render_part('list_each','view');
+            $arr['list_each'] =  $this->store->store->render_part('list_each','view');
         }
         if(isset($row['list_main'])){
-            $row['wr_id'] = $all_row['wr_id'];
-            $arr['list_main'] =  $this->manager->store->render_part('list_main','view',array('row'=>$row));
+            $arr['list_main'] =  $this->store->store->render_part('list_main','view',array('row'=>$row));
         }
 
 

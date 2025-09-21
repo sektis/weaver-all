@@ -27,5 +27,20 @@ class Menu extends StoreSchemaBase implements StoreSchemaInterface{
         );
     }
 
+    public function column_extend($row){
+
+
+        $arr = array();
+//        $cate_item = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory;
+
+        if(isset($row['test'])){
+            $arr['test'] = 'dasdsa';
+        }
+
+
+
+        return $arr;
+    }
+
 
 }

@@ -6,7 +6,7 @@ $sfl_options = array(
 );
 $sfl_whitelist = array_keys($sfl_options);
 
-
+//dd(wv()->store_manager->made('sub01_01')->get(20680)->store->list_each);
 
 $get_list_where = array();
 if($stx !== '') {
@@ -17,16 +17,7 @@ if($stx !== '') {
 }
 
 $get_list_option = array(
-    'where' => array(
-        'and' => array(
-            array('w.wr_subject' => "LIKE '%테스트%'"),
-            array('w.wr_datetime' => "> '2023-01-01'"),
-            'or' => array(
-                array('w.mb_id' => "= 'admin'"),
-                array('w.wr_hit' => "> 100")
-            )
-        )
-    ),
+
 
     'where_location' =>    array(
         'and'=>array(
@@ -34,15 +25,13 @@ $get_list_option = array(
             array('lng'=>"<>''"),
         )
     ),
-    'where_menu'=> array(
-        array('name'=>"=' (양념)소갈빗살한판(1kg)'")
-    ),
     'with_list_part'=>true,
     'select_store'=>array('list_each'=>'','service'=>array('cont_pdt_type'=>1)),
     'page'=>$page,
-    'rows'=>50,
+    'rows'=>1,
     'list_url'=>wv_page_url($wv_page_id, $qstr)
 );
 $result = wv()->store_manager->made('sub01_01')->get_list($get_list_option);
-dd($result['sql']);
+
 $list = $result['list'];
+dd($result);
