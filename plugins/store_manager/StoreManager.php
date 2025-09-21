@@ -1366,12 +1366,12 @@ class StoreManager extends Makeable{
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         // 목록 파트 데이터 미리 모으기
-        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
+//        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
 
         // ✅ 모든 파트(일반 + 목록) 프록시로 감싸기
         foreach ($this->parts as $pkey => $schema) {
             $schema->set_store($store);
-            $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $ext_row, $pkey);
+            $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema,$write_row, $ext_row, $pkey);
             if ($this->is_list_part_schema($schema)) {
 
                 $proxy->list = isset($ap[$pkey][$wr_id]) ? $ap[$pkey][$wr_id] : array();
@@ -1905,10 +1905,11 @@ class StoreManager extends Makeable{
                     }
                 }
             }
-            $this->apply_column_extend_to_row($row, $store, $write_row, $ext_row);
-            $this->inject_value_maps_into_row($write_row,$ext_row);
 
-            $list[] = $row;
+//dd($write_row);
+//            $this->inject_value_maps_into_row($write_row,$ext_row,$ext_columns);
+
+            $list[] = $this->inject_value_maps_into_row($write_row,$ext_row,$ext_columns);
 
 
         }
@@ -1973,33 +1974,7 @@ class StoreManager extends Makeable{
             'paging'       => $opts['list_url']?wv_get_paging($opts['write_pages'], $page, $total_page, $opts['list_url']):''
         );
     }
-    protected function apply_column_extend_to_row(&$row, $store, $write_row, $ext_row) {
-        if (!is_array($this->parts) || !count($this->parts)) return;
 
-        foreach($this->parts as $pkey => $schema) {
-            if ($this->is_list_part_schema($schema)) continue;
-
-            // ✅ 임시 프록시 생성 (Store에 설정하지 않음)
-            $temp_proxy = new \weaver\store_manager\StorePartProxy($this, $row['wr_id'], $schema, $ext_row, $pkey);
-
-            // ✅ column_extend가 있으면 호출
-            if (method_exists($schema, 'column_extend')) {
-                $proxy_row = $temp_proxy->ensure_rows();
-                $extended = $schema->column_extend($proxy_row, array());
-
-                if (is_array($extended) && count($extended)) {
-                    // ✅ 확장된 값들을 중첩 구조로 추가
-                    if (!isset($row[$pkey]) || !is_array($row[$pkey])) {
-                        $row[$pkey] = array();
-                    }
-
-                    foreach($extended as $key => $value) {
-                        $row[$pkey][$key] = $value;
-                    }
-                }
-            }
-        }
-    }
     /**
      * where 조건의 중첩 구조를 처리하는 메서드
      * @param array $conditions 처리할 조건 배열
@@ -2177,23 +2152,25 @@ class StoreManager extends Makeable{
 //        }
 //    }
 
-    protected function inject_value_maps_into_row(&$write_row,&$ext_row){
+    protected function inject_value_maps_into_row(&$write_row,&$ext_row,$ext_columns=array()){
         if (!is_array($this->parts) || !count($this->parts)) return;
         $wr_id = $write_row['wr_id'];
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         foreach($this->parts as $pkey => $schema){
             $schema->set_store($store);
-
             if ($this->is_list_part_schema($schema)) continue;
 
             // ✅ StorePartProxy 로직 재사용
-            $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $ext_row, $pkey);
+
+            $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $write_row, $ext_row, $pkey);
 //            dd($pkey);
 
-            $proxy->ensure_rows();
-
+            $proxy->ensure_rows($ext_columns[$pkey]);
+dd($proxy->row);
             $store->$pkey=$proxy;
+
+            return $store->$pkey->row;
         }
     }
 

@@ -7,7 +7,7 @@ class Store{
     protected $wr_id;
     protected $write_row = array();
     protected $ext_row = array();
-    protected $proxy_cache = array(); // ✅ 캐시 추가
+
     public function __construct($manager, $wr_id, $write_row, $ext_row){
         $this->manager = $manager;
         $this->wr_id = (int)$wr_id;
@@ -40,24 +40,11 @@ class Store{
     public function __get($name){
         $parts = $this->manager->get_parts();
         if (isset($parts[$name])) {
-            // ✅ 캐시 확인
-            if (isset($this->proxy_cache[$name])) {
-                return $this->proxy_cache[$name];
-            }
 
-            // ✅ 없으면 생성 후 캐시
-            $proxy = new StorePartProxy($this->manager, $this->wr_id, $parts[$name], $this->ext_row, $name);
-
-            // 목록 파트면 데이터 로드
-            if ($this->manager->is_list_part_schema($parts[$name])) {
-                $proxy->list = $this->manager->get_list_part_list($this->wr_id, $name);
-            }
-
-            $this->proxy_cache[$name] = $proxy;
-            return $proxy;
+            return new StorePartProxy($this->manager, $this->wr_id, $parts[$name],$this->write_row, $this->ext_row);
         }
 
-        // member 필드 매핑 등 기존 로직 유지
+        // member 필드 매핑 (mb_name → mb_mb_name)
         if (strpos($name, 'mb_') === 0) {
             $prefixed_name = 'mb_' . $name;
             if (isset($this->write_row[$prefixed_name])) {
@@ -69,5 +56,13 @@ class Store{
         if (isset($this->ext_row[$name])) return $this->ext_row[$name];
 
         return null;
+    }
+
+    public function __isset($name){
+        $parts = $this->manager->get_parts();
+        if (isset($parts[$name])) return true;
+        if (isset($this->write_row[$name])) return true;
+        if (isset($this->ext_row[$name])) return true;
+        return false;
     }
 }

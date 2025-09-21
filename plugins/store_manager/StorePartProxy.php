@@ -38,11 +38,12 @@ class StorePartProxy{
      * @param array $ext_row
      * @param string $part_key  (선택) 없으면 자동 추론
      */
-    public function __construct($manager, $wr_id, $part_schema, $ext_row = array(), $part_key = '')
+    public function __construct($manager, $wr_id, $part_schema, $write_row=array(), $ext_row = array(), $part_key = '')
     {
         $this->manager = $manager;
         $this->wr_id   = (int)$wr_id;
         $this->part    = $part_schema;
+        $this->write_row = is_array($write_row) ? $write_row : array();
         $this->ext_row = is_array($ext_row) ? $ext_row : array();
         $this->part_key = (string)$part_key;
     }
@@ -111,16 +112,18 @@ class StorePartProxy{
     }
 
     /** write/ext 최신 로우 병합 (일반 파트 기준; 목록 파트는 list 별도) */
-    public function ensure_rows($name='')
+    public function ensure_rows( )
     {
-        if (count($this->merged_row) and ($name and isset($this->merged_row[$name]))) {
+        if (count($this->merged_row)) {
             return $this->merged_row;
         }
 
         // 1) 원본 로딩
 
         if ($this->wr_id > 0) {
-            if ($this->manager && method_exists($this->manager, 'fetch_write_row_cached')) {
+            $need_write = (!is_array($this->write_row) || !count($this->write_row) ||
+                (isset($this->write_row['wr_id']) && count($this->write_row) === 1));
+            if ($need_write && $this->manager && method_exists($this->manager, 'fetch_write_row_cached')) {
                 $this->write_row = $this->manager->fetch_write_row_cached($this->wr_id);
             }
             // ext_row가 skeletal이면 갱신
@@ -170,9 +173,7 @@ class StorePartProxy{
             $merged['wr_id'] = $this->wr_id;
         }
 
-        if($name){
-            $merged[$name]='';
-        }
+      
 
 
         // 5) 값 맵핑 적용 (가상 파생키 생성)
