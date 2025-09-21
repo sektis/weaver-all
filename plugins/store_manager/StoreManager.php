@@ -2174,7 +2174,7 @@ class StoreManager extends Makeable{
 
 
             $proxy->ensure_rows();
-
+dd($proxy->row);
 
             $store->$pkey=$proxy;
 

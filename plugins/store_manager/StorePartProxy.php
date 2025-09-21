@@ -31,8 +31,6 @@ class StorePartProxy{
     /** @var array 목록 파트일 때의 리스트 (지연 로딩) */
     public $list = array();
 
-    protected $ensuring_rows = false;      // ✅ ensure_rows 실행 중 플래그
-    protected $extending_columns = false;  // ✅ column_extend 실행 중 플래그
     /**
      * @param StoreManager $manager
      * @param int $wr_id
@@ -120,9 +118,7 @@ class StorePartProxy{
             return $this->merged_row;
         }
 
-        if ($this->ensuring_rows) {
-            return $this->get_basic_row_without_extend();
-        }
+
 
         if ($this->wr_id > 0) {
             $need_write = (!is_array($this->write_row) || !count($this->write_row) ||
@@ -306,39 +302,6 @@ class StorePartProxy{
         }
     }
 
-    protected function get_basic_row_without_extend() {
-        // ✅ column_extend 없이 기본 데이터만 반환
-        $basic = array('wr_id' => $this->wr_id);
-
-        if (is_array($this->write_row)) {
-            $basic = array_merge($basic, $this->write_row);
-        }
-
-        // 물리 컬럼 매핑 (b64s 디코딩 포함)
-        $allowed = array();
-        if (is_object($this->part) && method_exists($this->part, 'get_allowed_columns')) {
-            $allowed = (array)$this->part->get_allowed_columns();
-        }
-
-        $pkey = $this->get_part_key();
-        foreach ($allowed as $logical) {
-            $physical = $logical;
-            if ($pkey !== '' && $this->manager && method_exists($this->manager, 'get_physical_col')) {
-                $physical = $this->manager->get_physical_col($pkey, $logical);
-            }
-
-            if (isset($this->ext_row[$physical])) {
-                $value = $this->ext_row[$physical];
-                if (is_string($value) && $value !== '' && $this->manager && method_exists($this->manager, 'decode_b64s')) {
-                    $try = $this->manager->decode_b64s($value);
-                    if (is_array($try)) $value = $try;
-                }
-                $basic[$logical] = $value;
-            }
-        }
-
-        return $basic;
-    }
 
     protected function get_virtual_keys()
     {
