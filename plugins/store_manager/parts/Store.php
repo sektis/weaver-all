@@ -44,8 +44,13 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
 
         $arr['main_image'] =  $first_image['path'];
 
-        $arr['list_each'] =  $this->store->store->render_part('list_each','view');
-        $arr['list_main'] =  $this->store->store->render_part('list_main','view',array('row'=>$row));
+        $arr['list_each'] =  function () use($row){
+            $this->store->store->render_part('list_each','view');
+        };
+        $arr['list_main'] =function ()use($row){
+            $this->store->store->render_part('list_main','view',array('row'=>$row));
+        };
+
 
 
         return $arr;
