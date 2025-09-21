@@ -35,7 +35,7 @@ if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
 
                         <?php
 
-                        echo wv()->location->display('region/town_setting')
+                        echo   wv_widget('location/region/main_category');
                         ?>
 
 

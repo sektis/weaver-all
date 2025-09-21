@@ -5,30 +5,30 @@
     <?php
     $data = array(
     );
-    echo wv_widget('content/map_main',$data);
+    echo wv_widget('map_main',$data);
     ?>
 
     <?php
     $skin_data = array(
         'text1' => '먹고 싶은 메뉴, 가게 검색',
     );
-    echo wv_widget('content/main_search', $skin_data)
+    echo wv_widget('main_search', $skin_data)
     ?>
     <?php
-    echo wv_widget('content/main_category');
+    echo wv_widget('main_category');
     ?>
     <div class="vstack" style="background-color: #efefef;padding:var(--wv-5) 0;row-gap: var(--wv-1)">
     <?php
     $data = array(
             'text1'=>'우리동네 인기 가게'
     );
-    echo wv_widget('content/our_town_store',$data);
+    echo wv_widget('our_town_store',$data);
     ?>
     <?php
     $data = array(
         'text1'=>'우리동네 신규 가게'
     );
-    echo wv_widget('content/our_town_store',$data);
+    echo wv_widget('our_town_store',$data);
     ?>
     </div>
 </div>

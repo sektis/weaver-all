@@ -887,7 +887,18 @@ class StoreManager extends Makeable{
                         $data[$pkey] = $list_part_form_array_intersect;
 
                     }
+                    if (method_exists($schema, 'get_checkbox_fields')) {
+                        $checkbox_fields = $schema->get_checkbox_fields();
 
+                        if (is_array($checkbox_fields) && count($checkbox_fields)) {
+                            foreach ($checkbox_fields as $checkbox_field) {
+                                if (!array_key_exists($checkbox_field, $data[$pkey])) {
+                                    $data[$pkey][$checkbox_field] = 0; // 체크 해제 = 0
+                                    $org_data[$pkey][$checkbox_field] = 0; // ✅ $org_data에도 추가!
+                                }
+                            }
+                        }
+                    }
 
                     if (!is_array($allowed) || !count($allowed)) continue;
                     if (!isset($data[$pkey]) || !is_array($data[$pkey])) $data[$pkey] = array();
@@ -923,7 +934,6 @@ class StoreManager extends Makeable{
                         $prev_serialized = isset($prev_ext_row[$phys]) ? $prev_ext_row[$phys] : '';
 
                         $prev_decoded = wv_base64_decode_unserialize($prev_serialized);
-
 
                         $walk_function = function (&$arr, $arr2, $node) use ($is_list_part, &$data_pkey_logical_col, &$walk_function, $data, $prev_decoded,$pkey,$logical_col) {
 
@@ -1164,6 +1174,7 @@ class StoreManager extends Makeable{
 
 // ✅ 수정: $data에 실제로 있는 필드만 필터링
             $original_data_keys = array_keys($org_data);
+
             foreach ($original_data_keys as $k) {
                 if ($k === 'wr_id') continue; // wr_id는 이미 처리됨
                 if (in_array($k, $this->allowed_columns) && array_key_exists($k, $data)) {

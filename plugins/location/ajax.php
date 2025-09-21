@@ -19,7 +19,7 @@ if($wv_location_action=='favorite_title'){
 
 }
 if($wv_location_action=='region'){
-    echo wv()->location->display('region/depth');
+    echo wv_widget('location/region/depth');
 
 }
 if($wv_location_action=='api'){

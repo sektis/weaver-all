@@ -103,9 +103,28 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         return is_array($this->non_checkbox_is_fields) ? $this->non_checkbox_is_fields : array();
     }
 
+    /**
+     * 체크박스 감지 패턴 반환 (is_, use_ 등)
+     * @return array
+     */
+    public function get_checkbox_patterns(){
+        return is_array($this->checkbox_patterns) ? $this->checkbox_patterns : array('is_', 'use_');
+    }
+
+    /**
+     * 패턴 매치되지만 체크박스가 아닌 필드들 반환
+     * get_non_checkbox_is_fields()와 동일한 역할
+     * @return array
+     */
+    public function get_non_checkbox_pattern_fields(){
+        return $this->get_non_checkbox_is_fields();
+    }
+
     public function is_checkbox_field($field_name){
         return in_array($field_name, $this->get_checkbox_fields(), true);
     }
+
+
 
     public function get_allowed_columns(){
         if (is_array($this->allowed) && count($this->allowed)) {

@@ -44,8 +44,6 @@ class Location extends Plugin {
         }
 
         $this->ajax_url = wv_path_replace_url(dirname(__FILE__)).'/ajax.php';
-        $this->make_json();
-
 
 
         add_event('wv_hook_before_header_wrapper',array($this,'wv_hook_before_header_wrapper'));
@@ -125,9 +123,7 @@ class Location extends Plugin {
     }
 
 
-    public function make_json(){
-        wv_add_symlink($this->plugin_theme_path.'/page',wv()->page->plugin_theme_path.'/location');
-    }
+
 
 
     public function address_search($address,$size=10,$page=1){
