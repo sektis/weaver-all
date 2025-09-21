@@ -30,7 +30,7 @@ if($action == 'get_stores_by_bounds'){
                 'lng' => "BETWEEN {$sw_lng} AND {$ne_lng} "
             ),
         ),
-        'select_store'=>array('list_each'=>'','service'=>array('cont_pdt_type'=>1)),
+        'select_store'=>array('list_each','service'),
         'order_by' => 'w.wr_datetime DESC',
         'rows' => 1000,  // 최대 1000개까지,
         'with_list_part'=>false

@@ -26,9 +26,9 @@ $get_list_option = array(
         )
     ),
     'with_list_part'=>true,
-    'select_store'=>array('list_each'=>'','service'=>array('cont_pdt_type'=>1)),
+//    'select_store'=>array('list_each'),
     'page'=>$page,
-    'rows'=>1,
+    'rows'=>5,
     'list_url'=>wv_page_url($wv_page_id, $qstr)
 );
 $result = wv()->store_manager->made('sub01_01')->get_list($get_list_option);

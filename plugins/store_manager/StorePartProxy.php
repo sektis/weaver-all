@@ -199,6 +199,7 @@ class StorePartProxy{
 
         $row = $this->ensure_rows();
 
+
         if ($name === 'row' ) {
             return $row;
         }

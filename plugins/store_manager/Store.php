@@ -40,7 +40,6 @@ class Store{
     public function __get($name){
         $parts = $this->manager->get_parts();
         if (isset($parts[$name])) {
-dd(31232);
             return new StorePartProxy($this->manager, $this->wr_id, $parts[$name],$this->write_row, $this->ext_row);
         }
 

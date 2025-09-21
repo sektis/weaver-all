@@ -1366,7 +1366,7 @@ class StoreManager extends Makeable{
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         // 목록 파트 데이터 미리 모으기
-//        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
+        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
 
         // ✅ 모든 파트(일반 + 목록) 프록시로 감싸기
         foreach ($this->parts as $pkey => $schema) {
@@ -1633,28 +1633,28 @@ class StoreManager extends Makeable{
                 $conds_select = $opts[$select_key];
                 if($conds_select){
 
-                    $walk_function = function (&$arr,$arr2,$node) use(&$conds_select,&$walk_function,$def,$pkey) {
-
-                        $parent_key = wv_array_last($node);
-
-                        if(!is_array($arr)){
-                            if(!array_key_exists($parent_key,$def) or $def[$parent_key]){
-                                $combined = 'unset($conds'. wv_array_to_text($node,"['","']").');';
-
-                                @eval("$combined;");
-                                return false;
-                            }
-                            return false;
-                        }
-
-                        foreach ($arr as $k=>&$v){
-                            wv_walk_by_ref_diff($v,$walk_function,array(),array_merge($node,(array)$k));
-                        }
-                        return false;
-
-                    };
-
-                    wv_walk_by_ref_diff($conds_select,$walk_function,array());
+//                    $walk_function = function (&$arr,$arr2,$node) use(&$conds_select,&$walk_function,$def,$pkey) {
+//
+//                        $parent_key = wv_array_last($node);
+//
+//                        if(!is_array($arr)){
+//                            if(!array_key_exists($parent_key,$def) or $def[$parent_key]){
+//                                $combined = 'unset($conds'. wv_array_to_text($node,"['","']").');';
+//
+//                                @eval("$combined;");
+//                                return false;
+//                            }
+//                            return false;
+//                        }
+//
+//                        foreach ($arr as $k=>&$v){
+//                            wv_walk_by_ref_diff($v,$walk_function,array(),array_merge($node,(array)$k));
+//                        }
+//                        return false;
+//
+//                    };
+//
+//                    wv_walk_by_ref_diff($conds_select,$walk_function,array());
 
                     $ext_columns[$pkey]=$conds_select;
 
@@ -1887,29 +1887,11 @@ class StoreManager extends Makeable{
                 }
             }
 
-            // 2) b64s 디코드 (중첩 컬럼에 한정)
-            if ($nest && is_array($this->parts) && count($this->parts)) {
-                foreach ($this->parts as $pkey => $schema) {
-                    if (!isset($row[$pkey]) || !is_array($row[$pkey])) continue;
-
-                    foreach ($ext_columns[$pkey] as $ex_k=>$ex_v){
-                        $row[$pkey][$ex_k]=$ex_v;
-                    }
-                    foreach ($row[$pkey] as $_k => $_v) {
-                        if (is_string($_v) && $_v !== '' && method_exists($this, 'decode_b64s')) {
-                            $try = $this->decode_b64s($_v);
-                            if (is_array($try)) $row[$pkey][$_k] = $try;
-
-                        }
-
-                    }
-                }
-            }
 
 //dd($write_row);
 //            $this->inject_value_maps_into_row($write_row,$ext_row,$ext_columns);
-
-            $list[] = $this->inject_value_maps_into_row($write_row,$ext_row,$ext_columns);
+            $this->inject_value_maps_into_row($row,$write_row,$ext_row,$ext_columns);
+            $list[] = $row;
 
 
         }
@@ -2152,33 +2134,57 @@ class StoreManager extends Makeable{
 //        }
 //    }
 
-    protected function inject_value_maps_into_row($write_row,$ext_row,$ext_columns=array()){
+    protected function inject_value_maps_into_row(&$row,$write_row,$ext_row,$ext_columns=array()){
 
         if (!is_array($this->parts) || !count($this->parts)) return;
         $wr_id = $write_row['wr_id'];
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         foreach($this->parts as $pkey => $schema){
-            if($pkey!='store'){
-                continue;
-            }
+
             $schema->set_store($store);
 
 
-//            if ($this->is_list_part_schema($schema)) continue;
-
-            // ✅ StorePartProxy 로직 재사용
-
             $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $write_row, $ext_row, $pkey);
-//            dd($pkey);
 
 
-            $proxy->ensure_rows();
-dd($proxy->row);
 
-            $store->$pkey=$proxy;
+            $full_row = $proxy->ensure_rows();;
+            // ✅ store 파트 관련 데이터만 추출
+            $store_data = array();
 
-//            return $proxy->ensure_rows();
+            // 허용된 논리 컬럼들만
+            $allowed = method_exists($schema, 'get_allowed_columns') ? (array)$schema->get_allowed_columns() : array();
+            foreach ($allowed as $col) {
+                if (isset($full_row[$col])) {
+                    $store_data[$col] = $full_row[$col];
+                }
+            }
+
+            // column_extend 결과들 (write_row에 없는 키들)
+            foreach ($full_row as $key => $value) {
+                if (!array_key_exists($key, $write_row) && $key !== 'wr_id') {
+                    if (is_callable($value) ) {
+
+                        if(in_array($key,$ext_columns[$pkey])){
+                            try {
+                                $store_data[$key] = $value();
+                            } catch (\Exception $e) {
+                                $store_data[$key] = '';
+                            }
+                        }else{
+                            unset($store_data[$key]);
+                        }
+
+                        continue;
+                    }
+                    $store_data[$key] = $value;
+                }
+            }
+
+
+            $row[$pkey] = $store_data;
+
         }
     }
 
