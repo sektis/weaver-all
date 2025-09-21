@@ -112,7 +112,7 @@ class StorePartProxy{
     }
 
     /** write/ext 최신 로우 병합 (일반 파트 기준; 목록 파트는 list 별도) */
-    public function ensure_rows( )
+    public function ensure_rows()
     {
         if (count($this->merged_row)) {
             return $this->merged_row;
@@ -173,7 +173,9 @@ class StorePartProxy{
             $merged['wr_id'] = $this->wr_id;
         }
 
-      
+        if($name){
+            $merged[$name]='';
+        }
 
 
         // 5) 값 맵핑 적용 (가상 파생키 생성)
@@ -194,11 +196,6 @@ class StorePartProxy{
 
             return $this->ensure_list_rows();
         }
-
-
-        // 가상 파생키 허용
-        $virtual = $this->get_virtual_keys();
-
 
         $row = $this->ensure_rows($name);
 
@@ -222,6 +219,7 @@ class StorePartProxy{
 
     public function __isset($name)
     {
+        dd(2222);
         $virtual = $this->get_virtual_keys();
         if (in_array($name, $virtual, true)) {
             $row = $this->ensure_rows();
