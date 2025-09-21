@@ -173,9 +173,7 @@ class StorePartProxy{
             $merged['wr_id'] = $this->wr_id;
         }
 
-        if($name){
-            $merged[$name]='';
-        }
+
 
 
         // 5) 값 맵핑 적용 (가상 파생키 생성)
@@ -197,7 +195,7 @@ class StorePartProxy{
             return $this->ensure_list_rows();
         }
 
-        $row = $this->ensure_rows($name);
+        $row = $this->ensure_rows();
 
         if ($name === 'row' ) {
             return $row;
@@ -219,7 +217,6 @@ class StorePartProxy{
 
     public function __isset($name)
     {
-        dd(2222);
         $virtual = $this->get_virtual_keys();
         if (in_array($name, $virtual, true)) {
             $row = $this->ensure_rows();
@@ -342,16 +339,9 @@ class StorePartProxy{
         if (is_object($this->part) && method_exists($this->part, 'column_extend')) {
 
             $extended = $this->part->column_extend($row);
-
             if (is_array($extended)) {
                 foreach($extended as $key => $value) {
-                    if(isset($row[$this->part_key])){
-
-                        $row[$this->part_key][$key]=$value;
-                    }else{
-                        $row[$key] = $value;
-                    }
-
+                    $row[$key] = $value;
                 }
             }
         }

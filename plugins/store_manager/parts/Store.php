@@ -41,12 +41,11 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
 //        $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$row['category'].'.png';
         $first_image = reset($row['image']);
         $arr['main_image'] =  $first_image['path'];
-        if(isset($row['list_each'])){
-            $arr['list_each'] =  $this->store->store->render_part('list_each','view');
-        }
-        if(isset($row['list_main'])){
-            $arr['list_main'] =  $this->store->store->render_part('list_main','view',array('row'=>$row));
-        }
+
+        $arr['list_each'] =  $this->store->store->render_part('list_each','view');
+
+
+        $arr['list_main'] =  $this->store->store->render_part('list_main','view',array('row'=>$row));
 
 
         return $arr;
