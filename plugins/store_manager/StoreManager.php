@@ -1366,7 +1366,7 @@ class StoreManager extends Makeable{
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         // 목록 파트 데이터 미리 모으기
-        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
+//        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
 
         // ✅ 모든 파트(일반 + 목록) 프록시로 감싸기
         foreach ($this->parts as $pkey => $schema) {

@@ -120,18 +120,19 @@ class StorePartProxy{
 
 
 
-        if ($this->wr_id > 0) {
-            $need_write = (!is_array($this->write_row) || !count($this->write_row) ||
-                (isset($this->write_row['wr_id']) && count($this->write_row) === 1));
-            if ($need_write && $this->manager && method_exists($this->manager, 'fetch_write_row_cached')) {
+        if (!is_array($this->write_row) || !count($this->write_row)) {
+            // ✅ write_row가 없을 때만 DB에서 가져오기
+            if ($this->wr_id > 0 && $this->manager && method_exists($this->manager, 'fetch_write_row_cached')) {
                 $this->write_row = $this->manager->fetch_write_row_cached($this->wr_id);
             }
-            // ext_row가 skeletal이면 갱신
-            $need_ext = (!is_array($this->ext_row) || !count($this->ext_row) ||
-                (isset($this->ext_row['wr_id']) && count($this->ext_row) === 1));
-            if ($need_ext && $this->manager && method_exists($this->manager, 'fetch_store_row_cached')) {
-                $this->ext_row = $this->manager->fetch_store_row_cached($this->wr_id);
-            }
+        }
+
+        // 2) ext_row 처리 - skeletal 체크해서 필요시에만 갱신
+        $need_ext = (!is_array($this->ext_row) || !count($this->ext_row) ||
+            (isset($this->ext_row['wr_id']) && count($this->ext_row) === 1));
+
+        if ($need_ext && $this->wr_id > 0 && $this->manager && method_exists($this->manager, 'fetch_store_row_cached')) {
+            $this->ext_row = $this->manager->fetch_store_row_cached($this->wr_id);
         }
 
         // 2) write 우선
@@ -175,7 +176,7 @@ class StorePartProxy{
 
         // ✅ 값 맵핑 적용 (순환 호출 방지와 함께)
         $this->apply_value_maps($merged);
-
+        $this->merged_row = $merged;
 
 
         return $this->merged_row;
