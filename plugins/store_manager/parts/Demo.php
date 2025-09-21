@@ -34,6 +34,12 @@ class Demo extends StoreSchemaBase implements StoreSchemaInterface{
     public function column_extend($row,$all_row=array()){
         $arr = array();
         $arr['image_first'] = '';
+
+        // column_extend 내 render_part는 메서드내에서 클로저로 변환
+        $arr['test1'] =  $this->store->store->render_part('list_each','view');
+
+        // 지연평가
+        $arr['test2'] =  function() use ($row) {return $this->store->demo->test1;};
         return $arr;
     }
 

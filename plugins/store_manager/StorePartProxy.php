@@ -31,6 +31,8 @@ class StorePartProxy{
     /** @var array 목록 파트일 때의 리스트 (지연 로딩) */
     public $list = array();
 
+    protected $ensuring_rows = false;      // ✅ ensure_rows 실행 중 플래그
+    protected $extending_columns = false;  // ✅ column_extend 실행 중 플래그
     /**
      * @param StoreManager $manager
      * @param int $wr_id
@@ -118,69 +120,83 @@ class StorePartProxy{
             return $this->merged_row;
         }
 
+        if ($this->ensuring_rows) {
+            return $this->get_basic_row_without_extend();
+        }
+
+        $this->ensuring_rows = true; // ✅ 플래그 설정
         // 1) 원본 로딩
 
-        if ($this->wr_id > 0) {
-            $need_write = (!is_array($this->write_row) || !count($this->write_row) ||
-                (isset($this->write_row['wr_id']) && count($this->write_row) === 1));
-            if ($need_write && $this->manager && method_exists($this->manager, 'fetch_write_row_cached')) {
-                $this->write_row = $this->manager->fetch_write_row_cached($this->wr_id);
-            }
-            // ext_row가 skeletal이면 갱신
-            $need_ext = (!is_array($this->ext_row) || !count($this->ext_row) ||
-                (isset($this->ext_row['wr_id']) && count($this->ext_row) === 1));
-            if ($need_ext && $this->manager && method_exists($this->manager, 'fetch_store_row_cached')) {
-                $this->ext_row = $this->manager->fetch_store_row_cached($this->wr_id);
-            }
-        }
+        try {
+            // 기존 ensure_rows 로직...
 
-        // 2) write 우선
-        $merged = is_array($this->write_row) ? $this->write_row : array();
 
-        // 3) 허용(논리) 컬럼만 ext에서 역매핑
-        $allowed = array();
-        if (is_object($this->part) && method_exists($this->part, 'get_allowed_columns')) {
-            $allowed = (array)$this->part->get_allowed_columns();
-        }
-
-        $pkey = $this->get_part_key();
-        if (!$this->is_list_part()) {
-            foreach ($allowed as $logical) {
-                $physical = $logical;
-                if ($pkey !== '' && $this->manager && method_exists($this->manager, 'get_physical_col')) {
-                    $physical = $this->manager->get_physical_col($pkey, $logical);
+            if ($this->wr_id > 0) {
+                $need_write = (!is_array($this->write_row) || !count($this->write_row) ||
+                    (isset($this->write_row['wr_id']) && count($this->write_row) === 1));
+                if ($need_write && $this->manager && method_exists($this->manager, 'fetch_write_row_cached')) {
+                    $this->write_row = $this->manager->fetch_write_row_cached($this->wr_id);
                 }
-                if (isset($this->ext_row[$physical])) {
-                    $merged[$logical] = $this->ext_row[$physical];
-                } elseif (isset($this->ext_row[$logical])) {
-                    // 과거 호환: 논리키가 그대로 저장돼 있던 경우
-                    $merged[$logical] = $this->ext_row[$logical];
+                // ext_row가 skeletal이면 갱신
+                $need_ext = (!is_array($this->ext_row) || !count($this->ext_row) ||
+                    (isset($this->ext_row['wr_id']) && count($this->ext_row) === 1));
+                if ($need_ext && $this->manager && method_exists($this->manager, 'fetch_store_row_cached')) {
+                    $this->ext_row = $this->manager->fetch_store_row_cached($this->wr_id);
                 }
             }
-        }
 
-        // 4) b64s 자동 디코딩
-        if (is_array($merged) && $this->manager && method_exists($this->manager, 'decode_b64s')) {
-            foreach ($merged as $k => $v) {
-                if (is_string($v) && $v !== '') {
-                    $try = $this->manager->decode_b64s($v);
-                    if (is_array($try)) $merged[$k] = $try;
+            // 2) write 우선
+            $merged = is_array($this->write_row) ? $this->write_row : array();
+
+            // 3) 허용(논리) 컬럼만 ext에서 역매핑
+            $allowed = array();
+            if (is_object($this->part) && method_exists($this->part, 'get_allowed_columns')) {
+                $allowed = (array)$this->part->get_allowed_columns();
+            }
+
+            $pkey = $this->get_part_key();
+            if (!$this->is_list_part()) {
+                foreach ($allowed as $logical) {
+                    $physical = $logical;
+                    if ($pkey !== '' && $this->manager && method_exists($this->manager, 'get_physical_col')) {
+                        $physical = $this->manager->get_physical_col($pkey, $logical);
+                    }
+                    if (isset($this->ext_row[$physical])) {
+                        $merged[$logical] = $this->ext_row[$physical];
+                    } elseif (isset($this->ext_row[$logical])) {
+                        // 과거 호환: 논리키가 그대로 저장돼 있던 경우
+                        $merged[$logical] = $this->ext_row[$logical];
+                    }
                 }
             }
+
+            // 4) b64s 자동 디코딩
+            if (is_array($merged) && $this->manager && method_exists($this->manager, 'decode_b64s')) {
+                foreach ($merged as $k => $v) {
+                    if (is_string($v) && $v !== '') {
+                        $try = $this->manager->decode_b64s($v);
+                        if (is_array($try)) $merged[$k] = $try;
+                    }
+                }
+            }
+
+            if (!isset($merged['wr_id']) && $this->wr_id > 0) {
+                $merged['wr_id'] = $this->wr_id;
+            }
+
+            // ✅ 값 맵핑 적용 (순환 호출 방지와 함께)
+            $this->apply_value_maps($merged);
+
+            $this->merged_row = $merged;
+
+        } finally {
+            $this->ensuring_rows = false; // ✅ 플래그 해제
         }
 
-        if (!isset($merged['wr_id']) && $this->wr_id > 0) {
-            $merged['wr_id'] = $this->wr_id;
-        }
-
-
-
-
-        // 5) 값 맵핑 적용 (가상 파생키 생성)
-        $this->apply_value_maps($merged);
-
-        $this->merged_row = $merged;
         return $this->merged_row;
+
+
+
     }
 
     /** 체인 접근 */
@@ -200,7 +216,12 @@ class StorePartProxy{
         if ($name === 'row' ) {
             return $row;
         }
+
         if (isset($row[$name])) {
+            // ✅ 클로저면 실행해서 반환
+            if (is_callable($row[$name])) {
+                return $row[$name]();
+            }
             return $row[$name];
         }
 
@@ -228,13 +249,24 @@ class StorePartProxy{
 
 
     public function render_part($arg1, $arg2 = null, $arg3 = array()){
-        // CSS/JS 자산 로딩
+        // ✅ ensuring_rows 중이면 지연 평가 클로저 반환
+        dd($this->ensuring_rows);
+        if ($this->ensuring_rows || $this->extending_columns) {
+            return function() use ($arg1, $arg2, $arg3) {
+                // 플래그가 해제된 후 실제 렌더링 실행
+                return $this->render_part_immediate($arg1, $arg2, $arg3);
+            };
+        }
 
+        // ✅ 일반적인 경우 즉시 렌더링
+        return $this->render_part_immediate($arg1, $arg2, $arg3);
 
+    }
+
+    private function render_part_immediate($arg1, $arg2 = null, $arg3 = array()) {
         $pkey = $this->get_part_key();
 
         if ($this->is_list_part()) {
-            // 목록 파트: row/list 데이터 준비
             $row = $this->ensure_rows();
             $row[$pkey] = $this->ensure_list_rows();
 
@@ -242,21 +274,16 @@ class StorePartProxy{
                 $this->part->make_array($row[$pkey]);
             }
 
-            // vars에 list 데이터 추가
             $vars = is_array($arg3) ? $arg3 : array();
             $vars = array_merge(array('row' => $row, 'list' => $row[$pkey]), $vars);
 
-            // StoreSchemaBase로 위임 (일반파트와 동일하게)
             if (is_object($this->part) && method_exists($this->part, 'render_part')) {
                 return $this->part->render_part($arg1, $arg2, $vars);
             }
             return '';
         }
 
-        // 일반 파트: row 데이터 준비 후 StoreSchemaBase로 위임
         $row = $this->ensure_rows();
-
-
 
         if (is_object($this->part) && method_exists($this->part, 'render_part')) {
             return $this->part->render_part($arg1, $arg2, array_merge(array('row' => $row), is_array($arg3) ? $arg3 : array()));
@@ -264,45 +291,6 @@ class StorePartProxy{
 
         return '';
     }
-
-
-    /** 스키마의 맵핑 프로퍼티 → 가상 파생키로 확장 */
-//    protected function get_schema_value_maps()    {
-//        static $cache = array();
-//        $cls = is_object($this->part) ? get_class($this->part) : '';
-//        if (!$cls) return array();
-//        if (isset($cache[$cls])) return $cache[$cls];
-//
-//        $allowed = array();
-//        if (is_object($this->part) && method_exists($this->part, 'get_allowed_columns')) {
-//            $allowed = (array)$this->part->get_allowed_columns();
-//        }
-//        $allowed = is_array($allowed) ? array_values($allowed) : array();
-//
-//        $maps = array(); // 예: ['cont_pdt_type_text' => ['base'=>'cont_pdt_type','map'=>[1=>'매장',2=>'포장']]]
-//
-//        $ref = new \ReflectionObject($this->part);
-//        $props = $ref->getProperties();
-//        foreach ($props as $p) {
-//            $name = $p->getName();
-//
-//            // 허용 컬럼 중 "col_" prefix로 시작하면 base로 인정
-//            $base = '';
-//            foreach ($allowed as $col) {
-//                if (strpos($name, $col . '_') === 0) { $base = $col; break; }
-//            }
-//            if ($base === '') continue;
-//
-//            $p->setAccessible(true);
-//            $val = $p->getValue($this->part);
-//            if (is_array($val)) {
-//                $maps[$name] = array('base' => $base, 'map' => $val);
-//            }
-//        }
-//
-//        $cache[$cls] = $maps;
-//        return $maps;
-//    }
 
     protected function get_schema_value_maps()
     {
@@ -320,31 +308,65 @@ class StorePartProxy{
         $cache[$cls] = $maps;
         return $maps;
     }
-    //    protected function apply_value_maps(&$row)
-//    {
-//        $maps = $this->get_schema_value_maps();
-//        $virt = array();
-//        foreach ($maps as $vname => $spec) {
-//            $base = isset($spec['base']) ? $spec['base'] : '';
-//            $map  = isset($spec['map'])  ? $spec['map']  : array();
-//            $code = isset($row[$base]) ? $row[$base] : '';
-//            $row[$vname] = isset($map[$code]) ? $map[$code] : '';
-//            $virt[$vname] = true;
-//        }
-//        $this->virtual_keys = array_keys($virt);
-//    }
 
-    public function apply_value_maps(&$row)
-    {
+    public function apply_value_maps(&$row) {
+        // ✅ 이미 실행 중이면 스킵
+        if ($this->extending_columns) return;
+
         if (is_object($this->part) && method_exists($this->part, 'column_extend')) {
+            $this->extending_columns = true; // ✅ 플래그 설정
 
-            $extended = $this->part->column_extend($row);
-            if (is_array($extended)) {
-                foreach($extended as $key => $value) {
-                    $row[$key] = $value;
+            try {
+
+                $extended = $this->part->column_extend($row);
+
+                if (is_array($extended)) {
+                    foreach($extended as $key => $value) {
+                        if(isset($row[$this->part_key])){
+                            $row[$this->part_key][$key] = $value;
+                        } else {
+                            $row[$key] = $value;
+                        }
+                    }
                 }
+            } finally {
+                $this->extending_columns = false; // ✅ 플래그 해제
             }
         }
+    }
+
+    protected function get_basic_row_without_extend() {
+        // ✅ column_extend 없이 기본 데이터만 반환
+        $basic = array('wr_id' => $this->wr_id);
+
+        if (is_array($this->write_row)) {
+            $basic = array_merge($basic, $this->write_row);
+        }
+
+        // 물리 컬럼 매핑 (b64s 디코딩 포함)
+        $allowed = array();
+        if (is_object($this->part) && method_exists($this->part, 'get_allowed_columns')) {
+            $allowed = (array)$this->part->get_allowed_columns();
+        }
+
+        $pkey = $this->get_part_key();
+        foreach ($allowed as $logical) {
+            $physical = $logical;
+            if ($pkey !== '' && $this->manager && method_exists($this->manager, 'get_physical_col')) {
+                $physical = $this->manager->get_physical_col($pkey, $logical);
+            }
+
+            if (isset($this->ext_row[$physical])) {
+                $value = $this->ext_row[$physical];
+                if (is_string($value) && $value !== '' && $this->manager && method_exists($this->manager, 'decode_b64s')) {
+                    $try = $this->manager->decode_b64s($value);
+                    if (is_array($try)) $value = $try;
+                }
+                $basic[$logical] = $value;
+            }
+        }
+
+        return $basic;
     }
 
     protected function get_virtual_keys()

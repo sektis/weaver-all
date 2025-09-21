@@ -1366,7 +1366,7 @@ class StoreManager extends Makeable{
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         // 목록 파트 데이터 미리 모으기
-//        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
+        $ap = $this->fetch_list_part_rows_for_wr_ids_cached(array($wr_id));
 
         // ✅ 모든 파트(일반 + 목록) 프록시로 감싸기
         foreach ($this->parts as $pkey => $schema) {
@@ -2152,25 +2152,33 @@ class StoreManager extends Makeable{
 //        }
 //    }
 
-    protected function inject_value_maps_into_row(&$write_row,&$ext_row,$ext_columns=array()){
+    protected function inject_value_maps_into_row($write_row,$ext_row,$ext_columns=array()){
+
         if (!is_array($this->parts) || !count($this->parts)) return;
         $wr_id = $write_row['wr_id'];
         $store = new Store($this, $wr_id, $write_row, $ext_row);
 
         foreach($this->parts as $pkey => $schema){
+            if($pkey!='store'){
+                continue;
+            }
             $schema->set_store($store);
-            if ($this->is_list_part_schema($schema)) continue;
+
+
+//            if ($this->is_list_part_schema($schema)) continue;
 
             // ✅ StorePartProxy 로직 재사용
 
             $proxy = new \weaver\store_manager\StorePartProxy($this, $wr_id, $schema, $write_row, $ext_row, $pkey);
 //            dd($pkey);
 
-            $proxy->ensure_rows($ext_columns[$pkey]);
-dd($proxy->row);
+
+            $proxy->ensure_rows();
+
+
             $store->$pkey=$proxy;
 
-            return $store->$pkey->row;
+//            return $proxy->ensure_rows();
         }
     }
 
