@@ -25,12 +25,12 @@ global $current_store_wr_id;
                                                "fields":"ceo/notice",
                                                "wr_id":"<?php echo $current_store_wr_id; ?>"
                                                }'
-                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $wv_skin_url; ?>/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
+                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
             </div>
             <p class="fs-[16/22/-0.64/600/#0D171B] wv-line-clamp" style="--wv-line-clamp-length: 1"><?php echo $row['notice']; ?></p>
             <div class="h-[38px] hstack align-items-center" style="border-radius: var(--wv-4);background-color: #f9f9f9;gap:var(--wv-2);padding: 0 var(--wv-8)">
 
-                <img src="<?php echo $wv_skin_url; ?>/vec1.png" class="w-[14px]" alt="">
+                <img src="<?php echo $this->manager->plugin_url ?>/img/vec1.png" class="w-[14px]" alt="">
                 <p class="fs-[12/17/-0.48/500/#97989C]">고객들에게 내 매장에 대한 특징을 소개해보세요</p>
 
             </div>

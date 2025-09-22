@@ -21,11 +21,11 @@ $cont =  $row['contract'][$contract_id];
         ?>
         <a class="fs-[14/17/-0.56/600/] hstack justify-content-center w-full cursor-pointer gap-[6px]"
               style="height:var(--wv-40);padding:0 var(--wv-10);color:#fff;border-radius:var(--wv-4);<?php echo $this->status_change_style_array[$cont['status']]?>"
-           href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' data-wv-ajax-option="replace_with:<?php echo $skin_selector; ?>"
-           data-wv-ajax-data='{
+           href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' data-wv-ajax-option="reload:true"
+           data-wv-ajax-data='{  "action":"update",
                                                "made":"sub01_01",
                                                "part":"contract",
-                                               "action":"update",
+
                                                "fields":"status",
                                                "wr_id":"<?php echo $row['wr_id']; ?>"
 

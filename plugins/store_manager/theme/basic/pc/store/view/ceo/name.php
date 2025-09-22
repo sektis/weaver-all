@@ -19,7 +19,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
             <div>
                 <p class="fs-[16/22/-0.64/600/#0D171B]"><?php echo $row['name']; ?></p>
                 <div class="hstack mt-[6px]" style="gap:var(--wv-2)">
-                    <img src="<?php echo $wv_skin_url; ?>/vec1.png" class="w-[14px]" alt="">
+                    <img src="<?php echo $this->manager->plugin_url ?>/img/vec1.png" class="w-[14px]" alt="">
                     <p class="fs-[12/17/-0.48/500/#97989C]">매장 이름 변경을 원하실 경우, 고객센터로 문의바랍니다</p>
                 </div>
             </div>

@@ -205,8 +205,9 @@ $(function(){
             if( isset(parsed_json.reload)){
                 if(isset(parsed_json.msg && !settings.success)){
                     alert(parsed_json.msg);
+                    location.reload();
                 }
-                location.reload();
+
             }
         } catch (e) {
 

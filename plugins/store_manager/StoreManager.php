@@ -1144,7 +1144,7 @@ class StoreManager extends Makeable{
                 }
             }
 
-dd($data);
+
             // === 평면화: 일반 파트만 물리 컬럼으로 펼치고 part 키 제거(목록 파트 제외) ===
             $this->normalize_part_data($data);
             $this->normalize_part_data($org_data, true);

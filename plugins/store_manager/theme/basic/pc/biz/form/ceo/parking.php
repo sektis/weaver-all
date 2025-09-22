@@ -15,7 +15,7 @@ $vars['form_selector']=$skin_selector;
 
 
                 <div class="col">
-                    <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $wv_skin_url; ?>/vec3.png" class="w-[28px]" alt=""></div>
+                    <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $this->manager->plugin_url ?>/img/vec3.png" class="w-[28px]" alt=""></div>
 
                 </div>
 

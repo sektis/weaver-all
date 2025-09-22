@@ -5,7 +5,7 @@ $this->make_array($row['image']);
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative d-flex-center flex-nowrap"    >
     <style>
         <?php echo $skin_selector?> {}
-        <?php echo $skin_selector?> .wv-ps-each{width: var(--wv-160);height: var(--wv-104);background-color: #f9f9f9;border-radius: var(--wv-4);overflow: hidden;border:1px solid #dcdcdc}
+        <?php echo $skin_selector?> .wv-ps-each{width: var(--wv-160);max-width:calc(50% - var(--wv-5));height: var(--wv-104);background-color: #f9f9f9;border-radius: var(--wv-4);overflow: hidden;border:1px solid #dcdcdc}
 
 
         @media (min-width: 992px) {

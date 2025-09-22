@@ -42,3 +42,8 @@
     flex-direction: column;
     row-gap: var(--wv-6);
 }
+.wv-part-skin .wv-offcanvas-header{padding: var(--wv-27) 0 var(--wv-7);font-size: var(--wv-18);font-weight: 700;}
+.wv-part-skin .wv-offcanvas-body{padding: var(--wv-12) 0}
+.wv-part-skin .wv-submit-btn:not(.active){pointer-events: none;user-select: none}
+.wv-part-skin .wv-submit-btn.active{  background-color: #0d171b !important;color: #fff !important;}
+.wv-part-skin .wv-submit-btn:hover{  background-color: #0d171b !important;color: #fff !important;}

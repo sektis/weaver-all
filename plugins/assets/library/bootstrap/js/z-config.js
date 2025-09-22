@@ -162,6 +162,9 @@ function parseWvAjaxOptions(options) {
             else if (option.indexOf('replace_with:') === 0) {
                 processedOptions.replace_with = option.substring(13).trim();
             }
+            else if (option.indexOf('reload:') === 0) {
+                processedOptions.reload = option.substring(7).trim();
+            }
             else if (option.indexOf('ajax_option:') === 0) {
                 try {
                     var ajaxOptionStr = option.substring(12).trim();
@@ -236,6 +239,9 @@ $(document).on('click', '[data-wv-ajax-url]', function (e) {
     var type = '';
     var processedOptions = parseWvAjaxOptions(optionAttr);
 
+    // 클릭 요소 정보 추가 (reload에서 사용)
+    processedOptions.$clickElement = $this;
+
     // type 찾기 (processedOptions.other에서 추출)
     if (processedOptions.other) {
         for (var i = 0; i < processedOptions.other.length; i++) {
@@ -308,12 +314,15 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
 
                 $(processedOptions.replace).html(response);
                 return false;
-            } //
+            }
             if (processedOptions.replace_with) {
-
                 $(processedOptions.replace_with).replaceWith(response);
                 return false;
-            } // console.log('AJAX 성공:', response);
+            }
+            if (processedOptions.reload) {
+                wv_handle_reload(processedOptions.reload, processedOptions.$clickElement);
+                return false;
+            }
         }
     };
 
@@ -332,7 +341,42 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
 
     $.ajax(defaultAjaxSettings);
 }
+// reload 처리 공통 함수
+function wv_handle_reload(reloadValue, $clickElement) {
+    var $target = null;
 
+    if (reloadValue === 'true') {
+        // 클릭 요소 기준으로 closest offcanvas 또는 modal 찾기
+        $target = $clickElement.closest('.offcanvas');
+        if (!$target.length) {
+            $target = $clickElement.closest('.modal');
+        }
+    } else {
+        // 셀렉터로 타겟 찾기
+        $target = $(reloadValue);
+    }
+
+    if (!$target.length) {
+        console.warn('Reload target not found:', reloadValue);
+        return false;
+    }
+
+    var targetId = $target.attr('id');
+    if (!targetId) {
+        console.warn('Target element has no ID for reload');
+        return false;
+    }
+
+    // offcanvas인지 modal인지 판단해서 적절한 reload 함수 호출
+    if ($target.hasClass('offcanvas')) {
+        return wv_reload_offcanvas(targetId);
+    } else if ($target.hasClass('modal')) {
+        return wv_reload_modal(targetId);
+    } else {
+        console.warn('Target is neither offcanvas nor modal:', $target);
+        return false;
+    }
+}
 function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
     // 옵션 파싱
     var processedOptions = isParsed ? options : parseWvAjaxOptions(options);
@@ -369,6 +413,11 @@ function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
             </div>
         </div>
     `);
+
+    // 리로딩을 위한 정보 저장
+    modalEl.data('wv-reload-url', url);
+    modalEl.data('wv-reload-options', processedOptions);
+    modalEl.data('wv-reload-data', data);
 
     $modal_target.append(modalEl);
 
@@ -435,12 +484,20 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
         </div>
     `);
 
+    offcanvasEl.data('wv-reload-url', url);
+    offcanvasEl.data('wv-reload-options', processedOptions);
+    offcanvasEl.data('wv-reload-data', data); // offcanvas가 아니라 offcanvasEl
+
     $offcanvas_target.append(offcanvasEl);
 
     var offcanvas = new bootstrap.Offcanvas(offcanvasEl[0], {
         backdrop: backdrop,
         scroll: scroll
     });
+
+    // 리로딩을 위한 정보 저장
+
+
     offcanvas.show();
 
     $(offcanvasEl).on("hidden.bs.offcanvas", function () {
@@ -468,4 +525,89 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
     }
 
     $.ajax(ajaxSettings);
+}
+
+function wv_reload_offcanvas(offcanvasId) {
+    var $offcanvas = $('#' + offcanvasId);
+    if (!$offcanvas.length) return false;
+
+    var url = $offcanvas.data('wv-reload-url');
+    var options = $offcanvas.data('wv-reload-options');
+    var data = $offcanvas.data('wv-reload-data');
+
+    if (!url) return false;
+
+    // 로딩 표시
+    $offcanvas.find('.offcanvas-body').html('<div class="d-flex justify-content-center p-4"><div class="spinner-border" role="status"></div></div>');
+
+    // AJAX 요청
+    var ajaxSettings = {
+        url: url,
+        method: "POST",
+        data: data,
+        success: function (html) {
+            $offcanvas.find('.offcanvas-body').html(html);
+        },
+        error: function () {
+            $offcanvas.find('.offcanvas-body').html('<div class="alert alert-danger m-3">로딩 중 오류가 발생했습니다.</div>');
+        }
+    };
+
+    if (options && options.ajax) {
+        $.extend(ajaxSettings, options.ajax);
+    }
+
+    $.ajax(ajaxSettings);
+    return true;
+}
+
+// 현재 활성화된 offcanvas 리로딩
+function wv_reload_current_offcanvas() {
+    var $activeOffcanvas = $('.offcanvas.show').last();
+    if ($activeOffcanvas.length && $activeOffcanvas.attr('id')) {
+        return wv_reload_offcanvas($activeOffcanvas.attr('id'));
+    }
+    return false;
+}
+function wv_reload_modal(modalId) {
+    var $modal = $('#' + modalId);
+    if (!$modal.length) return false;
+
+    var url = $modal.data('wv-reload-url');
+    var options = $modal.data('wv-reload-options');
+    var data = $modal.data('wv-reload-data');
+
+    if (!url) return false;
+
+    // 로딩 표시
+    $modal.find('.modal-content').html('<div class="d-flex justify-content-center p-4"><div class="spinner-border" role="status"></div></div>');
+
+    // AJAX 요청
+    var ajaxSettings = {
+        url: url,
+        method: "POST",
+        data: data,
+        success: function (html) {
+            $modal.find('.modal-content').html(html);
+        },
+        error: function () {
+            $modal.find('.modal-content').html('<div class="alert alert-danger m-3">로딩 중 오류가 발생했습니다.</div>');
+        }
+    };
+
+    if (options && options.ajax) {
+        $.extend(ajaxSettings, options.ajax);
+    }
+
+    $.ajax(ajaxSettings);
+    return true;
+}
+
+// 현재 활성화된 modal 리로딩
+function wv_reload_current_modal() {
+    var $activeModal = $('.modal.show').last();
+    if ($activeModal.length && $activeModal.attr('id')) {
+        return wv_reload_modal($activeModal.attr('id'));
+    }
+    return false;
 }
