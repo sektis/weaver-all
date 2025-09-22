@@ -1,11 +1,11 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 ?>
-<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative  vstack "  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
+<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative  h-100 "  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
     <style>
         <?php echo $skin_selector?> {}
-
-
+        #site-wrapper{height: 100dvh!important;}
+        #content-wrapper>.container{height: 100%}
         @media (min-width: 992px) {
 
         }
@@ -15,7 +15,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         }
     </style>
 
-    <div class="position-relative col col-lg-auto w-full md:w-full   aaaa vstack"  >
+    <div class="position-relative col col-lg-auto w-full md:w-full h-100"  >
         <?php
 
 
@@ -35,16 +35,16 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
         <div class="position-absolute top-0 start-0 w-full bg-white" style="z-index: 99">
         <?php
-        echo wv_widget('content/map_category');
+        echo wv_widget('map_category');
         ?>
         </div>
 
-        <div class="height-wrapper col">
+
             <!-- Location 플러그인 Map 스킨 호출 -->
-            <div class="map-container h-100 vstack">
+            <div class="map-container   h-100"  >
                 <?php echo wv_widget('location/map',$map_options); ?>
             </div>
-        </div>
+
 
 
 
@@ -52,7 +52,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
             $(document).ready(function() {
 
                 var $skin = $("<?php echo $skin_selector?>");
-
+               // $(".map-container",$skin).css('height', $("#content-wrapper").outerHeight() + 'px');
 
                 /**
                  * 🗺️ 지도 변경 이벤트 (통합)

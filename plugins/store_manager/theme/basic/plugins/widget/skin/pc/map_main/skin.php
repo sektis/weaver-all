@@ -5,8 +5,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
     <style>
         <?php echo $skin_selector?> {}
 
-            border-radius: var(--wv-4);
-            background: #f9f9f9;}
+
 
 
         @media (min-width: 992px) {
@@ -38,7 +37,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 
             <!-- Location 플러그인 Map 스킨 호출 -->
-            <div class="map-container">
+            <div class="map-container" style="height:30dvh">
                 <?php echo   wv_widget('location/map');?>
             </div>
 

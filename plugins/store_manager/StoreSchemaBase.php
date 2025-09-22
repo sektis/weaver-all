@@ -148,11 +148,12 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
     public function get_template_path($column, $type){
         if ($type !== 'view' && $type !== 'form') return '';
         if (!preg_match('/^[A-Za-z0-9_]+$/', $this->part_key)) return '';
-        if (!preg_match('/^[A-Za-z0-9_]+$/', $column)) return '';
+        if (!preg_match('/^[A-Za-z0-9_\/]+$/', $column)) return '';
         if (!strlen($this->plugin_theme_path)) return '';
 
         $base = rtrim($this->plugin_theme_path, '/');
         $path = $base . '/' . $this->part_key . '/' . $type . '/' . $column . '.php';
+
         return file_exists($path) ? $path : '';
     }
 
@@ -201,7 +202,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         if (is_array($column)) {
             $html = '';
             foreach ($column as $col) {
-                if (!is_string($col) || !preg_match('/^[A-Za-z0-9_]+$/', $col)) continue;
+                if (!is_string($col) || !preg_match('/^[A-Za-z0-9_\/]+$/', $col)) continue;
                 $chunk = $this->render_part($col, $type, $vars);
                 if (strlen($chunk)) $html .= $chunk;
             }
@@ -212,7 +213,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         // 컬럼 유효성 검증: $columns에 정의된 컬럼만 허용
 
         if (!isset($this->columns[$column])) {
-            return "  StoreSchemaBase: column '{$column}' not defined in \$columns  ";
+//            return "  StoreSchemaBase: column '{$column}' not defined in \$columns  ";
         }
 
         $tpl = $this->get_template_path($column, $type);

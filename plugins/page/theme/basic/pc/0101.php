@@ -4,7 +4,7 @@
 $data = array(
     'height_wrapper'=>'#content-wrapper'
 );
-echo wv_widget('content/map',$data);
+echo wv_widget('map',$data);
 ?>
 
 </div>

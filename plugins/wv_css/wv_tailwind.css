@@ -39,6 +39,9 @@
   .end-\[12px\] {
     inset-inline-end: var(--wv-12) !important;
   }
+  .my-\[16px\] {
+    margin-block: var(--wv-16) !important;
+  }
   .mt-\[1em\] {
     margin-top: 1em !important;
   }
@@ -108,6 +111,9 @@
   .mt-\[128px\] {
     margin-top: var(--wv-128) !important;
   }
+  .mb-\[16px\] {
+    margin-bottom: var(--wv-16) !important;
+  }
   .mb-\[50px\] {
     margin-bottom: var(--wv-50) !important;
   }
@@ -135,6 +141,9 @@
   .h-\[33px\] {
     height: var(--wv-33) !important;
   }
+  .h-\[38px\] {
+    height: var(--wv-38) !important;
+  }
   .h-\[39px\] {
     height: var(--wv-39) !important;
   }
@@ -146,6 +155,9 @@
   }
   .h-\[46px\] {
     height: var(--wv-46) !important;
+  }
+  .h-\[48px\] {
+    height: var(--wv-48) !important;
   }
   .h-\[54px\] {
     height: var(--wv-54) !important;
@@ -427,6 +439,13 @@
     font-weight: 500 !important;
     color: #97989C !important;
   }
+  .fs-\[12\/17\/-0\.48\/600\/\#0D171B\] {
+    font-size: var(--wv-12) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #0D171B !important;
+  }
   .fs-\[12\/100\%\/-0\.24\/500\/\#989898\] {
     font-size: var(--wv-12) !important;
     line-height: 100%px !important;
@@ -504,6 +523,13 @@
     font-weight: 500 !important;
     color: #CFCFCF !important;
   }
+  .fs-\[14\/20\/-0\.56\/600\/\#0D171B\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-20) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #0D171B !important;
+  }
   .fs-\[14\/20\/-0\.56\/600\/\#0d171b\] {
     font-size: var(--wv-14) !important;
     line-height: var(--wv-20) !important;
@@ -518,6 +544,27 @@
     font-weight: 600 !important;
     color: #FC5555 !important;
   }
+  .fs-\[14\/100\%\/-0\.56\/600\/\#97989C\] {
+    font-size: var(--wv-14) !important;
+    line-height: 100%px !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #97989C !important;
+  }
+  .fs-\[16\/22\/-0\.64\/500\/\#0D171B\] {
+    font-size: var(--wv-16) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #0D171B !important;
+  }
+  .fs-\[16\/22\/-0\.64\/500\/\#97989C\] {
+    font-size: var(--wv-16) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #97989C !important;
+  }
   .fs-\[16\/22\/-0\.64\/600\/\#0D171B\] {
     font-size: var(--wv-16) !important;
     line-height: var(--wv-22) !important;
@@ -531,6 +578,13 @@
     letter-spacing: -0.04em !important;
     font-weight: 700 !important;
     color: #0D171B !important;
+  }
+  .fs-\[16\/22\/-0\.64\/700\/\#FFF\] {
+    font-size: var(--wv-16) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
+    color: #FFF !important;
   }
   .fs-\[18\/25\/-0\.72\/600\/\#0D171B\] {
     font-size: var(--wv-18) !important;
@@ -763,6 +817,9 @@
   }
   .whitespace-pre-line {
     white-space: pre-line !important;
+  }
+  .text-\[\#0D171B\] {
+    color: #0D171B !important;
   }
   .text-\[\#4e546f\] {
     color: #4e546f !important;

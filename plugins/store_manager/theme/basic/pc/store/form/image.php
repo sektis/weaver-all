@@ -19,7 +19,7 @@ $this->make_array($row['image']);
     </style> 
     
     <div class="position-relative col col-lg-auto w-full md:w-full " style="">
-        <p class="wv-ps-subtitle">매장 이미지</p>
+
         <div class="wv-ps-col">
             <div class="wv-ps-list wv-ps-list-image" style="">
                 <div class="wv-ps-each ">

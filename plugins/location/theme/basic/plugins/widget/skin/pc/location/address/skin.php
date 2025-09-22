@@ -103,7 +103,7 @@ $initial_address = isset($data['address_name']) ? $data['address_name'] : '';
             <!-- 주소 검색 섹션 -->
             <div class="address-search-section">
                 <div class="position-relative">
-                    <?php echo wv_widget('search_address',array())?>
+                    <?php echo wv_widget('location/search_address',array())?>
                 </div>
             </div>
 

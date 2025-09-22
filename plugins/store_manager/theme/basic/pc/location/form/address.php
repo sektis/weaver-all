@@ -83,7 +83,7 @@ $address_skin_data = array(
 //                    echo '<div class="alert alert-warning">Location 플러그인이 활성화되지 않았습니다.</div>';
 //                }
 
-                echo wv('location')->display('address', $address_skin_data);
+                echo wv_widget('location/address',$address_skin_data);
                 ?>
                 </div>
             </div>

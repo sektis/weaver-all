@@ -89,14 +89,36 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
                     <div class="info-wrap ">
                         <div class="info-title">기본정보</div>
                         <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-30)">
-                            <?php echo $store->store->render_part(array('name','image','category_wr_id'),'form');; ?>
+                            <?php echo $store->store->render_part('name','form');; ?>
+                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
+                                <p class="wv-ps-subtitle">매장 이미지</p>
+                                <div>
+                                    <?php echo $store->store->render_part('image','form');; ?>
+                                </div>
+                            </div>
+
+                            <?php echo $store->store->render_part(array('category_wr_id'),'form');; ?>
                             <?php echo $store->location->render_part('address','form');; ?>
-                            <?php echo $store->store->render_part(array('tel','notice'),'form');; ?>
+                            <?php echo $store->store->render_part(array('tel'),'form');; ?>
+
+                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
+                                <p class="wv-ps-subtitle">사장님 공지</p>
+                                <div>     <?php echo $store->store->render_part(array('notice'),'form');; ?></div>
+                            </div>
+
+
                         </div>
                     </div>
                     <div class="info-wrap ">
                         <div class="info-title">영업정보</div>
                         <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-8)">
+                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
+                                <p class="wv-ps-subtitle">영업시간</p>
+                                <div>
+                                    <?php echo $store->store->render_part('image','form');; ?>
+                                </div>
+                            </div>
+
                             <?php echo $store->biz->render_part('*','form'); ?>
                         </div>
                     </div>

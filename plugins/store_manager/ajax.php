@@ -102,7 +102,7 @@ if($action=='render_part_form'){
     $store = wv()->store_manager->made($made)->get($wr_id);
 
     ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),'form',$_REQUEST);
+    echo $store->{$part}->render_part(explode(',',$fields),$type,$_REQUEST);
     $render_content = ob_get_clean();
     $skin_data = array(
         'store'=>$store,
@@ -110,6 +110,24 @@ if($action=='render_part_form'){
         'made'=>$made
     );
     echo wv_widget('store_manager_form', $skin_data);
+    exit;
+}
+
+if($action=='render_part_ceo_form'){
+    if(!$type){
+        $type='form';
+    }
+    $store = wv()->store_manager->made($made)->get($wr_id);
+
+    ob_start();
+    echo $store->{$part}->render_part(explode(',',$fields),$type,$_REQUEST);
+    $render_content = ob_get_clean();
+    $skin_data = array(
+        'store'=>$store,
+        'render_content' => $render_content,
+        'made'=>$made
+    );
+    echo wv_widget('store_manager_ceo_form', $skin_data);
     exit;
 }
 if($action=='render_part'){

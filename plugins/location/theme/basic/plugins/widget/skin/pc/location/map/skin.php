@@ -18,7 +18,7 @@ $initial_level = isset($map_options['initial_level']) ? intval($map_options['ini
 $min_level = isset($map_options['min_level']) ? intval($map_options['min_level']) : 1;
 $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']) : 14;
 ?>
-<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-location-map-skin position-relative" style="<?php echo isset($data['margin_top'])?"margin-top:{$data['margin_top']};":""; ?>">
+<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-location-map-skin position-relative h-100" style="<?php echo isset($data['margin_top'])?"margin-top:{$data['margin_top']};":""; ?>">
     <style>
         <?php echo $skin_selector?> { width: 100%; position: relative;    }
         <?php echo $skin_selector?> .kakao-map { width: 100%; height: 100%; }
@@ -232,7 +232,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                 if ($heightWrapper.length) {
                     var wrapperHeight = $heightWrapper.outerHeight();
                     var currentHeight = wrapperHeight > 0 ? wrapperHeight : 400;
-                    $skin.css('height', currentHeight + 'px');
+                    // $skin.css('height', currentHeight + 'px');
                 }
             }
 

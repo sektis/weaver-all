@@ -7,17 +7,21 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> position-relative d-flex-center flex-nowrap" style="">
     <style>
-        <?php echo $skin_selector?> .nav-pills .nav-link{background:#fff;color:#97989C;margin-right:8px;border:1px solid #efefef}
+        <?php echo $skin_selector?> .nav-pills .nav-link{background:#fff;color:#97989C; ;border:1px solid #efefef;height: var(--wv-40);display: flex;justify-content: center;align-items: center}
         <?php echo $skin_selector?> .nav-pills .nav-link.active{background:#000;color:#fff}
         <?php echo $skin_selector?> .time-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-        <?php echo $skin_selector?> .time-label{min-width:50px;font-weight:500;}
+        <?php echo $skin_selector?> .time-label{min-width:50px;font-weight:600;color: #97989c;;font-size: var(--wv-14)}
         <?php echo $skin_selector?> .form-select{border:1px solid #ddd;padding:4px 8px;border-radius:4px;}
         <?php echo $skin_selector?> .tab-content{padding:20px 0;}
-        <?php echo $skin_selector?> .time-section{background:#f8f9fa;padding:16px;border-radius:6px;margin-bottom:16px;}
-        <?php echo $skin_selector?> .day-item{border:1px solid #e9ecef;padding:12px;border-radius:6px;margin-bottom:12px;}
+        <?php echo $skin_selector?> .time-section{background:#fff; ; :6px; ;}
+        <?php echo $skin_selector?> .time-section h6{font-size: var(--wv-14);font-weight: 600}
+        <?php echo $skin_selector?> .time-section .time-row{margin-top: var(--wv-6 )}
+        <?php echo $skin_selector?> .day-item{padding: var(--wv-16) 0}
+        <?php echo $skin_selector?> .day-item span{font-size: var(--wv-14);font-weight: 600}
         <?php echo $skin_selector?> .day-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
         <?php echo $skin_selector?> .day-times{display:none;}
-        <?php echo $skin_selector?> .day-times.show{display:block;}
+        <?php echo $skin_selector?> .day-times.show{display:block;margin-top: var(--wv-16)}
+        <?php echo $skin_selector?> select{height: var(--wv-48);padding: var(--wv-13) var(--wv-12) !important;background-color: #f9f9f9;border: 0!important;font-size: var(--wv-16);font-weight: 500}
 
         @media (min-width: 992px) {}
         @media (max-width: 991.98px) {
@@ -27,19 +31,20 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
 
     <div class="position-relative col col-lg-auto w-full md:w-full wv-vstack" style="row-gap: var(--wv-10)">
         <p class="wv-ps-subtitle">영업시간</p>
-        <div class="w-[500px]">
+        <div class="w-[500px] mw-100">
 
-            <ul class="nav nav-pills mb-3 text-center">
+            <ul class="nav nav-pills mb-3 text-center mb-[16px]" style="gap:var(--wv-6)">
                 <li class="nav-item col"><a class="nav-link active" href="#daily">매일</a></li>
                 <li class="nav-item col"><a class="nav-link" href="#week">평일/주말</a></li>
                 <li class="nav-item col"><a class="nav-link" href="#days">요일별</a></li>
             </ul>
-
+            <div class="wv-mx-fit" style="height: 10px;background-color: #efefef"></div>
             <div class="tab-content">
                 <div class="tab-pane show active" id="daily">
                     <div class="time-section">
+                        <h6>매일</h6>
                         <div class="time-row">
-                            <span class="time-label">시작:</span>
+                            <span class="time-label">시작</span>
                             <?php
                             $ds = isset($open_time['daily']['start']) ? $open_time['daily']['start'] : array();
                             echo $this->wv_biz_time_select($field_name.'[daily][start][period]', $ds, 'period');
@@ -49,7 +54,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             ?>
                         </div>
                         <div class="time-row">
-                            <span class="time-label">종료:</span>
+                            <span class="time-label">종료</span>
                             <?php
                             $de = isset($open_time['daily']['end']) ? $open_time['daily']['end'] : array();
                             echo $this->wv_biz_time_select($field_name.'[daily][end][period]', $de, 'period');
@@ -65,7 +70,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                     <div class="time-section">
                         <h6>평일</h6>
                         <div class="time-row">
-                            <span class="time-label">시작:</span>
+                            <span class="time-label">시작</span>
                             <?php
                             $ws = isset($open_time['weekday']['start']) ? $open_time['weekday']['start'] : array();
                             echo $this->wv_biz_time_select($field_name.'[weekday][start][period]', $ws, 'period');
@@ -75,7 +80,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             ?>
                         </div>
                         <div class="time-row">
-                            <span class="time-label">종료:</span>
+                            <span class="time-label">종료</span>
                             <?php
                             $we = isset($open_time['weekday']['end']) ? $open_time['weekday']['end'] : array();
                             echo $this->wv_biz_time_select($field_name.'[weekday][end][period]', $we, 'period');
@@ -85,10 +90,11 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             ?>
                         </div>
                     </div>
+                    <div class="wv-mx-fit my-[16px]" style="height: 2px;background-color: #efefef"></div>
                     <div class="time-section">
                         <h6>주말</h6>
                         <div class="time-row">
-                            <span class="time-label">시작:</span>
+                            <span class="time-label">시작</span>
                             <?php
                             $wes = isset($open_time['weekend']['start']) ? $open_time['weekend']['start'] : array();
                             echo $this->wv_biz_time_select($field_name.'[weekend][start][period]', $wes, 'period');
@@ -98,7 +104,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             ?>
                         </div>
                         <div class="time-row">
-                            <span class="time-label">종료:</span>
+                            <span class="time-label">종료</span>
                             <?php
                             $wee = isset($open_time['weekend']['end']) ? $open_time['weekend']['end'] : array();
                             echo $this->wv_biz_time_select($field_name.'[weekend][end][period]', $wee, 'period');
@@ -116,9 +122,10 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                         $en = isset($d['enabled']) ? (int)$d['enabled'] : 0;
                         ?>
                         <div class="day-item">
+
                             <div class="day-header hstack justify-content-between">
                                 <span><?php echo $v; ?>요일</span>
-                                <div class="form-check form-switch">
+                                <div class="form-check form-switch <?php echo $en?'':'disabled'; ?>" data-on-value="설정 함" data-off-value="설정 안함">
                                     <input class="form-check-input" type="checkbox" role="switch" name="<?php echo $field_name; ?>[<?php echo $k; ?>][enabled]" id="<?php echo $field_name; ?>[<?php echo $k; ?>][enabled]" value="1" <?php echo $en?'checked':''; ?> data-day="<?php echo $k; ?>">
                                     <label class="form-check-label" for="<?php echo $field_name; ?>[<?php echo $k; ?>][enabled]"><?php echo $en?'설정 함':'설정 안함'; ?></label>
                                 </div> 
@@ -145,7 +152,9 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                                     ?>
                                 </div>
                             </div>
+
                         </div>
+                        <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -172,7 +181,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                 var $switch = $(this).closest('.form-switch');
                 var $label = $switch.find('label');
                 $switch.toggleClass('disabled', !checked);
-                $label.text(checked ? '설정 함' : '설정 안함');
+                // $label.text(checked ? '설정 함' : '설정 안함');
                 $skin.find('[data-times="'+day+'"]').toggleClass('show', checked);
             });
         });
