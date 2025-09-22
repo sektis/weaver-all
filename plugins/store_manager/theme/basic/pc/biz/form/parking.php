@@ -15,10 +15,10 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
     <div class="position-relative col col-lg-auto w-full md:w-full" style="">
         <div class="  wv-vstack" style="row-gap: var(--wv-5)">
 
-            <div class="wv-ps-subtitle">주차 여부 설정</div>
-            <div class="form-floating position-relative" style="z-index: 10" data-max-char="<?php echo $this->parking_max_char; ?>">
-                <input type="text" name="biz[parking]" value="<?php echo htmlspecialchars($row['parking']); ?>" id="biz[parking]" class="form-control" placeholder="ex) 주차 3대 가능, 지하 주차장 무료 이용 가능">
-                <label for="biz[parking]" class="floatingInput">주차여부</label>
+
+            <div class=" " style="z-index: 10" data-max-char="<?php echo $this->parking_max_char; ?>">
+                <input type="text" name="biz[parking]" value="<?php echo htmlspecialchars($row['parking']); ?>" id="biz[parking]" class="form-control h-[48px]" style="background-color: #f9f9f9;border: 0!important;" placeholder="ex) 주차 3대 가능, 지하 주차장 무료 이용 가능">
+                <label for="biz[parking]" class="visually-hidden">주차여부</label>
             </div>
             <p class="text-end fs-[11///600/#97989c]">
                 <span class="char-counter" style="color:#0d171b" data-current="0">0</span> / <span class="char-limit"><?php echo $this->parking_max_char; ?></span>자

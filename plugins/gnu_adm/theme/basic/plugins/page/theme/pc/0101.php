@@ -88,8 +88,8 @@ $list = $result['list'];
                         <?php for($i=0; $i<count($list); $i++){ ?>
                             <tr>
                                 <td><?php echo get_text($list[$i]['mb_id']); ?></td>
-                                <td><?php echo get_text($list[$i]['jm_mb_name']); ?></td>
-                                <td><?php echo get_text($list[$i]['jm_mb_datetime']); ?></td>
+                                <td><?php echo get_text($list[$i]['mb_mb_name']); ?></td>
+                                <td><?php echo get_text($list[$i]['mb_mb_datetime']); ?></td>
                                 <td>
                                     <div class="hstack justify-content-center gap-[6px]">
                                         <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'

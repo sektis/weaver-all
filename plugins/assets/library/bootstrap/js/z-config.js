@@ -56,6 +56,44 @@ $(document).ready(function () {
         // store에서 기록 정리 (중요!)
         wvPortalStore.delete(el);
     });
+    document.addEventListener('show.bs.offcanvas', (e) => {
+        const el = e.target;
+        if (!el.classList.contains('wv-offcanvas-portal')) return;
+
+        let rec = wvPortalStore.get(el);
+        if (!rec) {
+            const originalParent = el.parentElement;
+            const placeholder = document.createComment('offcanvas placeholder');
+            wvPortalStore.set(el, { originalParent, placeholder });
+            originalParent && originalParent.replaceChild(placeholder, el);
+        }
+        document.body.appendChild(el);
+    });
+
+    document.addEventListener('hidden.bs.offcanvas', (e) => {
+        const el = e.target;
+        if (!el.classList.contains('wv-offcanvas-portal')) return;
+
+        const rec = wvPortalStore.get(el);
+        if (!rec) return;
+
+        const { originalParent, placeholder } = rec;
+
+        // body에서 제거
+        if (el.parentElement === document.body) {
+            document.body.removeChild(el);
+        }
+
+        // 원래 위치로 복원
+        if (originalParent && placeholder && placeholder.parentElement === originalParent) {
+            originalParent.replaceChild(el, placeholder);
+        }
+
+        // store에서 기록 정리
+        wvPortalStore.delete(el);
+    });
+
+
     function getScrollbarWidth() {
         const scrollDiv = document.createElement('div')
         scrollDiv.style.position = 'absolute'

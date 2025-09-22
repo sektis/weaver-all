@@ -99,7 +99,7 @@ $dayoffs_list = $row['dayoffs'];
         </div>
 
         <!-- Bootstrap5 Offcanvas -->
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="dayoff-offcanvas" aria-labelledby="dayoff-offcanvas-label" style="height: auto;max-height: 80dvh">
+        <div class="offcanvas offcanvas-bottom bg-white" tabindex="-1" id="dayoff-offcanvas" aria-labelledby="dayoff-offcanvas-label" style="height: auto;max-height: 80dvh">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="dayoff-offcanvas-label"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>

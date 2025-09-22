@@ -112,12 +112,7 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
                     <div class="info-wrap ">
                         <div class="info-title">영업정보</div>
                         <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-8)">
-                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
-                                <p class="wv-ps-subtitle">영업시간</p>
-                                <div>
-                                    <?php echo $store->store->render_part('image','form');; ?>
-                                </div>
-                            </div>
+
 
                             <?php echo $store->biz->render_part('*','form'); ?>
                         </div>

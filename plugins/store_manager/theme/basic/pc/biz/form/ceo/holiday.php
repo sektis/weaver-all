@@ -19,7 +19,7 @@ $vars['form_selector']=$skin_selector;
                 </div>
 
                 <div class="col-auto text-center">
-                    <p class="fs-[14/20/-0.56/600/#0D171B]">영업시간</p>
+                    <p class="fs-[14/20/-0.56/600/#0D171B]">휴무일</p>
                 </div>
                 <div class="col"></div>
             </div>
@@ -31,7 +31,7 @@ $vars['form_selector']=$skin_selector;
 
 
         <div class=" h-100 vstack">
-            <?php echo $this->store->biz->render_part('open_time','form');  ?>
+            <?php echo $this->store->biz->render_part('is_holiday_off','form');  ?>
 
         </div>
 

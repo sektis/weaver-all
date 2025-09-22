@@ -100,10 +100,10 @@ $list = $result['list'];
                     <?php if(count($list) > 0){ ?>
                         <?php for($i=0; $i<count($list); $i++){ ?>
                             <tr>
-                                <td><?php echo get_text($list[$i]['jm_mb_name']); ?></td>
+                                <td><?php echo get_text($list[$i]['mb_mb_name']); ?></td>
                                 <td><?php echo get_text($list[$i]['mb_id']); ?></td>
-                                <td><?php echo $list[$i]['jm_mb_hp']; ?></td>
-                                <td><?php echo get_text($list[$i]['jm_mb_datetime']); ?></td>
+                                <td><?php echo $list[$i]['mb_mb_hp']; ?></td>
+                                <td><?php echo get_text($list[$i]['mb_mb_datetime']); ?></td>
                                 <td>0</td>
                                 <td>0</td>
                                 <td><?php echo $list[$i]['member']['active_text']; ?></td>

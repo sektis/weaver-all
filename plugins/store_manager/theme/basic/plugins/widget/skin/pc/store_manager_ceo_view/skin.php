@@ -24,19 +24,13 @@ global $g5;
 
     <div class="position-relative col col-lg-auto  md:w-full h-100 " style="">
         <div class="container h-100">
-            <form name="fpartsupdate" action='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="update">
-                <input type="hidden" name="made" value="<?php echo $data['made']; ?>">
-                <?php if($data['menu_id']){ ?>
-                    <input type="hidden" name="menu[<?php echo $data['menu_id']; ?>][id]" value="<?php echo $data['menu_id']; ?>">
-                <?php } ?>
-                <?php echo $data['store']->basic->render_part('wr_id','form');; ?>
+
                 <div class="h-100" style="padding-top:var(--wv-10)">
                     <?php echo $data['render_content']; ?>
                 </div>
 
 
-            </form>
+
         </div>
     </div>
 
@@ -52,7 +46,7 @@ global $g5;
             //
             //     console.log($("form",$skin).serializeArray())
             // })
-            var replace_target = '<?php echo $data['replace_with']?>';
+            var replace_with = '<?php echo $data['replace_with']?>';
             var replace_field = '<?php echo $data['replace_field']?>';
 
 
@@ -60,16 +54,17 @@ global $g5;
                 dataType:'json',
                 success: function (data) {
 
-                    if(replace_target){
-
+                    if(replace_with){
+                        console.log(data)
                     }else{
                         if(data.result){
                             alert('완료');
                         }
+                        // location.reload()
                     }
 
 
-                    location.reload()
+
                 }
 
             })

@@ -39,8 +39,8 @@ class Ceo extends Plugin {
         $wv_main_menu_array = array(
             array('name' => '홈', 'url' => '/ceo','icon'=>WV_URL.'/img/foot_1.png'),
             array('name' => '매장관리', 'url' => '/?wv_page_id=0101','icon'=>WV_URL.'/img/foot_6.png'),
-            array('name' => '서비스관리', 'url' => '/?wv_page_id=0101','icon'=>WV_URL.'/img/foot_7.png'), 
-            array('name' => 'MY 계정', 'url' => '/?wv_page_id=0101','icon'=>WV_URL.'/img/foot_8.png'),
+            array('name' => '서비스관리', 'url' => '/?wv_page_id=0201','icon'=>WV_URL.'/img/foot_7.png'),
+            array('name' => 'MY 계정', 'url' => '/?wv_page_id=0301','icon'=>WV_URL.'/img/foot_8.png'),
 
         );
 

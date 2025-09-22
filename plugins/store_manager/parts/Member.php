@@ -93,8 +93,9 @@ class Member extends StoreSchemaBase{
         $data['wr_password']=$mb['mb_password'];
 
 
-        $write_row = $this->manager->fetch_write_row_cached($wr_id);
+        $write_row = $this->manager->fetch_write_row($wr_id);
         if($wr_id and ($data['mb_id']!=$write_row['mb_id'])){
+            dd($data['mb_id'].'++'.$write_row['mb_id']);
             alert('id는 변경할 수 없습니다.');
         }
 

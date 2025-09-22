@@ -891,10 +891,29 @@ class StoreManager extends Makeable{
                         $checkbox_fields = $schema->get_checkbox_fields();
 
                         if (is_array($checkbox_fields) && count($checkbox_fields)) {
-                            foreach ($checkbox_fields as $checkbox_field) {
-                                if (!array_key_exists($checkbox_field, $data[$pkey])) {
-                                    $data[$pkey][$checkbox_field] = 0; // 체크 해제 = 0
-                                    $org_data[$pkey][$checkbox_field] = 0; // ✅ $org_data에도 추가!
+
+                            // 목록 파트인지 확인
+                            if ($schema->list_part && is_array($data[$pkey])) {
+                                // 목록 파트의 경우 각 항목별로 처리
+                                foreach ($data[$pkey] as $index => $item) {
+                                    if (is_array($item)) {
+                                        foreach ($checkbox_fields as $checkbox_field) {
+                                            if (!array_key_exists($checkbox_field, $data[$pkey][$index])) {
+                                                $data[$pkey][$index][$checkbox_field] = 0;
+                                            }
+                                            if (!array_key_exists($checkbox_field, $org_data[$pkey][$index])) {
+                                                $org_data[$pkey][$index][$checkbox_field] = 0;
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                // 단일 파트의 경우 기존 로직
+                                foreach ($checkbox_fields as $checkbox_field) {
+                                    if (!array_key_exists($checkbox_field, $data[$pkey])) {
+                                        $data[$pkey][$checkbox_field] = 0;
+                                        $org_data[$pkey][$checkbox_field] = 0;
+                                    }
                                 }
                             }
                         }
@@ -966,8 +985,8 @@ class StoreManager extends Makeable{
                                 alert('insert : key 중복생성');
                             }
                             if (!$is_new and $arr['id'] != $arr2['id']) {
-
-                                alert('update : id 체크 오류');
+                                $arr2=$arr;
+//                                alert('update : id 체크 오류');
                             }
                             $i = 0;
                             foreach ($arr as $k => &$v) {
@@ -1125,7 +1144,7 @@ class StoreManager extends Makeable{
                 }
             }
 
-
+dd($data);
             // === 평면화: 일반 파트만 물리 컬럼으로 펼치고 part 키 제거(목록 파트 제외) ===
             $this->normalize_part_data($data);
             $this->normalize_part_data($org_data, true);
@@ -3076,7 +3095,7 @@ class StoreManager extends Makeable{
     public function rsync_mapping($bo_table){
         global $g5;
 
-return;
+
 
         $manager_ids = array('609','610','611','612','613');
         $category_ids = array(
@@ -3097,9 +3116,9 @@ return;
             15=>'체험',
             16=>'게시보류'
         );
-
+return ;
         $write_table = $g5['write_prefix'].$bo_table;
-        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and a.wv_com!=1 and  a.wr_is_comment=0    order by a.wr_id asc limit 1000";
+        $sql = "select a.*,b.mb_3 from $write_table as a left join g5_member as b  on  a.mb_id=b.mb_id left join wv_store_sub01_01 as c on a.wr_id=c.wr_id where c.wr_id is null and a.wv_com!=1 and  a.wr_is_comment=0 and a.wr_id='1613'   order by a.wr_id asc limit 100";
         $result = sql_query($sql);
 
 
@@ -3171,10 +3190,23 @@ return;
             $i=0;
             while ($row2 = sql_fetch_array($result2)){
                 $data['menu'][$i]['name'] = $row2['wr_subject'];
+                $data['menu'][$i]['desc'] = $row2['wr_content'];
                 $data['menu'][$i]['prices'][0]['price'] = str_replace(',','',$row2['wr_10']);
+                $data['menu'][$i]['prices'][0]['name'] = str_replace(',','',$row2['wr_2']);
                 $data['menu'][$i]['is_main'] = $row2['wr_1']=='대표메뉴'?1:0;
                 $data['menu'][$i]['use_eum'] = $row2['wr_use_eum'];
                 $data['menu'][$i]['ord'] = $i;
+                $images = get_file($bo_table,$row2['wr_id']);
+                foreach ($images as $k=>$v){
+                    if(!$v['view'])continue;
+                    $path_arr = explode('/data/',$v['path']);
+                    $data['menu'][$i]['images'][$k]=array(
+                        'source'=>$v['source'],
+                        'path'=>'/data/'.$path_arr[1].'/'.$v['file'],
+                        'type'=>$v['type'],
+                        'ord'=>$k
+                    );
+                }
 
                 $i++;
             }
@@ -3196,7 +3228,6 @@ return;
                 $post['member']['is_ceo']=1;
                 wv()->store_manager->made('member')->set($post);
             }
-
 
 
             wv()->store_manager->made('sub01_01')->set($data);

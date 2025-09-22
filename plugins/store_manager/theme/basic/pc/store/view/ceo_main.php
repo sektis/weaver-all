@@ -36,7 +36,14 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                             <div><img src="<?php echo $wv_skin_url; ?>/img/ceo_main/time.png" class="w-[38px]" alt=""></div>
                             <div>
                                 <p class="fs-[11/15/-0.44/500/#97989C]">영업시간</p>
-                                <p class="fs-[13/19/-0.13/500/#0D171B] mt-[4px]"><?php echo $this->store->biz->open_time_summary; ?></p>
+                                <div class="fs-[13/19/-0.13/500/#0D171B] mt-[4px] vstack" style="row-gap: var(--wv-3)">
+                                    <?php $i=0; foreach ($this->store->biz->open_time_summary as $each){ ?>
+                                        <p class="hstack" style="gap:var(--wv-5)"><span>(<?php echo $each['name']; ?>)</span><span><?php echo $each['time']; ?></span></p>
+                                    <?php $i++;} ?>
+                                    <?php if($i==0){ ?>
+                                        <p>미등록</p>
+                                    <?php } ?>
+                                </div>
                             </div>
                         </div>
                     </div>

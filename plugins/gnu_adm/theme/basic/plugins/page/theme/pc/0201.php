@@ -95,7 +95,7 @@ $list = $result['list'];
                         <?php for($i=0; $i<count($list); $i++){ ?>
                             <tr>
                                 <td><?php echo $list[$i]['mb_id']; ?></td>
-                                <td><?php echo $list[$i]['jm_mb_name']; ?></td>
+                                <td><?php echo $list[$i]['mb_mb_name']; ?></td>
                                 <td class="text-start" >
                                     <div class="hstack align-items-center bo_tit" style="gap:.5em">
                                         <div class="hstack text-truncate" style="gap:1em" >

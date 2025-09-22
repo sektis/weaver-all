@@ -125,9 +125,27 @@ if($action=='render_part_ceo_form'){
     $skin_data = array(
         'store'=>$store,
         'render_content' => $render_content,
-        'made'=>$made
+        'made'=>$made,
     );
+    $skin_data = array_merge($skin_data,$_REQUEST);
     echo wv_widget('store_manager_ceo_form', $skin_data);
+    exit;
+}
+if($action=='render_part_ceo_view'){
+    if(!$type){
+        $type='form';
+    }
+    $store = wv()->store_manager->made($made)->get($wr_id);
+
+    ob_start();
+    echo $store->{$part}->render_part(explode(',',$fields),$type,$_REQUEST);
+    $render_content = ob_get_clean();
+    $skin_data = array(
+        'store'=>$store,
+        'render_content' => $render_content,
+        'made'=>$made,
+    );
+    echo wv_widget('store_manager_ceo_view', $skin_data);
     exit;
 }
 if($action=='render_part'){
@@ -146,6 +164,7 @@ if($action=='update'){
     $manager = wv()->store_manager->made($made);
     $wr_id = $manager->set($_POST);
     $store = $manager->get($wr_id);
+
     if($fields){
         ob_start();
         echo $store->{$part}->render_part(explode(',',$fields),'form',$_REQUEST);

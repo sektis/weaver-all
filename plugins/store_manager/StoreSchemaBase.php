@@ -246,6 +246,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
             }
         }
 
+
         if ($this->is_list_part()) {
             // {part_key}_id 변수 체크 (예: menu_id, store_id)
             $id_key = $this->part_key . '_id';

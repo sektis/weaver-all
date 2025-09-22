@@ -29,7 +29,15 @@ global $current_store_wr_id;
                    data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
             </div>
             <div>
-                <p class="fs-[16/22/-0.64/500/#0D171B]"><?php echo $this->store->biz->open_time_list; ?></p>
+
+                <div class="fs-[16/22/-0.64/500/#0D171B]  vstack" style="row-gap: var(--wv-3)">
+                    <?php $i=0; foreach ($this->store->biz->open_time_list as $each){ ?>
+                        <p class="hstack" style="gap:var(--wv-5)"><span class="fs-[16/22/-0.64/600/#97989C] w-[50px]"><?php echo $each['name']; ?></span><span><?php echo $each['time']; ?></span></p>
+                        <?php $i++;} ?>
+                    <?php if($i==0){ ?>
+                        <p>미등록</p>
+                    <?php } ?>
+                </div>
 
             </div>
 
