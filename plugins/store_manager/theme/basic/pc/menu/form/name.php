@@ -16,7 +16,7 @@
         $skin.on('input', '.js-menu-name', function(){
             var v = $(this).val();
             // SQL 인젝션 위험 문자와 !, @, # 제거
-            var dangerousChars = /[!@#'"`;=<>|&%()[\]{}\\\/\*\-]+/g;
+            var dangerousChars = /[!@#'"`;=<>|&%[\]{}\\\/\*\-]+/g;
             var filtered = v.replace(dangerousChars, '').slice(0,20);
             if (v !== filtered) $(this).val(filtered);
             this.setCustomValidity(dangerousChars.test($(this).val()) ? '!, @, #과 SQL 관련 특수문자는 사용할 수 없습니다.' : '');

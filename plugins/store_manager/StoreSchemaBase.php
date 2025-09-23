@@ -170,29 +170,6 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
     public function render_part($column, $type, $vars = array()){
         // 목록 파트는 특수 처리 (menu/form.php 같은 통합 스킨)
 
-//        $walk_function = function (&$arr,$arr2,$node) use(&$walk_function)  {
-//
-//
-//            if(!is_array($arr)){
-//                return false;
-//            }
-//            foreach ($arr as $k=>&$v){
-//
-//                wv_walk_by_ref_diff($v,$walk_function,$arr2[$k],array_merge($node,(array)$k));
-//
-//            }
-//            if(wv_is_all_int_keys($arr)){
-//
-//                array_unshift($arr, array());
-//
-//            }
-//
-//
-//            return false;
-//        };
-//        foreach ($this->get_allowed_columns() as $k=>$v){
-//            wv_walk_by_ref_diff($vars['row'][$v],$walk_function);
-//        }
 
         if ($column === '*') {
             $column = $this->get_columns_with_ddl();
@@ -250,9 +227,12 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         if ($this->is_list_part()) {
             // {part_key}_id 변수 체크 (예: menu_id, store_id)
             $id_key = $this->part_key . '_id';
+            if (isset($vars[$id_key])){
+                $is_list_item_mode = true;
+            }
             if (isset($vars[$id_key]) && $vars[$id_key] !== '') {
                 $item_id = $vars[$id_key];
-                $is_list_item_mode = true;
+
 
                 // 해당 아이템을 $row에 직접 설정 (일반 파트처럼 접근 가능)
                 if (isset($vars['list']) && is_array($vars['list']) && isset($vars['list'][$item_id])) {

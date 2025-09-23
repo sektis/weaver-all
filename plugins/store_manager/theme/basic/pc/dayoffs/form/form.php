@@ -53,7 +53,7 @@ $dayoffs_list = $row['dayoffs'];
     </style>
 
     <div class="position-relative col col-lg-auto w-full md:w-full wv-ps-col" style="">
-        <div class="dayoffs-container">
+        <div class="dayoffs-container wv-ps-col">
             <p class="wv-ps-subtitle">정기휴무</p>
 
             <!-- 정기휴무 목록 -->

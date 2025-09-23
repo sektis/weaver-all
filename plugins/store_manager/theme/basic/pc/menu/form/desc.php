@@ -1,7 +1,7 @@
 <div id="<?php echo $skin_id; ?>">
     <div  >
         <textarea class="form-control h-[48px] bg-[#f9f9f9] border-0 js-desc" 
-                  id="<?php echo $field_name; ?>" name="<?php echo $field_name; ?>" placeholder="ex) 메뉴 구성, 주요 재료 및 원산지, 맛의 특징 등" maxlength="100" style="min-height: var(--wv-140);"><?php echo htmlspecialchars($row['desc'], ENT_QUOTES); ?></textarea>
+                  id="<?php echo $field_name; ?>" name="<?php echo $field_name; ?>" placeholder="ex) 메뉴 구성, 주요 재료 및 원산지, 맛의 특징 등" maxlength="100" style="min-height: var(--wv-140);"><?php echo get_text($row['desc']); ?></textarea>
         <label for="<?php echo $field_name; ?>" class="visually-hidden">메뉴 부가설명 (최대 100자)</label>
     </div>
     <div class="form-text subtle mb-2 text-end"><span class="js-desc-count">0</span>/100자</div>

@@ -127,12 +127,19 @@ if($action=='form'){
     echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($field,'form',$_REQUEST);
     exit;
 }
+if($action=='view'){
+    if(!$made or !$part or !$field){
+        alert('필수파라메터 누락');
+    }
+    echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($field,'view',$_REQUEST);
+    exit;
+}
 if($action=='update'){
     if(!$made){
         alert('필수파라메터 누락');
     }
     $manager = wv()->store_manager->made($made)->set($_POST);
-    wv_json_exit(array('reload'));
+    wv_json_exit(array('reload'=>true,'msg'=>'완료'));
     exit;
 }
 if($action=='delete'){

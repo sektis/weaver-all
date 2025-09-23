@@ -32,11 +32,19 @@ class Contractitem extends StoreSchemaBase{
 
     public function column_extend($row){
         $arr = array();
-
+        $arr['item_name_montserrat'] = $this->montserrat_change($row['name']);
+        $arr['color_type_bg'] =  "background-color:{$row['color_type']['bg']};";
+        $arr['color_type_text'] =  "color:{$row['color_type']['text']};";
         return $arr;
     }
     public function before_set(&$data) {
 //        dd($data);
+    }
+
+    public function montserrat_change($text){
+        $text = str_replace('DUM','<span class="ff-montserrat fw-700">DUM</span>',$text);
+        $text = str_replace('&','<span class="ff-montserrat fw-700">&</span>',$text);
+        return $text;
     }
 
 

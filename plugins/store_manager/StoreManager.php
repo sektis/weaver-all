@@ -1051,8 +1051,9 @@ class StoreManager extends Makeable{
 
                                 if (!$is_list_part or (($is_list_part and count($node) < 2) === false)) {
                                     $arr['id'] = uniqid() . $parent_key;
-                                    $this->execute_hook('is_new',$arr,$pkey,$get_hook_logical_col());
+
                                 }
+                                $this->execute_hook('is_new',$arr,$pkey,$get_hook_logical_col());
                             } else {
 
 

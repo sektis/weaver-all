@@ -332,7 +332,7 @@ $(document).ready(function () {
             if (pos < 0) return false; // id 패턴이 없으면 인덱싱 불가
 
             // 마지막 “실제 행”(id 필드 보유)을 베이스로 선택
-            console.log($ps_list)
+
             var $base = $ps_list.children('.wv-ps-demo');
 
             // 없으면(모두 타일/빈 상태) 안전하게 중단 — 템플릿을 쓰지 않으므로 무분별 복제 방지

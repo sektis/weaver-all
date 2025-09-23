@@ -553,6 +553,48 @@ $(document).ready(function () {
         scheduleCheck();
     });
 
+    $("body").loaded('[data-wv-max-length]', function () {
+        var $element = $(this);
+        var maxLength = parseInt($element.data('wv-max-length')) || 0;
+
+        // 이미 카운터가 추가된 요소는 스킵
+        if ($element.next('.wv-char-counter').length > 0) {
+            return;
+        }
+
+        // 요소에 maxlength 속성 추가
+        $element.attr('maxlength', maxLength);
+
+        // 카운터 HTML 생성
+        var counterHtml = '<div class="form-text subtle mb-2 text-end wv-char-counter">' +
+            '<span class="js-char-count">0</span>/' + maxLength + '자</div>';
+
+        // 요소 다음에 카운터 추가
+        $element.after(counterHtml);
+
+        // 카운터 요소 찾기
+        var $counter = $element.next('.wv-char-counter').find('.js-char-count');
+
+        // 글자수 업데이트 함수
+        var updateCount = function() {
+            var currentLength = ($element.val() || '').length;
+            $counter.text(currentLength);
+
+            // 최대 길이 초과시 스타일 변경 (선택사항)
+            if (currentLength > maxLength) {
+                $counter.parent().addClass('text-danger');
+            } else {
+                $counter.parent().removeClass('text-danger');
+            }
+        };
+
+        // 이벤트 바인딩
+        $element.on('input paste keyup', updateCount);
+
+        // 초기 카운트 설정
+        updateCount();
+    });
+
 })
 
 

@@ -25,8 +25,8 @@ $this->make_array($row['prices']);
                             </div>
                             <div class="col ">
                                 <div class="position-relative">
-                                <input type="text" class="form-control h-[48px] bg-[#f9f9f9] border-0 wv-only-number" id="<?php echo $field_name; ?>[<?php echo $k; ?>][name]" name="<?php echo $field_name; ?>[<?php echo $k; ?>][name]" maxlength="20" placeholder="가격" value="<?php echo htmlspecialchars($v['price'], ENT_QUOTES); ?>">
-                                <label for="<?php echo $field_name; ?>[<?php echo $k; ?>][name]" class="visually-hidden">가격</label>
+                                <input type="text" class="form-control h-[48px] bg-[#f9f9f9] border-0 wv-only-number" id="<?php echo $field_name; ?>[<?php echo $k; ?>][price]" name="<?php echo $field_name; ?>[<?php echo $k; ?>][price]" maxlength="20" placeholder="가격" value="<?php echo htmlspecialchars($v['price'], ENT_QUOTES); ?>">
+                                <label for="<?php echo $field_name; ?>[<?php echo $k; ?>][price]" class="visually-hidden">가격</label>
                                 <span class="pe-none position-absolute top-50 translate-middle-y fs-[12/17/-0.48/500/#CFCFCF]" style="right:var(--wv-8)">원</span>
                                 </div>
                             </div>
@@ -34,7 +34,7 @@ $this->make_array($row['prices']);
 
                         <div class="wv-ps-box ms-3 col-auto">
                             <label class="h-100">
-                                <input type="checkbox" class="d-none" name="menu[<?php echo $k; ?>][prices][<?php echo $pk; ?>][delete]" value="1">
+                                <input type="checkbox" class="d-none" name="<?php echo $field_name; ?>[<?php echo $k; ?>][delete]" value="1">
                                 <span class=" ">삭제</span>
                             </label>
                         </div>

@@ -11,7 +11,7 @@
 
 
                             <div data-wv-ajax-url="<?php echo wv()->store_manager->ajax_url(); ?>" class="cursor-pointer"
-                                 data-wv-ajax-data='{"action":"widget","widget":"select_store"}'
+                                 data-wv-ajax-data='{"action":"widget","widget":"ceo/select_store"}'
                                  data-wv-ajax-option="offcanvas,bottom,backdrop-static" data-wv-ajax-option="offcanvas,bottom,backdrop-static" >
                                 <?php echo wv_widget('ceo/stores_display');; ?>
                             </div>

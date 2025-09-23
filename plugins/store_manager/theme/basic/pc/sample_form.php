@@ -15,8 +15,11 @@ global $g5;
             <form name="fpartsupdate" action='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="made" value="<?php echo $made; ?>">
+                <?php if($is_list_item_mode){ ?>
+                    <input type="hidden" name="<?php echo str_replace("[{$column}]",'',$field_name); ?>[id]" value="<?php echo $row['id']; ?>">
+                <?php } ?>
                 <?php echo $this->store->basic->render_part('wr_id','form');; ?>
-                <div class="vstack h-100 " style="padding-top:var(--wv-10)">
+                <div class="vstack h-100 pt-[10px]" style="">
 
                 </div>
             </form>
@@ -26,10 +29,23 @@ global $g5;
     <script>
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
-
             $("form", $skin).ajaxForm({
-
-               reload:true
+                // reload:false,
+                // success: function () {
+                //     var $offcanvas =  $skin.closest('.wv-offcanvas');
+                //
+                //     var parent_id = $offcanvas.data('parent-elem');
+                //     if(parent_id){
+                //         $("#"+parent_id).attr('data-need-refresh', 'true');
+                //         wv_reload_offcanvas(parent_id);
+                //     }
+                //
+                //
+                //     $offcanvas.offcanvas('hide');
+                //
+                //     wv_reload_offcanvas($offcanvas.attr('id'));
+                //
+                // }
             })
         })
     </script>

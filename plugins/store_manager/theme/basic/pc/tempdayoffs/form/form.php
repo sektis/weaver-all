@@ -89,7 +89,7 @@ $tempdayoffs_list = $row['tempdayoffs'];
     </style>
 
     <div class="position-relative col col-lg-auto w-full md:w-full wv-ps-col" style="">
-        <div class="tempdayoffs-container">
+        <div class="tempdayoffs-container wv-ps-col">
             <p class="wv-ps-subtitle">임시휴무</p>
 
             <!-- 임시휴무 목록 -->

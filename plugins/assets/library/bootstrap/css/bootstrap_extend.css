@@ -118,7 +118,7 @@ table.table {all:revert-layer}
 input, button {font-family:revert-layer}
 .wv-modal .modal-dialog{--bs-modal-width:auto;--bs-modal-bg:transparent;justify-content: center}
 .wv-modal .modal-content{width:auto;border: 0!important;border-radius: 0!important;}
-.wv-offcanvas{--bs-offcanvas-width:auto;--bs-body-bg:transparent;width: inherit;margin: 0 auto;border:0!important;}
+.wv-offcanvas{--bs-offcanvas-width:auto;--bs-body-bg:transparent;width: inherit;margin: 0 auto;border:0!important;overflow-x: clip!important;}
 .wv-offcanvas.offcanvas-bottom{--bs-offcanvas-height:auto}
 .wv-offcanvas + .offcanvas-backdrop{width: inherit;margin: 0 auto;top:initial;left:initial}
 .wv-offcanvas .offcanvas-body{--bs-offcanvas-padding-y:0;--bs-offcanvas-padding-x:0}

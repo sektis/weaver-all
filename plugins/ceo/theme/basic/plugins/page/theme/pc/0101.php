@@ -7,7 +7,7 @@
 </div>
 
 <div class="tab-content menu-tab-content " id="myTabContent">
-    <div class="tab-pane fade  show active" id="0101-basic" >
+    <div class="tab-pane fade show active" id="0101-basic" >
         <div class="tab-pane-inner  ">
             <div>
                 <?php echo $current_store->store->render_part('ceo/name','view');; ?>

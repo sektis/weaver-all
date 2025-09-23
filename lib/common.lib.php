@@ -1836,6 +1836,64 @@ if(!function_exists('wv_format_biznum')){
         return $str;
     }
 }
+if(!function_exists('wv_get_keys_by_nested_value')){
+    function wv_get_keys_by_nested_value($data, $search_value, $need_obj = false /* , ...keys */){
+        $args = func_get_args();
+        $keys = array_slice($args, 3);
+
+        if(empty($keys)){
+            return array();
+        }
+
+        // null만 제거
+        $filtered_data = array_filter($data, function($item){
+            return $item !== null;
+        });
+
+        $matching_keys = array();
+
+        // 키가 하나인 경우 (최상위 레벨 검색)
+        if(count($keys) == 1){
+            $search_key = $keys[0];
+
+            // ⭐ array_column 대신 수동으로 검색하여 원본 키 보존
+            foreach($filtered_data as $original_key => $item){
+                if(isset($item[$search_key]) && $item[$search_key] == $search_value){
+                    $matching_keys[] = $original_key;
+                }
+            }
+        } else {
+            // 중첩 키들의 경우
+            foreach($filtered_data as $original_key => $item){
+                $current_value = $item;
+                $found = true;
+
+                // 중첩 키들을 순차적으로 탐색
+                foreach($keys as $key){
+                    if(!isset($current_value[$key])){
+                        $found = false;
+                        break;
+                    }
+                    $current_value = $current_value[$key];
+                }
+
+                if($found && $current_value == $search_value){
+                    $matching_keys[] = $original_key;
+                }
+            }
+        }
+
+        if($need_obj){
+            $objects = array();
+            foreach($matching_keys as $key){
+                $objects[$key] = $data[$key]; // 원본 데이터에서 가져오기
+            }
+            return $objects;
+        } else {
+            return $matching_keys;
+        }
+    }
+}
 
 
 /**

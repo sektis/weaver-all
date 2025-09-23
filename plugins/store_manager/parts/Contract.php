@@ -10,23 +10,32 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
     protected $columns = array(
         'contractmanager_wr_id'=> 'int(11) not null',
         'contractitem_wr_id'=> 'int(11) not null',
-        'start' => "DATE NOT NULL",
-        'end' => "DATE NOT NULL",
-        'last' => "DATE NOT NULL",
+        'start' => "DATETIME NOT NULL",
+        'end' => "DATETIME NOT NULL",
+        'last' => "DATETIME NOT NULL",
         'status' => "ENUM('1','2','3') NOT NULL Default 1", // 1:진행,2:일시중지,3:종료
         'memo'=>'TEXT DEFAULT NULL',
-        'first_manager_wr_id'=>'',
-        'first_item_wr_id'=>'',
-        'mb_name'=>'',
-        'cont_form'=>'',
-        'contract_item'=>'',
-        'start_end'=>'',
+        'service_content'=>'TEXT DEFAULT NULL',
+        'service_time'=>'TEXT DEFAULT NULL',
+
     );
 
     protected $status_text_array = array(
         '1'=>'진행 중',
         '2'=>'일시중지',
         '3'=>'종료',
+    );
+
+    protected $status_text_option_array = array(
+        '1'=>'이용 중',
+        '2'=>'미이용 중',
+        '3'=>'미이용 중',
+    );
+
+    protected $status_text_config_array = array(
+        '1'=>'제공중',
+        '2'=>'미제공',
+        '3'=>'미제공',
     );
 
     protected $status_style_array = array(
@@ -78,9 +87,11 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
 
 //        dd(wv()->store_manager->made('member')->get($row['contractmanager_wr_id'])->wr_id);
         $arr['manager_name'] =  wv()->store_manager->made('member')->get($row['contractmanager_wr_id'])->mb_name;
-        $arr['item_name'] =  str_replace('DUM','<span class="ff-montserrat">DUM</span> ',$cont_item->name);
+        $arr['item_name'] =  $cont_item->item_name_montserrat;
         $arr['item'] =  $cont_item->row;
         $arr['status_text'] =  $this->status_text_array[$row['status']];
+        $arr['status_text_option'] =  $this->status_text_option_array[$row['status']];
+        $arr['status_text_config'] =  $this->status_text_config_array[$row['status']];
         $arr['status_html'] =  '<div class="fs-[14/22/-0.56/500/] wv-flex-box" style="height:var(--wv-31);padding:0 var(--wv-10);color:#fff;border-radius:var(--wv-4);'.$this->status_style_array[$row['status']].'">'.$arr['status_text'].'</div>';
         $arr['status_service_html'] =  '<div class="flex px-[9px] py-[4px] justify-center items-center gap-[10px] rounded-[4px] fs-[12/17/-0.48/500/]"
  style="height:var(--wv-25);padding:var(--wv-4) var(--wv-9);border-radius:var(--wv-4);
@@ -97,6 +108,9 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
     public function is_new(&$data,$pkey,$col) {
         if($col=='memo'){
             $data['date']=date('Y-m-d h:i:s');
+        }
+        if(!$data['start']){
+            $data['start']=date('Y-m-d h:i:s');
         }
 
     }

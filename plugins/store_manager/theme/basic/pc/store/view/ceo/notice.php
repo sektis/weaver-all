@@ -18,14 +18,8 @@ global $current_store_wr_id;
             <div class="hstack justify-content-between">
                 <p class="text1">사장님 공지</p>
                 <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
-                   data-wv-ajax-data='{
-                                               "made":"sub01_01",
-                                               "part":"store",
-                                               "action":"render_part_ceo_form",
-                                               "fields":"ceo/notice",
-                                               "wr_id":"<?php echo $current_store_wr_id; ?>"
-                                               }'
-                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
+                   data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"store","field":"ceo/notice","wr_id":"<?php echo $current_store_wr_id; ?>"}'
+                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
             </div>
             <p class="fs-[16/22/-0.64/600/#0D171B] wv-line-clamp" style="--wv-line-clamp-length: 1"><?php echo $row['notice']; ?></p>
             <div class="h-[38px] hstack align-items-center" style="border-radius: var(--wv-4);background-color: #f9f9f9;gap:var(--wv-2);padding: 0 var(--wv-8)">

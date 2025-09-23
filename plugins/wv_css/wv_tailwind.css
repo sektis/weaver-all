@@ -96,6 +96,9 @@
   .mt-\[26px\] {
     margin-top: var(--wv-26) !important;
   }
+  .mt-\[29px\] {
+    margin-top: var(--wv-29) !important;
+  }
   .mt-\[30px\] {
     margin-top: var(--wv-30) !important;
   }
@@ -159,11 +162,17 @@
   .h-\[40px\] {
     height: var(--wv-40) !important;
   }
+  .h-\[42px\] {
+    height: var(--wv-42) !important;
+  }
   .h-\[43px\] {
     height: var(--wv-43) !important;
   }
   .h-\[46px\] {
     height: var(--wv-46) !important;
+  }
+  .h-\[47px\] {
+    height: var(--wv-47) !important;
   }
   .h-\[48px\] {
     height: var(--wv-48) !important;
@@ -248,6 +257,9 @@
   }
   .w-\[125px\] {
     width: var(--wv-125) !important;
+  }
+  .w-\[130px\] {
+    width: var(--wv-130) !important;
   }
   .w-\[140px\] {
     width: var(--wv-140) !important;
@@ -348,6 +360,9 @@
   .border-\[\#FC5555\] {
     border-color: #FC5555 !important;
   }
+  .bg-\[\#0d171b\] {
+    background-color: #0d171b !important;
+  }
   .bg-\[\#29cc6a\] {
     background-color: #29cc6a !important;
   }
@@ -429,6 +444,9 @@
   .py-\[26px\] {
     padding-block: var(--wv-26) !important;
   }
+  .pt-\[10px\] {
+    padding-top: var(--wv-10) !important;
+  }
   .pt-\[16px\] {
     padding-top: var(--wv-16) !important;
   }
@@ -476,6 +494,13 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0D171B !important;
+  }
+  .fs-\[12\/17\/-0\.48\/600\/\#97989C\] {
+    font-size: var(--wv-12) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #97989C !important;
   }
   .fs-\[12\/100\%\/-0\.24\/500\/\#989898\] {
     font-size: var(--wv-12) !important;
@@ -631,6 +656,13 @@
     font-weight: 700 !important;
     color: #0D171B !important;
   }
+  .fs-\[16\/22\/-0\.64\/700\/\#FC5555\] {
+    font-size: var(--wv-16) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
+    color: #FC5555 !important;
+  }
   .fs-\[16\/22\/-0\.64\/700\/\#FFF\] {
     font-size: var(--wv-16) !important;
     line-height: var(--wv-22) !important;
@@ -659,6 +691,13 @@
     font-weight: 700 !important;
     color: #0D171B !important;
   }
+  .fs-\[24\/25\/-0\.96\/600\/\#0D171B\] {
+    font-size: var(--wv-24) !important;
+    line-height: var(--wv-25) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #0D171B !important;
+  }
   .fs-\[24\/32\/-0\.96\/600\/\#0D171B\] {
     font-size: var(--wv-24) !important;
     line-height: var(--wv-32) !important;
@@ -679,6 +718,12 @@
     letter-spacing: -0.04em !important;
     font-weight: 500 !important;
   }
+  .fs-\[12\/17\/-0\.48\/600\/\] {
+    font-size: var(--wv-12) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+  }
   .fs-\[14\/17\/-0\.56\/600\/\] {
     font-size: var(--wv-14) !important;
     line-height: var(--wv-17) !important;
@@ -690,6 +735,12 @@
     line-height: var(--wv-22) !important;
     letter-spacing: -0.04em !important;
     font-weight: 500 !important;
+  }
+  .fs-\[20\/28\/-0\.8\/600\/\] {
+    font-size: var(--wv-20) !important;
+    line-height: var(--wv-28) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
   }
   .fs-\[25\/30\/-0\.5\/700\/\] {
     font-size: var(--wv-25) !important;
@@ -878,6 +929,9 @@
   }
   .text-\[\#777\] {
     color: #777 !important;
+  }
+  .text-\[\#FC5555\] {
+    color: #FC5555 !important;
   }
   .text-\[\#FF5F5A\] {
     color: #FF5F5A !important;

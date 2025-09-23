@@ -74,15 +74,6 @@ global $g5;
 
             $("form", $skin).ajaxForm({
 
-                success: function () {
-
-                    var offcanvasId = $skin.closest('.wv-offcanvas').attr('id');
-                    if(offcanvasId){
-                        wv_reload_offcanvas(offcanvasId);
-                        return true;
-                    }
-
-                }
             })
         })
     </script>

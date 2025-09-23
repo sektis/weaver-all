@@ -18,14 +18,8 @@ global $current_store_wr_id;
             <div class="hstack justify-content-between">
                 <p class="text1">매장 주소</p>
                 <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
-                   data-wv-ajax-data='{
-                                               "made":"sub01_01",
-                                               "part":"location",
-                                               "action":"render_part_ceo_form",
-                                               "fields":"ceo/address",
-                                               "wr_id":"<?php echo $current_store_wr_id; ?>"
-                                               }'
-                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
+                   data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"location","field":"ceo/address","wr_id":"<?php echo $current_store_wr_id; ?>"}'
+                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
             </div>
             <div>
                 <div>

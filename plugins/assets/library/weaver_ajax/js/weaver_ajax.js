@@ -199,13 +199,23 @@ $(function(){
 
     $(document).ajaxComplete(function(event, xhr, settings) {
         clearTimeout(timer);
+
         $loader.hide();
         try {
             var parsed_json = JSON.parse(xhr.responseText);
+
             if( isset(parsed_json.reload)){
-                if(isset(parsed_json.msg && !settings.success)){
-                    alert(parsed_json.msg);
-                    location.reload();
+                // console.log(settings.reload)
+                if(parsed_json.reload && !settings.reload_ajax   ){
+
+
+                    if((isset(settings.reload) && settings.reload!=false)){
+                        if(parsed_json.msg){
+                            alert(parsed_json.msg);
+                        }
+                        location.reload();
+                    }
+
                 }
 
             }
@@ -213,7 +223,7 @@ $(function(){
 
         }
 
-        if(isset(settings.reload) && settings.reload!='false' ){
+        if(isset(settings.reload) && settings.reload!=false ){
             location.reload();
         }
 

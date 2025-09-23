@@ -3,13 +3,11 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 $page_title = '일반 사용자 관리';
 $sfl_options = array(
-    'jm.mb_id'    => '아이디',
-    'jm.mb_name'  => '이름',
+    'mb.mb_id'    => '아이디',
+    'mb.mb_name'  => '이름',
 );
 $sfl_whitelist = array_keys($sfl_options);
 
-$sfl = isset($_GET['sfl']) && in_array($_GET['sfl'], $sfl_whitelist) ? $_GET['sfl'] : 'mb_id';
-$stx = isset($_GET['stx']) ? trim($_GET['stx']) : '';
 
 $get_list_where = array();
 if($stx !== ''){
@@ -32,9 +30,8 @@ $get_list_option = array(
     'join_member'  =>  array(
         'table'  => $g5['member_table'],
         'on'     => 'mb_id',
-        'select' => 'jm.mb_name, jm.mb_level, jm.mb_datetime, jm.mb_hp',
+        'select' => 'mb.mb_name, mb.mb_level, mb.mb_datetime, mb.mb_hp',
         'type'   => 'LEFT',
-        'as'     => 'jm'
     ),
 
     'page'=>$page,
@@ -55,7 +52,7 @@ $list = $result['list'];
             <p>탈퇴 회원 수(<?php echo number_format($left_count); ?>명)</p>
         </div>
 
-        <form method="get" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
+        <form method="post" action="<?php echo wv_page_url($wv_page_id); ?>" class="hstack" style="gap: var(--wv-8);">
             <input type="hidden" name="wv_page_id" value="0102">
 
             <div class="form-floating" style="min-width:180px;">
@@ -109,10 +106,13 @@ $list = $result['list'];
                                 <td><?php echo $list[$i]['member']['active_text']; ?></td>
                                 <td>
                                     <div class="hstack justify-content-center gap-[6px]">
-                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php?made=member&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                           data-wv-ajax-data='{ "action":"delete","made":"member","wr_id":"<?php echo $list[$i]['wr_id']; ?>"}'
                                            class="wv-data-list-delete-btn  ">[삭제]</a>
-                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part_form&part=member&fields=member_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
-                                           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
+                                        <a href="#"
+                                           data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+                                           data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"admin/member_form","wr_id":"<?php echo $list[$i]['wr_id']; ?>"}'
+                                           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]" class="wv-data-list-edit-btn">[수정]</a>
                                     </div>
                                 </td>
                             </tr>

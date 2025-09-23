@@ -21,16 +21,9 @@ $cont =  $row['contract'][$contract_id];
         ?>
         <a class="fs-[14/17/-0.56/600/] hstack justify-content-center w-full cursor-pointer gap-[6px]"
               style="height:var(--wv-40);padding:0 var(--wv-10);color:#fff;border-radius:var(--wv-4);<?php echo $this->status_change_style_array[$cont['status']]?>"
-           href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' data-wv-ajax-option="reload:true"
-           data-wv-ajax-data='{  "action":"update",
-                                               "made":"sub01_01",
-                                               "part":"contract",
-
-                                               "fields":"status",
-                                               "wr_id":"<?php echo $row['wr_id']; ?>"
-
-                                               }'
-        data-wv-ajax-data-add='<?php echo json_encode($post_data); ?>'>
+           href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' data-wv-ajax-option="reload_ajax:true"
+           data-wv-ajax-data='{"action":"update","made":"sub01_01","part":"contract","fields":"status","wr_id":"<?php echo $row['wr_id']; ?>"}'
+           data-wv-ajax-data-add='<?php echo json_encode($post_data); ?>'>
 
             <?php echo  $this->status_change_icon_array[$cont['status']]; ?>
             <span><?php echo $this->status_change_text_array[$cont['status']]; ?></span>

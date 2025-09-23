@@ -26,15 +26,8 @@ global $current_store_wr_id;
                         <div class="hstack fs-[14/20/-0.56/600/#0D171B] justify-content-between" style="padding: var(--wv-16) 0">
                             <p><?php echo $menu['name']; ?></p>
                             <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
-                               data-wv-ajax-data='{
-                                           "made":"sub01_01",
-                                           "part":"menu",
-                                           "action":"render_part_ceo_view",
-                                           "fields":"ceo/menu_view",
-                                           "wr_id":"<?php echo $current_store_wr_id; ?>",
-                                           "menu_id":"<?php echo $menu['id']; ?>"
-                                           }'
-                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]" class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
+                               data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/edit","wr_id":"<?php echo $current_store_wr_id; ?>","menu_id":"<?php echo $menu['id']?>"}'
+                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
 
                         </div>
                         <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
@@ -52,7 +45,7 @@ global $current_store_wr_id;
                             </div>
                             <div class="w-[60px] h-[60px] col-auto">
                                 <?php if($menu['images'][0]){ ?>
-                                <img src="<?php echo $menu['images'][0]['path']; ?>" alt="" class="wh-100 object-fit-cover" style="border-radius: var(--wv-4);overflow: hidden">
+                                    <img src="<?php echo $menu['images'][0]['path']; ?>" alt="" class="wh-100 object-fit-cover" style="border-radius: var(--wv-4);overflow: hidden">
                                 <?php } ?>
                             </div>
                         </div>

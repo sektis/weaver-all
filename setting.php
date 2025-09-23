@@ -5,6 +5,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 wv()->load(array('wv_css','theme','adm_bbs','location','parsing'));
 wv('assets')->add_library(array('weaver','weaver_ajax','weaver_bf_file','bootstrap','hc_sticky','font_awesome','swiper11','animate_css'));
 wv('assets')->add_font(array('pretendard','roboto_mono','montserrat'));
+
 wv('layout')->set_theme_dir('basic');
 wv('layout')->set_use_header_footer(true);
 wv('layout')->set_must_add_site_wrapper(true);
@@ -15,7 +16,10 @@ wv('gnu_skin')->set_theme_dir('basic');
 wv('gnu_skin')->set_use_skin('member',array('login','register','register_form','register_result','password_lost'));
 wv('gnu_skin')->use_social_skin();
 wv()->load(array('ceo','gnu_adm'));
+if(wv_info('path')=='bbs' and $bo_table=='push1'){
 
+    wv('layout')->set_use_header_footer(false);
+}
 
 $wv_main_menu_array = array(
     array('name' => '홈', 'url' => '/','icon'=>WV_URL.'/img/foot_1.png'),

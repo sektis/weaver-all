@@ -22,7 +22,7 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
             <div style="padding-bottom: var(--wv-40)">
                 <div class="hstack justify-content-between">
                     <div class="wv-ps-subtitle">공휴일</div>
-                    <div class="form-check form-switch <?php echo $is_holiday_off?'':'disabled'; ?>" style="gap:var(--wv-6)" data-on-value="설정 함" data-off-value="설정 안함">
+                    <div class="form-check form-switch  <?php echo $is_holiday_off?'':'disabled'; ?>" style="gap:var(--wv-6)" data-on-value="설정 함" data-off-value="설정 안함">
                         <label class="form-check-label" for="holiday-off-switch">
 
                         </label>
@@ -46,7 +46,7 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
 
             <div class="wv-mx-fit" style="height: 10px;background-color: #efefef"></div>
             <!-- 정기휴무 설정 -->
-            <div style="padding: var(--wv-16) var(--wv-16) var(--wv-20)">
+            <div style="padding: var(--wv-16) 0 var(--wv-20)">
                 <div>
                 <?php
                 echo $this->manager->get($row['wr_id'])->dayoffs->render_part('form','form');
@@ -55,7 +55,7 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
             </div>
             <div class="wv-mx-fit" style="height: 10px;background-color: #efefef"></div>
             <!-- 임시휴무 설정 -->
-            <div style="padding: var(--wv-16) var(--wv-16) var(--wv-20)">
+            <div style="padding: var(--wv-16) 0 var(--wv-20)">
                 <div>
                 <?php
                 echo $this->manager->get($row['wr_id'])->tempdayoffs->render_part('form','form');

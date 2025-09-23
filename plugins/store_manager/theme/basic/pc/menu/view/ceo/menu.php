@@ -19,20 +19,14 @@ global $current_store_wr_id,$current_store;
                 <p class="text1">대표메뉴</p>
                 <div class="hstack justify-content-between mt-[20px] fs-[14/100%/-0.56/600/#0D171B]" style="gap:var(--wv-8)">
                     <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
-                       data-wv-ajax-data='{
-                                               "made":"sub01_01",
-                                               "part":"menu",
-                                               "action":"render_part_ceo_form",
-                                               "fields":"ceo/menu_form",
-                                               "wr_id":"<?php echo $current_store_wr_id; ?>"
-                                               }'
+                       data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/add","wr_id":"<?php echo $current_store_wr_id; ?>"}'
                        data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]"  class="h-[40px] d-flex-center border col" style="border-radius:var(--wv-4) ">
                     <span>
                         <i class="fa-solid fa-plus me-1"></i>
                        메뉴 추가
                     </span>
                     </a>
-                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                    <a href="#"
                        data-wv-ajax-data='{
                                                "made":"sub01_01",
                                                "part":"menu",

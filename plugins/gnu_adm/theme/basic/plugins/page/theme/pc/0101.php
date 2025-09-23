@@ -3,13 +3,12 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 $page_title = '사장님 관리';
 $sfl_options = array(
-    'jm.mb_id'    => '아이디',
-    'jm.mb_name'  => '대표자이름',
+    'mb.mb_id'    => '아이디',
+    'mb.mb_name'  => '대표자이름',
 );
 $sfl_whitelist = array_keys($sfl_options);
 
-$sfl = isset($_GET['sfl']) && in_array($_GET['sfl'], $sfl_whitelist) ? $_GET['sfl'] : 'mb_id';
-$stx = isset($_GET['stx']) ? trim($_GET['stx']) : '';
+
 
 $get_list_where = array();
 if($stx !== ''){
