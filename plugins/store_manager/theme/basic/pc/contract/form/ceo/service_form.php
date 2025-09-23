@@ -42,7 +42,7 @@ if(!$row['id']){
                                 </div>
 
                                 <div class="col-auto text-center">
-                                    <p class="fs-[14/20/-0.56/600/#0D171B]"><?php echo $cont_item['item_name_montserrat']; ?> 등록</p>
+                                    <p class="fs-[14/20/-0.56/600/#0D171B]"><?php echo $cont_item['item_name_montserrat']; ?> <?php echo $row['service_content']?'관리':'등록'; ?></p>
                                 </div>
                                 <div class="col"></div>
                             </div>
@@ -61,7 +61,7 @@ if(!$row['id']){
                                 </div>
                             </div>
                             <div class=" ">
-                                <?php echo $this->store->contract->render_part('service_content','form');; ?>
+                                <?php echo $this->store->contract->render_part('service_content','form',array('contract_id'=>$row['id']));; ?>
                             </div>
 
                             <div class="fs-[12/17/-0.48/500/#97989C] mt-[20px] vstack" style="row-gap:var(--wv-8)">
@@ -108,13 +108,13 @@ if(!$row['id']){
                 reload:false,
                 success: function () {
                     var $offcanvas =  $skin.closest('.wv-offcanvas');
-
+                    $offcanvas.attr('data-need-refresh', 'true');
                     var parent_id = $offcanvas.data('parent-elem');
                     if(parent_id){
                         $("#"+parent_id).attr('data-need-refresh', 'true');
                         wv_reload_offcanvas(parent_id);
                     }
-
+                    alert('완료');
 
                     $offcanvas.offcanvas('hide');
 

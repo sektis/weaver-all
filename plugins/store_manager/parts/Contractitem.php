@@ -11,6 +11,7 @@ class Contractitem extends StoreSchemaBase{
         'use_schedule' => "TINYINT(1) NOT NULL DEFAULT 0",
         'name' => "VARCHAR(255) DEFAULT NULL",
         'icon'=>'TEXT DEFAULT NULL',
+        'icon_small'=>'TEXT DEFAULT NULL',
         'desc_option' => "TEXT DEFAULT NULL",
         'desc_list' => "VARCHAR(255) DEFAULT NULL",
         'call_num'=>"VARCHAR(255) DEFAULT NULL",

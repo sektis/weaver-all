@@ -204,6 +204,9 @@
   .w-\[17px\] {
     width: var(--wv-17) !important;
   }
+  .w-\[18px\] {
+    width: var(--wv-18) !important;
+  }
   .w-\[20px\] {
     width: var(--wv-20) !important;
   }
@@ -723,6 +726,12 @@
     line-height: var(--wv-17) !important;
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
+  }
+  .fs-\[12\/22\/-0\.48\/700\/\] {
+    font-size: var(--wv-12) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
   }
   .fs-\[14\/17\/-0\.56\/600\/\] {
     font-size: var(--wv-14) !important;

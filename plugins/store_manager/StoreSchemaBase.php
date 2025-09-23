@@ -261,6 +261,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
             // 기본 모드: part_key[column]
             $field_name = $this->part_key . '[' . $column . ']';
         }
+
         $part_key = $this->part_key;
         $bo_table = $this->bo_table;
 

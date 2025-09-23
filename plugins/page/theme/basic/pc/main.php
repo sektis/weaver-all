@@ -1,5 +1,5 @@
 <div class="wv-vstack">
-    <a href="/boot.html">test</a>
+
     <div>
         <img src="<?php echo $wv_page_skin_url; ?>/img/main/1.png" class="w-full" alt="">
     </div>
