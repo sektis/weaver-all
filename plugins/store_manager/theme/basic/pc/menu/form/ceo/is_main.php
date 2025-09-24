@@ -62,16 +62,7 @@ global $g5;
                 reload:false,
                 success: function () {
                     var $offcanvas =  $skin.closest('.wv-offcanvas');
-
-                    var parent_id = $offcanvas.data('parent-elem');
-                    if(parent_id){
-                        $("#"+parent_id).attr('data-need-refresh', 'true');
-                        wv_reload_offcanvas(parent_id);
-                    }
-
-
                     $offcanvas.offcanvas('hide');
-
                 }
             })
         })

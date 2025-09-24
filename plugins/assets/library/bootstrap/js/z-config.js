@@ -148,13 +148,81 @@ $(document).ready(function () {
     });
 
     $(document).on('hidden.bs.offcanvas', '.offcanvas', function() {
-        if($(this).data('need-refresh')){
-            location.reload()
-        }
+
         $(this).removeClass('offcanvas-nested');
     });
 
+    $(document).on('hide.bs.modal', function(e) {
+        var $modal = $(e.target);
+        if ($modal.data('need-refresh')) {
+            wv_handle_parent_reload($modal, true);  // true = 닫힘 이벤트에서 호출
+        }
+    });
+
+// offcanvas 닫힐 때 이벤트
+    $(document).on('hide.bs.offcanvas', function(e) {
+        var $offcanvas = $(e.target);
+        if ($offcanvas.data('need-refresh')) {
+            wv_handle_parent_reload($offcanvas, true);  // true = 닫힘 이벤트에서 호출
+        }
+    });
+
 })
+
+// 부모 리로드 처리 함수
+function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
+    if (isFromCloseEvent) {
+        // modal/offcanvas 닫힐 때: parent-elem 사용
+        var parentElemId = $currentElement.data('parent-elem');
+
+        if (parentElemId) {
+            var $parentElement = $('#' + parentElemId);
+
+            if ($parentElement.length) {
+                // 부모가 offcanvas인 경우
+                if ($parentElement.hasClass('offcanvas') || $parentElement.hasClass('wv-offcanvas')) {
+                    wv_reload_offcanvas(parentElemId);
+                    return;
+                }
+
+                // 부모가 modal인 경우
+                if ($parentElement.hasClass('modal') || $parentElement.hasClass('wv-modal')) {
+                    wv_reload_modal(parentElemId);
+                    return;
+                }
+            }
+        }
+    } else {
+        // type이 없는 일반 ajax 요청: data-wv-reload-url 찾기
+        var $parentElement = $currentElement.closest('[data-wv-reload-url]');
+
+
+        if ($parentElement.length) {
+            // 부모가 offcanvas인 경우
+            if ($parentElement.hasClass('offcanvas') || $parentElement.hasClass('wv-offcanvas')) {
+                var parentId = $parentElement.attr('id');
+                if (parentId) {
+
+                    wv_reload_offcanvas(parentId);
+                    return;
+                }
+            }
+
+            // 부모가 modal인 경우
+            if ($parentElement.hasClass('modal') || $parentElement.hasClass('wv-modal')) {
+                var parentId = $parentElement.attr('id');
+                if (parentId) {
+                    wv_reload_modal(parentId);
+                    return;
+                }
+            }
+        }
+    }
+
+    // 적절한 부모를 찾지 못하면 페이지 새로고침
+    location.reload();
+}
+
 // 옵션 파싱 공통 함수
 function parseWvAjaxOptions(options,$from) {
     var processedOptions = {};
@@ -236,6 +304,17 @@ function parseWvAjaxOptions(options,$from) {
 
     if(processedOptions.reload_ajax===true && !processedOptions.$clickElement){
         alert('reload element not found');
+    }
+
+    // reload_ajax 처리 추가
+    if (processedOptions.reload_ajax === true) {
+        if (!processedOptions.type) {
+            // type이 없으면 클릭 이벤트 기준 부모 리로드
+            processedOptions.reload_ajax = 'parent';
+        } else if (processedOptions.type === 'offcanvas' || processedOptions.type === 'modal') {
+            // offcanvas나 modal인 경우 닫힐 때 리로드 설정
+            processedOptions.reload_ajax = 'on_close';
+        }
     }
 
     return processedOptions;
@@ -361,10 +440,14 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
                 $(processedOptions.replace_with).replaceWith(response);
                 return false;
             }
-            if (processedOptions.reload_ajax) {
-
-                wv_handle_reload(processedOptions.reload_ajax, processedOptions.$clickElement);
+            if (processedOptions.reload_ajax === 'parent') {
+                // 즉시 부모 리로드
+                wv_handle_parent_reload(processedOptions.$clickElement, false);
                 return false;
+            }
+            if (processedOptions.reload_ajax === 'on_close') {
+                // modal/offcanvas 닫힐 때 리로드하도록 마킹 (응답 처리는 계속)
+                // 이 부분은 modal/offcanvas 생성 시점에서 처리
             }
         }
 
@@ -417,42 +500,42 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
     $.ajax(defaultAjaxSettings);
 }
 // reload 처리 공통 함수
-function wv_handle_reload(reloadValue, $clickElement) {
-    var $target = null;
-
-    if (reloadValue === 'true') {
-        // 클릭 요소 기준으로 closest offcanvas 또는 modal 찾기
-        $target = $clickElement.closest('.offcanvas');
-        if (!$target.length) {
-            $target = $clickElement.closest('.modal');
-        }
-    } else {
-        // 셀렉터로 타겟 찾기
-        $target = $(reloadValue);
-    }
-
-    if (!$target.length) {
-        alert('Reload target not found:', reloadValue);
-        return false;
-    }
-
-    var targetId = $target.attr('id');
-    if (!targetId) {
-        alert('Target element has no ID for reload');
-        return false;
-    }
-
-    // offcanvas인지 modal인지 판단해서 적절한 reload 함수 호출
-    if ($target.hasClass('offcanvas')) {
-        $('#'+targetId).attr('data-need-refresh', 'true');
-        return wv_reload_offcanvas(targetId);
-    } else if ($target.hasClass('modal')) {
-        return wv_reload_modal(targetId);
-    } else {
-        console.warn('Target is neither offcanvas nor modal:', $target);
-        return false;
-    }
-}
+// function wv_handle_reload(reloadValue, $clickElement) {
+//     var $target = null;
+//
+//     if (reloadValue === 'true') {
+//         // 클릭 요소 기준으로 closest offcanvas 또는 modal 찾기
+//         $target = $clickElement.closest('.offcanvas');
+//         if (!$target.length) {
+//             $target = $clickElement.closest('.modal');
+//         }
+//     } else {
+//         // 셀렉터로 타겟 찾기
+//         $target = $(reloadValue);
+//     }
+//
+//     if (!$target.length) {
+//         alert('Reload target not found:', reloadValue);
+//         return false;
+//     }
+//
+//     var targetId = $target.attr('id');
+//     if (!targetId) {
+//         alert('Target element has no ID for reload');
+//         return false;
+//     }
+//
+//     // offcanvas인지 modal인지 판단해서 적절한 reload 함수 호출
+//     if ($target.hasClass('offcanvas')) {
+//         $('#'+targetId).attr('data-need-refresh', 'true');
+//         return wv_reload_offcanvas(targetId);
+//     } else if ($target.hasClass('modal')) {
+//         return wv_reload_modal(targetId);
+//     } else {
+//         console.warn('Target is neither offcanvas nor modal:', $target);
+//         return false;
+//     }
+// }
 function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
     // 옵션 파싱
     var processedOptions = isParsed ? options : parseWvAjaxOptions(options);
@@ -490,10 +573,20 @@ function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
         </div>
     `);
 
+    var $parent = processedOptions.$clickElement.closest('.wv-modal');
+    if($parent.length){
+        modalEl.data('parent-elem',  $parent.attr('id'));
+    }
+
+
     // 리로딩을 위한 정보 저장
-    modalEl.data('wv-reload-url', url);
+    modalEl.attr('data-wv-reload-url', url);
     modalEl.data('wv-reload-options', processedOptions);
     modalEl.data('wv-reload-data', data);
+
+    if (processedOptions.reload_ajax === 'on_close') {
+        modalEl.attr('data-need-refresh', true);
+    }
 
     $modal_target.append(modalEl);
 
@@ -559,15 +652,17 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
             <div class="offcanvas-body"></div>
         </div>
     `);
-    var $parent_offcanvas = processedOptions.$clickElement.closest('.wv-offcanvas');
-    if($parent_offcanvas.length){
-
-        offcanvasEl.data('parent-elem',  $parent_offcanvas.attr('id'));
+    var $parent = processedOptions.$clickElement.closest('.wv-offcanvas');
+    if($parent.length){
+        offcanvasEl.data('parent-elem',  $parent.attr('id'));
     }
-
-    offcanvasEl.data('wv-reload-url', url);
+    offcanvasEl.attr('data-wv-reload-url', url);
     offcanvasEl.data('wv-reload-options', processedOptions);
     offcanvasEl.data('wv-reload-data', data); // offcanvas가 아니라 offcanvasEl
+
+    if (processedOptions.reload_ajax === 'on_close') {
+        offcanvasEl.attr('data-need-refresh', true);
+    }
 
     $offcanvas_target.append(offcanvasEl);
 
@@ -647,6 +742,7 @@ function wv_reload_offcanvas(offcanvasId) {
     }
 
     $.ajax(ajaxSettings);
+    console.log(1)
     return true;
 }
 

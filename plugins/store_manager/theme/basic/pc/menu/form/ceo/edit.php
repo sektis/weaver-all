@@ -78,13 +78,13 @@ global $g5;
                             <div class="hstack col-box" style="gap:var(--wv-8)">
                                 <a href="#"  class="wv-flex-box border h-[40px] col" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
                                    data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/name","wr_id":"<?php echo $row['wr_id']; ?>","menu_id":"<?php echo $menu_id?>"}'
-                                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:current"  >
+                                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  >
                                     <i class="fa-solid fa-plus"></i>
                                     <p class="fs-[14/17/-0.56/500/#0D171B]">메뉴명 변경</p>
                                 </a>
                                 <a href="#"  class="wv-flex-box border h-[40px] col" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
                                    data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/prices","wr_id":"<?php echo $row['wr_id']; ?>","menu_id":"<?php echo $menu_id?>"}'
-                                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:current"  >
+                                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  >
                                     <i class="fa-solid fa-plus"></i>
                                     <p class="fs-[14/17/-0.56/500/#0D171B]">가격 변경</p>
                                 </a>
@@ -100,7 +100,7 @@ global $g5;
                                     <div class="form-check form-switch align-self-center"  data-on-value="대표메뉴"  data-off-value="대표메뉴"
                                          data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php'
                                          data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/is_main","wr_id":"<?php echo $row['wr_id']; ?>","menu_id":"<?php echo $menu_id?>"}'
-                                         data-wv-ajax-option="offcanvas,bottom,backdrop,class: w-[360px] rounded-t-[4px],reload_ajax:current" >
+                                         data-wv-ajax-option="offcanvas,bottom,backdrop,class: w-[360px] rounded-t-[4px],reload_ajax:true" >
                                         <input class="form-check-input" type="checkbox"     <?php echo $row['is_main'] ? 'checked' : ''; ?>>
                                         <label class="form-check-label"></label>
                                     </div>
@@ -115,7 +115,7 @@ global $g5;
                                     <p class="fs-[16/22/-0.64/600/#0D171B]" style="line-height: var(--wv-31)">메뉴 부가설명</p>
                                     <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
                                        data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/desc","wr_id":"<?php echo $row['wr_id']; ?>","menu_id":"<?php echo $menu_id?>"}'
-                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:current"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
+                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
                                 </div>
 
                                 <div class="mt-[20px]" >
@@ -131,7 +131,7 @@ global $g5;
                                     <p class="fs-[16/22/-0.64/600/#0D171B]" style="line-height: var(--wv-31)">메뉴 이미지</p>
                                     <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
                                        data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/images","wr_id":"<?php echo $row['wr_id']; ?>","menu_id":"<?php echo $menu_id?>"}'
-                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:current"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
+                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
                                 </div>
 
                                 <div class="mt-[20px]" >
@@ -162,7 +162,7 @@ global $g5;
                         <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php' style="border:1px solid #fc5555;border-radius: var(--wv-4);background-color: #fff"
                            class="w-full h-[54px] fs-[16/22/-0.64/700/#FC5555] wv-flex-box  transition menu-delete  "
                            data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/delete","wr_id":"<?php echo $row['wr_id']; ?>","menu_id":"<?php echo $menu_id?>"}'
-                           data-wv-ajax-option="offcanvas,bottom,backdrop,class: w-[360px] rounded-t-[4px],reload_ajax:current" >메뉴 삭제하기</a>
+                           data-wv-ajax-option="offcanvas,bottom,backdrop,class: w-[360px] rounded-t-[4px],reload_ajax:true" >메뉴 삭제하기</a>
 
                     </div>
 

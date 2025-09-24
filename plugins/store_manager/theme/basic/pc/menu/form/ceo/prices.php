@@ -68,11 +68,8 @@ global $g5;
             $("form", $skin).ajaxForm({
                 reload:false,
                 success: function () {
-                    if(reload_ajax_target){
-                        wv_reload_offcanvas(reload_ajax_target);
-                    }
-                    $skin.closest('.wv-offcanvas').offcanvas('hide');
-
+                    var $offcanvas =  $skin.closest('.wv-offcanvas');
+                    $offcanvas.offcanvas('hide');
                 }
             })
         })

@@ -950,6 +950,7 @@ class StoreManager extends Makeable{
 
                         $phys = $this->get_physical_col($pkey, $logical_col);
 
+
                         $prev_serialized = isset($prev_ext_row[$phys]) ? $prev_ext_row[$phys] : '';
 
                         $prev_decoded = wv_base64_decode_unserialize($prev_serialized);
@@ -1517,10 +1518,10 @@ class StoreManager extends Makeable{
     }
 
     public function get_physical_col($part_key, $logical){
-        if(isset($this->parts[$part_key]) &&
-            $this->is_list_part_schema($this->parts[$part_key])) {
-            return $logical; // 원본 그대로 반환
+        if(isset($this->parts[$part_key]) && $this->is_list_part_schema($this->parts[$part_key])) {
+            return $part_key; // 원본 그대로 반환
         }
+
         return isset($this->colmap[$part_key][$logical]) ? $this->colmap[$part_key][$logical] : $this->physical_col($part_key, $logical);
     }
 

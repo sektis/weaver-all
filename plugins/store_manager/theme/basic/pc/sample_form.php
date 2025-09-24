@@ -30,22 +30,12 @@ global $g5;
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
-                // reload:false,
-                // success: function () {
-                //     var $offcanvas =  $skin.closest('.wv-offcanvas');
-                //
-                //     var parent_id = $offcanvas.data('parent-elem');
-                //     if(parent_id){
-                //         $("#"+parent_id).attr('data-need-refresh', 'true');
-                //         wv_reload_offcanvas(parent_id);
-                //     }
-                //
-                //
-                //     $offcanvas.offcanvas('hide');
-                //
-                //     wv_reload_offcanvas($offcanvas.attr('id'));
-                //
-                // }
+                reload:false,
+                // reload_ajax:true,
+                success: function () {
+                    var $offcanvas =  $skin.closest('.wv-offcanvas');
+                    $offcanvas.offcanvas('hide');
+                }
             })
         })
     </script>

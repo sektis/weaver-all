@@ -8,6 +8,11 @@ $(function(){
 
             var originalBeforeSubmit = options.beforeSubmit;
             options.beforeSubmit = function(formData, jqForm, opts) {
+
+                if(isset(opts.reload_ajax)){
+                    opts.reload_ajax = jqForm;
+                }
+
                 // 빈 파일 input 제거 (전역 처리)
                 for (var i = formData.length - 1; i >= 0; i--) {
                     var item = formData[i];
@@ -54,6 +59,48 @@ $(function(){
 
             return originalAjaxSubmit.call(this, options);
         };
+    }
+
+    // 폼 기준 부모 리로드 처리 함수
+    function wv_handle_parent_reload_from_form($formElement) {
+        console.log('Finding parent from form element:', $formElement);
+
+        // 1. offcanvas 부모 찾기
+        var $parentOffcanvas = $formElement.closest('.offcanvas, .wv-offcanvas');
+        if ($parentOffcanvas.length) {
+            console.log('Found parent offcanvas:', $parentOffcanvas);
+
+            // DOM 요소로 변환해서 attribute 확인
+            var parentOffcanvasElement = $parentOffcanvas[0];
+            if (parentOffcanvasElement.hasAttribute('data-wv-reload-url')) {
+                var parentId = parentOffcanvasElement.getAttribute('id');
+                if (parentId) {
+                    console.log('Reloading offcanvas:', parentId);
+                    wv_reload_offcanvas(parentId);
+                    return;
+                }
+            }
+        }
+
+        // 2. modal 부모 찾기
+        var $parentModal = $formElement.closest('.modal, .wv-modal');
+        if ($parentModal.length) {
+            console.log('Found parent modal:', $parentModal);
+
+            // DOM 요소로 변환해서 attribute 확인
+            var parentModalElement = $parentModal[0];
+            if (parentModalElement.hasAttribute('data-wv-reload-url')) {
+                var parentId = parentModalElement.getAttribute('id');
+                if (parentId) {
+                    console.log('Reloading modal:', parentId);
+                    wv_reload_modal(parentId);
+                    return;
+                }
+            }
+        }
+
+        console.log('No suitable parent found, falling back to location.reload()');
+        location.reload();
     }
 
     $(document).ajaxError(function(event, jqxhr, settings){
@@ -214,29 +261,25 @@ $(function(){
 
         }
 
-        if(reload==false){
-            if(isset(settings.reload) && settings.reload===true ){
-                reload=true;
-            }
+        if(isset(settings.reload)   ){
+            reload=settings.reload;
         }
 
         if(isset(settings.reload_ajax )){
 
-            if(settings.reload_ajax===true){
-                // ajax날라올때
-            }else{
-                // 타겟
+            if(settings.reload_ajax){
+                var $formElement = settings.reload_ajax;
+                // 폼 기준으로 부모 offcanvas/modal 찾아서 리로드
+                wv_handle_parent_reload_from_form($formElement);
+               reload=false;
             }
 
         }
 
-        console.log(reload)
 
-        if(msg){
-            alert(msg);
-        }
         if(reload){
-            // location.reload()
+
+            location.reload()
         }
 
 
@@ -249,3 +292,4 @@ $(function(){
     });
 
 })
+

@@ -108,16 +108,7 @@ if(!$row['id']){
                 reload:false,
                 success: function () {
                     var $offcanvas =  $skin.closest('.wv-offcanvas');
-                    $offcanvas.attr('data-need-refresh', 'true');
-                    var parent_id = $offcanvas.data('parent-elem');
-                    if(parent_id){
-                        $("#"+parent_id).attr('data-need-refresh', 'true');
-                        wv_reload_offcanvas(parent_id);
-                    }
-                    alert('완료');
-
                     $offcanvas.offcanvas('hide');
-
                 }
             })
         })
