@@ -4486,7 +4486,7 @@ if(!function_exists('wv_write_member')){
         if ($mb_name && ($msg = empty_mb_name($mb_name)))       return $msg;
         if ($mb_nick && ($msg = empty_mb_nick($mb_nick)))       return $msg;
         if ($mb_email && ($msg = empty_mb_email($mb_email)))    return $msg;
-        if ($mb_id && ($msg = reserve_mb_id($mb_id)))           return $msg;
+//        if ($mb_id && ($msg = reserve_mb_id($mb_id)))           return $msg;
         if ($mb_nick && ($msg = reserve_mb_nick($mb_nick)))     return $msg;
         if ($mb_nick && ($msg = valid_mb_nick($mb_nick)))       return $msg;
         if ($mb_email && ($msg = valid_mb_email($mb_email)))    return $msg;

@@ -90,12 +90,12 @@ global $g5;
                         <?php if (array_filter($cont['service_time'])) { ?>
                             <div class="my-[8px]" style="height: 1px;background-color: #efefef"></div>
                             <div class="fs-[12/17/-0.48/500/#0D171B] hstack align-items-start" style="gap:var(--wv-4)"  >
-                                <div><img src="<?php echo $this->manager->plugin_url; ?>/img/clock.png" class="w-[14px]" alt=""></div>
-                                <p>이용 가능한 시간 :</p>
-                                <div>
+                                <div class="col-auto"><img src="<?php echo $this->manager->plugin_url; ?>/img/clock.png" class="w-[14px]" alt=""></div>
+                                <p class="col-auto">이용 가능한 시간 :</p>
+                                <div class="vstack col " style="row-gap: var(--wv-5)">
 
-                                    <?php $i=0; foreach ($cont['service_time_list'] as $each){ ?>
-                                        <p class="hstack" style="gap:var(--wv-5)"><span>(<?php echo $each['name']; ?>)</span><span><?php echo $each['time']; ?></span></p>
+                                    <?php $i=0; foreach ($cont['service_time_group'] as $each){ ?>
+                                        <p class="hstack flex-wrap" style="gap:var(--wv-5);row-gap: 0"><span>(<?php echo $each['name']; ?>)</span><span><?php echo $each['time']; ?></span></p>
                                         <?php $i++;} ?>
                                     <?php if($i==0){ ?>
                                         <p>미등록</p>
@@ -115,7 +115,7 @@ global $g5;
                     <?php } else { ?>
                         data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"contract","field":"ceo/service_form","wr_id":"<?php echo $store_wr_id; ?>","contract_id":"<?php echo $cont['id'] ?>","contractitem_wr_id":"<?php echo $row['wr_id']; ?>"}'
                     <?php } ?>
-                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]" class="wv-flex-box fs-[12/17/-0.48/500/#97989C]"  >
+                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" class="wv-flex-box fs-[12/17/-0.48/500/#97989C]"  >
                     <span><img src="<?php echo $this->manager->plugin_url; ?>/img/pen.png" class="w-[12px]" alt=""></span>
                     <span>서비스 관리</span>
                 </a>

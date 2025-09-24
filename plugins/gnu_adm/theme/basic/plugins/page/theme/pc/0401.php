@@ -40,9 +40,6 @@ $cont_list_table_row = sql_fetch("select count(*) as cnt from {$cont_list_table}
 ?>
 <div class="wv-vstack">
 
-    <div class="page-top-menu">
-        <a href="<?php echo wv_page_url($wv_page_id); ?>" class="top-menu-btn"><i class="fa-solid fa-plus"></i> 신규등록</a>
-    </div>
 
     <div class="hstack justify-content-between">
         <div></div>
@@ -114,16 +111,9 @@ $cont_list_table_row = sql_fetch("select count(*) as cnt from {$cont_list_table}
                                     <td ><div class="wv-line-clamp"><?php echo  $cont['memo_list'] ?></div></td>
                                     <td >
                                         <div class="hstack justify-content-center gap-[6px]">
-                                            <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php'
-                                               data-wv-ajax-data='{
-                                               "made":"sub01_01",
-                                               "part":"contract",
-                                               "action":"render_part_form",
-                                               "fields":"cont_form",
-                                               "wr_id":"<?php echo $list[$i]['wr_id']; ?>",
-                                               "contract_id":"<?php echo $cont['id']?>"
-                                               }'
-                                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
+                                            <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                                               data-wv-ajax-data='{"action":"form","made":"sub01_01","part":"contract","field":"admin/cont_form","wr_id":"<?php echo $list[$i]['wr_id']; ?>","contract_id":"<?php echo $cont['id']?>"}'
+                                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px],reload_ajax:true"  class="wv-data-list-edit-btn">[수정]</a>
                                         </div>
                                     </td>
                                 <?php $j++;}?>
@@ -131,16 +121,9 @@ $cont_list_table_row = sql_fetch("select count(*) as cnt from {$cont_list_table}
                                 <td colspan="7">계약이 없습니다.</td>
                                 d<td colspan="7">
                                     <div class="hstack justify-content-center gap-[6px]">
-                                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php'
-                                       data-wv-ajax-data='{
-                                               "made":"sub01_01",
-                                               "part":"contract",
-                                               "action":"render_part_form",
-                                               "fields":"cont_form",
-                                               "wr_id":"<?php echo $list[$i]['wr_id']; ?>",
-                                               "contract_id":"<?php echo $cont['id']?>"
-                                               }'
-                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-add-btn">[추가]</a>
+                                    <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                                       data-wv-ajax-data='{"action":"form","made":"sub01_01","part":"contract","field":"admin/cont_form","wr_id":"<?php echo $list[$i]['wr_id']; ?>","contract_id":"<?php echo $cont['id']?>"}'
+                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px],reload:ajax:true"   class="wv-data-list-add-btn">[추가]</a>
                                     </div>
                                 </td>
                         <?php } ?>

@@ -42,26 +42,37 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
             <div class="tab-content">
                 <div class="tab-pane show active" id="daily">
                     <div class="time-section">
-                        <h6>매일</h6>
-                        <div class="time-row">
-                            <span class="time-label">시작</span>
+                        <div class="day-header hstack justify-content-between">
+                            <h6>매일</h6>
                             <?php
-                            $ds = isset($open_time['daily']['start']) ? $open_time['daily']['start'] : array();
-                            echo wv_store_manager_time_select($field_name.'[daily][start][period]', $ds, 'period');
-                            echo wv_store_manager_time_select($field_name.'[daily][start][hour]', $ds, 'hour');
-                            echo '<span>:</span>';
-                            echo wv_store_manager_time_select($field_name.'[daily][start][minute]', $ds, 'minute');
+                            $daily_en = isset($open_time['daily']['enabled']) ? (int)$open_time['daily']['enabled'] : 0;
                             ?>
+                            <div class="form-check form-switch <?php echo $daily_en?'':'disabled'; ?>" data-on-value="설정 함" data-off-value="설정 안함">
+                                <input class="form-check-input" type="checkbox" role="switch" name="<?php echo $field_name; ?>[daily][enabled]" id="<?php echo $field_name; ?>[daily][enabled]" value="1" <?php echo $daily_en?'checked':''; ?> data-day="daily">
+                                <label class="form-check-label" for="<?php echo $field_name; ?>[daily][enabled]"><?php echo $daily_en?'설정 함':'설정 안함'; ?></label>
+                            </div>
                         </div>
-                        <div class="time-row">
-                            <span class="time-label">종료</span>
-                            <?php
-                            $de = isset($open_time['daily']['end']) ? $open_time['daily']['end'] : array();
-                            echo wv_store_manager_time_select($field_name.'[daily][end][period]', $de, 'period');
-                            echo wv_store_manager_time_select($field_name.'[daily][end][hour]', $de, 'hour');
-                            echo '<span>:</span>';
-                            echo wv_store_manager_time_select($field_name.'[daily][end][minute]', $de, 'minute');
-                            ?>
+                        <div class="day-times <?php echo $daily_en?'show':''; ?>" data-times="daily">
+                            <div class="time-row">
+                                <span class="time-label">시작</span>
+                                <?php
+                                $ds = isset($open_time['daily']['start']) ? $open_time['daily']['start'] : array();
+                                echo wv_store_manager_time_select($field_name.'[daily][start][period]', $ds, 'period');
+                                echo wv_store_manager_time_select($field_name.'[daily][start][hour]', $ds, 'hour');
+                                echo '<span>:</span>';
+                                echo wv_store_manager_time_select($field_name.'[daily][start][minute]', $ds, 'minute');
+                                ?>
+                            </div>
+                            <div class="time-row">
+                                <span class="time-label">종료</span>
+                                <?php
+                                $de = isset($open_time['daily']['end']) ? $open_time['daily']['end'] : array();
+                                echo wv_store_manager_time_select($field_name.'[daily][end][period]', $de, 'period');
+                                echo wv_store_manager_time_select($field_name.'[daily][end][hour]', $de, 'hour');
+                                echo '<span>:</span>';
+                                echo wv_store_manager_time_select($field_name.'[daily][end][minute]', $de, 'minute');
+                                ?>
+                            </div>
                         </div>
                     </div>
                 </div>

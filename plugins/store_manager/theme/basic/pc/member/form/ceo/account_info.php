@@ -3,7 +3,9 @@ global $g5;
 ?>
 <div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
     <style>
-        <?php echo $skin_selector?> {}
+        <?php echo $skin_selector?>
+        {
+        }
 
         @media (min-width: 992px) {
         }
@@ -29,64 +31,79 @@ global $g5;
                                     <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $this->manager->plugin_url; ?>/img/arrow_left.png" class="w-[28px]" alt=""></div>
                                 </div>
                                 <div class="col-auto text-center">
-                                    <p class="fs-[14/20/-0.56/600/#0D171B]">매장 전화번호</p>
+                                    <p class="fs-[14/20/-0.56/600/#0D171B]">관리자 정보</p>
                                 </div>
                                 <div class="col"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
+
 
                     <div class="wv-offcanvas-body col">
+ 
 
 
-                        <div class="vstack  " style="row-gap:var(--wv-20)">
+                        <div class="vstack   mt-[19px]" style="row-gap:var(--wv-20)">
                             <div>
-                                <p class="fs-[16/22/-0.64/600/#0D171B]  ">대표번호</p>
-                                <div class="mt-[20px]" style="z-index: 10">
-                                    <?php echo $this->store->store->render_part('tel', 'form'); ?>
+                                <div class="hstack justify-content-between" >
+                                    <p class="fs-[16/22/-0.64/600/#0D171B]  ">관리자명</p>
                                 </div>
-                                <div class="fs-[12/17/-0.48/500/#97989C] mt-[20px] vstack" style="row-gap:var(--wv-8)">
-                                    <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>이미지는 순서대로 고객에게 보여집니다</p></div>
-                                    <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>매장 소개 이미지는 <span class="text-[#0D171B]">매장 외부, 내부, 대표 메뉴 등</span> 내 매장을 <br>잘 나타낼 수 있는 이미지가 좋아요</p></div>
-                                    <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>JPG / PNG 이미지만 업로드 가능합니다</p></div>
+                                <div class="mt-[12px]" style="row-gap:var(--wv-8)">
+                                   <p class="fs-[16/22/-0.64/500/#0D171B]"><?php echo $row['mb_mb_name']; ?></p>
                                 </div>
                             </div>
 
-                            <div class="wv-mx-fit" style="height: 10px;background-color: #efefef"></div>
+                            <div class="wv-mx-fit" style="height: 6px;background-color: #efefef"></div>
 
                             <div>
-                                <p class="fs-[16/22/-0.64/600/#0D171B]  ">추가번호</p>
-                                <div class="mt-[20px]" style="z-index: 10">
-                                    <?php echo $this->store->store->render_part('tel_add', 'form'); ?>
+                                <div class="hstack justify-content-between" >
+                                    <p class="fs-[16/22/-0.64/600/#0D171B]  ">관리자 전화번호</p>
+                                </div>
+                                <div class="mt-[12px]" style="row-gap:var(--wv-8)">
+                                    <p class="fs-[16/22/-0.64/500/#0D171B] ff-montserrat"><?php echo $row['mb_mb_hp']?$row['mb_mb_hp']:'미등록'; ?></p>
                                 </div>
                             </div>
 
-                            <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
-                               data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"ceo/account_config","wr_id":"<?php echo $current_member_wr_id; ?>"}'
-                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" ></a>
+
                         </div>
+
+                        <div class="fs-[12/17/-0.48/500/#97989C] mt-[12px] vstack" style="row-gap:var(--wv-8)">
+                            <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>사업자등록증이 변경되었나요? 고객센터를 통해 진행해 주세요.</p></div>
+                            <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>등록된 사업자 정보와 실제 관리자 정보가 상이한 경우, <br>정확한 확인을 위해 고객센터로 문의해 주세요. </p></div>
+                        </div>
+
                     </div>
 
                     <div class="mt-auto col-auto pb-[50px] hstack gap-[6px]">
-                        <button type="submit" class="w-full h-[54px] fs-[16/22/-0.64/700/#FFF] wv-submit-btn transition " style="border:0;border-radius: var(--wv-4)">완료</button>
+                        <a href="#" class="w-full h-[54px] fs-[16/22/-0.64/700/#FC5555]   wv-flex-box  transition " style="border: var(--wv-1) solid #fc5555;background: #fff;">관리자 변경 요청하기</a>
                     </div>
+
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+
+
         $(document).ready(function () {
+            $(".member_leaver",$skin).click(function (e) {
+                if(confirm('정말 회원에서 탈퇴 하시겠습니까?')){
+                    return true;
+                }else{
+                    e.stopImmediatePropagation(); // 다른 click 핸들러 실행 안됨
+                    e.stopPropagation(); // 다른 click 핸들러 실행 안
+                }
+            })
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
-                // reload: false,
+                reload: false,
                 // reload_ajax:true,
-                // success: function () {
-                //     var $offcanvas = $skin.closest('.wv-offcanvas');
-                //     $offcanvas.offcanvas('hide');
-                // }
+                success: function () {
+                    var $offcanvas = $skin.closest('.wv-offcanvas');
+                    $offcanvas.offcanvas('hide');
+                }
             })
         })
     </script>

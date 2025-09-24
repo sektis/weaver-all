@@ -1,5 +1,3 @@
-
-
 <?php
 global $g5;
 ?>
@@ -25,12 +23,15 @@ global $g5;
                 <?php echo $this->store->basic->render_part('wr_id', 'form');; ?>
                 <div class="vstack h-100 pt-[10px]" style="">
                     <div class="wv-offcanvas-header col-auto">
-                        <div class="row align-items-center">
-                            <div class="col"></div>
-                            <div class="col-auto"><p>계약 담당자 관리</p></div>
-
-                            <div class="col text-end">
-                                <button type="button" class="btn" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+                        <div class=" ">
+                            <div class="row align-items-center g-0">
+                                <div class="col">
+                                    <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $this->manager->plugin_url; ?>/img/arrow_left.png" class="w-[28px]" alt=""></div>
+                                </div>
+                                <div class="col-auto text-center">
+                                    <p class="fs-[14/20/-0.56/600/#0D171B]">(사장님) <?php echo $row['wr_id']?'수정':'신규등록' ?></p>
+                                </div>
+                                <div class="col"></div>
                             </div>
                         </div>
                     </div>
@@ -40,17 +41,17 @@ global $g5;
                     <div class="wv-offcanvas-body col">
 
 
-                        <div class="vstack  " style="row-gap:var(--wv-20)">
-                            <input type="hidden" name="member[is_manager]" value="1">
-                            <?php echo $this->store->member->render_part('mb_id','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_password','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_name','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_email','form',array('row'=>$row)); ?>
-                        </div>
+                        <input type="hidden" name="member[is_ceo]" value="1">
+                        <?php echo $this->store->member->render_part('mb_id','form'); ?>
+                        <?php echo $this->store->member->render_part('mb_password','form'); ?>
+                        <?php echo $this->store->member->render_part('mb_name','form'); ?>
+                        <?php echo $this->store->member->render_part('mb_hp','form'); ?>
+                        <?php echo $this->store->member->render_part('mb_email','form'); ?>
                     </div>
 
-                    <div class="mt-auto pb-[50px] ">
-                        <button type="submit" class="wv-submit-btn transition ">확인</button>
+
+                    <div class="mt-auto pb-[50px]">
+                        <button type="submit" class="w-full py-[14px] fs-[14//-0.56/700/#FFF] wv-submit-btn transition mt-[22px]" style="border:0; ;border-radius: var(--wv-4)">확인</button>
                     </div>
                 </div>
             </form>

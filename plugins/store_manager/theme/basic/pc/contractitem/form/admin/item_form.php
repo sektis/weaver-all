@@ -1,5 +1,3 @@
-
-
 <?php
 global $g5;
 ?>
@@ -27,7 +25,7 @@ global $g5;
                     <div class="wv-offcanvas-header col-auto">
                         <div class="row align-items-center">
                             <div class="col"></div>
-                            <div class="col-auto"><p>계약 담당자 관리</p></div>
+                            <div class="col-auto"><p>계약 상품 관리</p></div>
 
                             <div class="col text-end">
                                 <button type="button" class="btn" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
@@ -38,19 +36,15 @@ global $g5;
                     <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
 
                     <div class="wv-offcanvas-body col">
+                        <div class="vstack" style="row-gap: var(--wv-16)">
+                            <?php echo $this->store->contractitem->render_part('*','form'); ?>
 
-
-                        <div class="vstack  " style="row-gap:var(--wv-20)">
-                            <input type="hidden" name="member[is_manager]" value="1">
-                            <?php echo $this->store->member->render_part('mb_id','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_password','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_name','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_email','form',array('row'=>$row)); ?>
                         </div>
+
                     </div>
 
-                    <div class="mt-auto pb-[50px] ">
-                        <button type="submit" class="wv-submit-btn transition ">확인</button>
+                    <div class="mt-auto pb-[50px]">
+                        <button type="submit" class="wv-submit-btn transition "  >확인</button>
                     </div>
                 </div>
             </form>
@@ -61,7 +55,12 @@ global $g5;
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
-
+                // reload: false,
+                // reload_ajax:true,
+                // success: function () {
+                //     var $offcanvas = $skin.closest('.wv-offcanvas');
+                //     $offcanvas.offcanvas('hide');
+                // }
             })
         })
     </script>

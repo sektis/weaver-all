@@ -51,11 +51,11 @@ global $g5;
 
                             <div class="col-box" style="row-gap: var(--wv-20)">
                                 <div class="hstack align-items-start" style="gap:var(--wv-12)">
+                                    <?php if($row['images'][0]){ ?>
                                     <div class="w-[80px] h-[80px] col-auto">
-                                        <?php if($row['images'][0]){ ?>
-                                            <img src="<?php echo $row['images'][0]['path']; ?>" alt="" class="wh-100 object-fit-cover">
-                                        <?php } ?>
+                                        <img src="<?php echo $row['images'][0]['path']; ?>" alt="" class="wh-100 object-fit-cover">
                                     </div>
+                                    <?php } ?>
                                     <div class="col">
                                         <p class="fs-[16/22/-0.64/600/#0D171B]" id="<?php echo $skin_id; ?>-name"><?php echo $row['name']; ?></p>
                                         <div class="fs-[14/20/-0.56/500/#0D171B] mt-[6px]">

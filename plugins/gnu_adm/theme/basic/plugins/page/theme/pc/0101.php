@@ -35,7 +35,8 @@ $list = $result['list'];
 <div class="wv-vstack">
 
     <div class="page-top-menu">
-        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part_form&part=member&fields=ceo_form'
+        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+           data-wv-ajax-data='{"action":"form","made":"member","part":"member","field":"admin/ceo_form","wr_id":""}'
            data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]" class="top-menu-btn"><i class="fa-solid fa-plus"></i> 신규등록</a>
     </div>
 
@@ -91,9 +92,11 @@ $list = $result['list'];
                                 <td><?php echo get_text($list[$i]['mb_mb_datetime']); ?></td>
                                 <td>
                                     <div class="hstack justify-content-center gap-[6px]">
-                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=delete&wr_id=<?php echo $list[$i]['wr_id']; ?>'
-                                           class="wv-data-list-delete-btn  ">[삭제]</a>
-                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part_form&part=member&fields=ceo_form&wr_id=<?php echo $list[$i]['wr_id']; ?>'
+                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                                           data-wv-ajax-data='{ "action":"delete","made":"member","wr_id":"<?php echo $list[$i]; ?>"}'
+                                           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]" class="wv-data-list-delete-btn  ">[삭제]</a>
+                                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                                           data-wv-ajax-data='{"action":"form","made":"member","part":"member","field":"admin/ceo_form","wr_id":"<?php echo $list[$i]['wr_id']; ?>"}'
                                            data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="wv-data-list-edit-btn">[수정]</a>
                                     </div>
                                 </td>

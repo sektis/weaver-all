@@ -1,5 +1,3 @@
-
-
 <?php
 global $g5;
 ?>
@@ -40,17 +38,11 @@ global $g5;
                     <div class="wv-offcanvas-body col">
 
 
-                        <div class="vstack  " style="row-gap:var(--wv-20)">
-                            <input type="hidden" name="member[is_manager]" value="1">
-                            <?php echo $this->store->member->render_part('mb_id','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_password','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_name','form',array('row'=>$row)); ?>
-                            <?php echo $this->store->member->render_part('mb_email','form',array('row'=>$row)); ?>
-                        </div>
+
                     </div>
 
-                    <div class="mt-auto pb-[50px] ">
-                        <button type="submit" class="wv-submit-btn transition ">확인</button>
+                    <div class="mt-auto pb-[50px]">
+                        <button type="submit" class="wv-submit-btn transition "  >확인</button>
                     </div>
                 </div>
             </form>
@@ -61,7 +53,12 @@ global $g5;
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
-
+                // reload: false,
+                // reload_ajax:true,
+                // success: function () {
+                //     var $offcanvas = $skin.closest('.wv-offcanvas');
+                //     $offcanvas.offcanvas('hide');
+                // }
             })
         })
     </script>

@@ -112,45 +112,52 @@ $(document).ready(function () {
     });
 
 
-    function getScrollbarWidth() {
-        const scrollDiv = document.createElement('div')
-        scrollDiv.style.position = 'absolute'
-        scrollDiv.style.top = '-9999px'
-        scrollDiv.style.width = '50px'
-        scrollDiv.style.height = '50px'
-        scrollDiv.style.overflow = 'scroll'
-        document.body.appendChild(scrollDiv)
 
-        const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth
-        document.body.removeChild(scrollDiv)
-        return scrollbarWidth
+    function wv_getScrollbarWidth() {
+        if ($(document).height() <= $(window).height()) {
+            return 0;
+        }
+
+        var outer = document.createElement('div');
+        var inner = document.createElement('div');
+        var widthNoScroll;
+        var widthWithScroll;
+
+        outer.style.visibility = 'hidden';
+        outer.style.width = '100px';
+        document.body.appendChild(outer);
+
+        widthNoScroll = outer.offsetWidth;
+
+        // Force scrollbars
+        outer.style.overflow = 'scroll';
+
+        // Add inner div
+        inner.style.width = '100%';
+        outer.appendChild(inner);
+
+        widthWithScroll = inner.offsetWidth;
+
+        // Remove divs
+        outer.parentNode.removeChild(outer);
+
+        return widthNoScroll - widthWithScroll;
     }
-    const getLiveScrollbarWidth = () =>
-        Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+
     document.addEventListener('show.bs.offcanvas', function (e) {
         const offcanvasEl = e.target
-        const scrollbarWidth = getLiveScrollbarWidth()
+        const scrollbarWidth = wv_getScrollbarWidth();
 
         // shown 시점이 아니라 show 시점에 미리 패딩 부여
         var move_x = scrollbarWidth/2*-1;
-        $(offcanvasEl).find('.offcanvas-body').css('transform',`translateX(${move_x}px)`);
+        // $(offcanvasEl).find('.offcanvas-body').css('transform',`translateX(${move_x}px)`);
         // offcanvasEl.style.paddingRight = `${scrollbarWidth}px`
     })
 
-    $(document).on('show.bs.offcanvas', '.offcanvas', function() {
-        // 이미 열린 offcanvas가 있는지 확인
-        var openOffcanvas = $('.offcanvas.show').length;
 
-        if(openOffcanvas > 0) {
-            // 두 번째 이상의 offcanvas에 특별한 클래스 추가
-            $(this).addClass('offcanvas-nested');
-        }
-    });
 
-    $(document).on('hidden.bs.offcanvas', '.offcanvas', function() {
 
-        $(this).removeClass('offcanvas-nested');
-    });
+
 
     $(document).on('hide.bs.modal', function(e) {
         var $modal = $(e.target);
@@ -606,8 +613,13 @@ function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
     var modal = new bootstrap.Modal(modalEl[0], modal_options);
     modal.show();
 
-    $(modalEl).on("hidden.bs.modal", function () {
-        modalEl.remove();
+
+
+    $(modalEl).on("hidden.bs.modal", function (e) {
+        // 이벤트가 현재 요소에서 발생한 경우에만 제거
+        if (e.target === this) {
+            modalEl.remove();
+        }
     });
 
     // AJAX 요청 설정
@@ -691,8 +703,11 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
 
     offcanvas.show();
 
-    $(offcanvasEl).on("hidden.bs.offcanvas", function () {
-        offcanvasEl.remove();
+    $(offcanvasEl).on("hidden.bs.offcanvas", function (e) {
+        // 이벤트가 현재 요소에서 발생한 경우에만 제거
+        if (e.target === this) {
+            offcanvasEl.remove();
+        }
     });
 
     // if(processedOptions.reload_ajax=='current'){

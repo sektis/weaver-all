@@ -1491,6 +1491,7 @@ class StoreManager extends Makeable{
         } else {
             $sql = "SELECT * FROM `{$write_table}` WHERE wr_id = {$wr_id} LIMIT 1";
         }
+
         $row = sql_fetch($sql);
         return $row ? $row : array();
     }

@@ -70,9 +70,36 @@
   .offcanvas {
     transition: transform 0.5s ease-in-out !important;
   }
-  .offcanvas-nested + .offcanvas-backdrop,
-  .offcanvas-nested .offcanvas-backdrop {
+  /*.offcanvas-nested + .offcanvas-backdrop,*/
+  /*.offcanvas-nested .offcanvas-backdrop {*/
+  /*  background-color: transparent !important;*/
+  /*}*/
+  .offcanvas-backdrop ~ .offcanvas-backdrop{
     background-color: transparent !important;
+  }
+  .offcanvas-backdrop{
+    max-width: 100%;
+  }
+  .wv-offcanvas .offcanvas:not(.show){
+     height: 0!important;
+    opacity: 0;
+    overflow-y: hidden;
+    transition: opacity .2s ease-in-out !important;
+  }
+  .wv-offcanvas .offcanvas.show{
+
+    opacity: 1;
+    transition: opacity .4s ease-in-out !important;
+  }
+
+  .wv-offcanvas .offcanvas {
+    transition: all 1s ease-in-out; /* 기본 transition */
+  }
+
+  .wv-offcanvas .offcanvas.show {
+    max-height: 500px;
+    opacity: 1;
+    transition: all 1s ease-in-out 1s; /* show될 때만 딜레이 */
   }
   /*.wv-offcanvas-body{overflow-y: auto;overflow-x: hidden}*/
   /*.offcanvas-body:has(.wv-offcanvas-body){*/

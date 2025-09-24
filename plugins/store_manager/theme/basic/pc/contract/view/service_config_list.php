@@ -35,6 +35,12 @@ $rows = $result['list'];
                  
 
 
+                    <div class="fs-[12/17/-0.48/500/#97989C] wv-flex-box justify-content-start h-[35px] bg-[#efefef] position-relative" style="padding: var(--wv-9) var(--wv-12)">
+                        <div><img src="<?php echo $this->manager->plugin_url; ?>/img/vec1.png" class="w-[14px]" alt=""></div>
+                        <p>고객이 좋아하는 서비스가 궁금하다면?</p>
+                        <i class="fa-solid fa-angle-right ms-auto"></i>
+                        <a href="#" class="stretched-link"></a>
+                    </div>
 
                 </div>
             </form>

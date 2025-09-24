@@ -41,7 +41,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
     protected $checkbox_patterns = array('is_', 'use_');
 
-    protected $ajax_data_field = array('made' ,'part' ,'fields','wr_id','size' );
+    protected $ajax_data_field = array('action','made','part','field','wr_id','size');
 
     public function set_context($manager, $bo_table, $part_key, $plugin_theme_path = ''){
         $this->manager           = $manager;
@@ -194,7 +194,9 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         }
 
         $tpl = $this->get_template_path($column, $type);
-        if (!$tpl) return '';
+        if (!$tpl) {
+            wv_error("{$type} / {$column} not found",1);
+        }
 
         $row = (isset($vars['row']) && is_array($vars['row'])) ? $vars['row'] : array();
 

@@ -84,10 +84,13 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
                         </div>
                     </div>
-                    <div class="" style="row-gap: var(--wv-12)">
+                    <div class="position-relative" style="row-gap: var(--wv-12)">
                         <div class="flex   h-[33px] px-[88px] py-[8px] justify-center items-center gap-[10px] rounded-[6px] fs-[12/17/-0.48/500/#97989C] bg-[#f6f6f6]">
                             상세 날짜 및 시간 설정하기
                         </div>
+                        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                           data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"biz","field":"ceo/holiday","wr_id":"<?php echo $current_store_wr_id; ?>"}'
+                           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]" class="stretched-link"></a>
                     </div>
                 </div>
             </div>

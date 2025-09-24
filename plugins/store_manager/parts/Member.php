@@ -48,13 +48,47 @@ class Member extends StoreSchemaBase{
 
     public function before_set(&$data) {
         // 좌표 유효성 검사
-        global $config;
+        global $config,$is_admin,$member;
+
+
+        $can_changer_member_password=false;
+        if($is_admin){
+            $can_changer_member_password=true;
+        }
 
        if(!$data['mb_id'])return;
+        $wr_id = $data['wr_id'];
+       if($wr_id){
+           $write_row = $this->manager->fetch_write_row($wr_id);
 
-        if($config['cf_admin']==$data['mb_id']){
-            alert('최고관리자 정보변경금지');
-        }
+           if( $data['mb_id']!=$write_row['mb_id']){
+//            dd($data['mb_id'].'++'.$write_row['mb_id']);
+               alert('id가 일치하지 않습니다.');
+           }
+           if($data['mb_id']==$config['cf_admin']){
+               alert('최고관리자 정보 변경 금지');
+           }
+
+           if($data['mb_password_new']){
+                //
+               if(!$can_changer_member_password){
+                   if(!check_password($data['mb_password'],$write_row['mb_mb_password'])){
+                       alert('현재 비밀번호 불일치');
+                   }
+                   if($data['mb_password_new']!==$write_row['mb_password_re']){
+                       alert('새 비밀번호 확인 불일치');
+                   }
+
+               }
+
+
+               $data['mb_password'] = $data['mb_password_new'];
+           }
+
+
+       }else{
+           $data['mb_password'] = $data['mb_password_new'];
+       }
 
         $mb= get_member($data['mb_id']);
 
@@ -65,8 +99,8 @@ class Member extends StoreSchemaBase{
                 $chk = sql_fetch("select wr_id from $write_table where mb_id='{$mb['mb_id']}'");
 
                 if($chk['wr_id']){
-//                    alert('이미 존재하는 아이디입니다.');
-                    $data['wr_id'] = $wr_id= $chk['wr_id'];
+                    alert('이미 존재하는 아이디입니다.');
+//                    $data['wr_id'] = $wr_id= $chk['wr_id'];
                 }
 
             }
@@ -81,23 +115,17 @@ class Member extends StoreSchemaBase{
             }
         }
 
+
+
+
+
         $result = wv_write_member($data);
         if($result!==true){
             alert($result);
         }
 
 
-        $mb= get_member($data['mb_id']);
-        $data['mb_id']=$mb['mb_id'];
-        $data['wr_name']=$mb['mb_name'];
-        $data['wr_password']=$mb['mb_password'];
 
-
-        $write_row = $this->manager->fetch_write_row($wr_id);
-        if($wr_id and ($data['mb_id']!=$write_row['mb_id'])){
-            dd($data['mb_id'].'++'.$write_row['mb_id']);
-            alert('id는 변경할 수 없습니다.');
-        }
 
 
 

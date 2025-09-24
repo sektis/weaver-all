@@ -434,7 +434,7 @@ $(document).ready(function () {
      * wv-password-toggle 클래스 기반 비밀번호 토글 기능
      * loaded() 함수 사용, form-floating 환경 완벽 지원
      */
-    $("body").loaded('.wv-password-toggle', function() {
+    $(document).loaded('.wv-password-toggle', function() {
         const $input = $(this);
 
         // 이미 초기화된 경우 스킵
