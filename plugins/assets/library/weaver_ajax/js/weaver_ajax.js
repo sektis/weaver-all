@@ -11,6 +11,8 @@ $(function(){
 
                 if(isset(opts.reload_ajax)){
                     opts.reload_ajax = jqForm;
+                }else{
+                    opts.reload_ajax_none = jqForm;
                 }
 
                 // 빈 파일 input 제거 (전역 처리)
@@ -62,46 +64,7 @@ $(function(){
     }
 
     // 폼 기준 부모 리로드 처리 함수
-    function wv_handle_parent_reload_from_form($formElement) {
-        console.log('Finding parent from form element:', $formElement);
 
-        // 1. offcanvas 부모 찾기
-        var $parentOffcanvas = $formElement.closest('.offcanvas, .wv-offcanvas');
-        if ($parentOffcanvas.length) {
-            console.log('Found parent offcanvas:', $parentOffcanvas);
-
-            // DOM 요소로 변환해서 attribute 확인
-            var parentOffcanvasElement = $parentOffcanvas[0];
-            if (parentOffcanvasElement.hasAttribute('data-wv-reload-url')) {
-                var parentId = parentOffcanvasElement.getAttribute('id');
-                if (parentId) {
-                    console.log('Reloading offcanvas:', parentId);
-                    wv_reload_offcanvas(parentId);
-                    return;
-                }
-            }
-        }
-
-        // 2. modal 부모 찾기
-        var $parentModal = $formElement.closest('.modal, .wv-modal');
-        if ($parentModal.length) {
-            console.log('Found parent modal:', $parentModal);
-
-            // DOM 요소로 변환해서 attribute 확인
-            var parentModalElement = $parentModal[0];
-            if (parentModalElement.hasAttribute('data-wv-reload-url')) {
-                var parentId = parentModalElement.getAttribute('id');
-                if (parentId) {
-                    console.log('Reloading modal:', parentId);
-                    wv_reload_modal(parentId);
-                    return;
-                }
-            }
-        }
-
-        console.log('No suitable parent found, falling back to location.reload()');
-        location.reload();
-    }
 
     $(document).ajaxError(function(event, jqxhr, settings){
         var msg,url;
@@ -241,6 +204,19 @@ $(function(){
             }
         }
 
+        // ajaxForm에서 온 요청인 경우 부모의 reload count 증가
+        if(isset(settings.reload_ajax_none)){
+            var $formElement = settings.reload_ajax_none;
+
+            // 폼 기준으로 부모 중에 [data-wv-reload-count] 속성이 있는 요소 찾기
+            var $parentWithCount = $formElement.closest('[data-wv-reload-count]');
+
+            if($parentWithCount.length){
+                var currentCount = parseInt($parentWithCount.attr('data-wv-reload-count') || '0');
+                $parentWithCount.attr('data-wv-reload-count', currentCount + 1);
+            }
+        }
+
         return true;
     });
 
@@ -254,7 +230,7 @@ $(function(){
         try {
             var parsed_json = JSON.parse(xhr.responseText);
 
-            if( isset(parsed_json.reload) && parsed_json.reload==true){
+            if( isset(parsed_json.reload) && parsed_json.reload===true){
                 reload = true;
             }
         } catch (e) {
@@ -265,14 +241,14 @@ $(function(){
             reload=settings.reload;
         }
 
-        if(isset(settings.reload_ajax )){
+        if(isset(settings.reload_ajax && settings.reload_ajax)){
 
-            if(settings.reload_ajax){
-                var $formElement = settings.reload_ajax;
-                // 폼 기준으로 부모 offcanvas/modal 찾아서 리로드
-                wv_handle_parent_reload($formElement);
-               reload=false;
-            }
+
+            var $formElement = settings.reload_ajax;
+            // 폼 기준으로 부모 offcanvas/modal 찾아서 리로드
+            wv_handle_parent_reload($formElement);
+           reload=false;
+
 
         }
 

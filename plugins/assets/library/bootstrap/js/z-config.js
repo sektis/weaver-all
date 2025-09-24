@@ -176,8 +176,11 @@ function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
         // modal/offcanvas 닫힐 때: parent-elem 사용
         var parentElemId = $currentElement.data('parent-elem');
 
+        var reloadCount = parseInt($currentElement.attr('data-wv-reload-count') || '0');
 
-
+        if(reloadCount==0){
+            return false;
+        }
 
 
         if (parentElemId) {
@@ -228,7 +231,7 @@ function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
 
     // 적절한 부모를 찾지 못하면 페이지 새로고침
     // alert(1)
-    // location.reload();
+    location.reload();
 }
 
 // 옵션 파싱 공통 함수
@@ -595,6 +598,8 @@ function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
     if (processedOptions.reload_ajax === 'on_close') {
         modalEl.attr('data-need-refresh', true);
     }
+    modalEl.attr('data-wv-reload-count',0);
+
 
     $modal_target.append(modalEl);
 
@@ -669,8 +674,10 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
     offcanvasEl.data('wv-reload-data', data); // offcanvas가 아니라 offcanvasEl
 
     if (processedOptions.reload_ajax === 'on_close') {
+
         offcanvasEl.attr('data-need-refresh', true);
     }
+    offcanvasEl.attr('data-wv-reload-count',0);
 
     $offcanvas_target.append(offcanvasEl);
 
@@ -755,7 +762,7 @@ function wv_reload_offcanvas(offcanvasId) {
     }
 
     $.ajax(ajaxSettings);
-    console.log($offcanvas)
+
     return true;
 }
 

@@ -74,10 +74,10 @@ global $g5;
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
                 reload:false,
-                reload_ajax:true,
+
                 success: function () {
-                    // var $offcanvas =  $skin.closest('.wv-offcanvas');
-                    // $offcanvas.offcanvas('hide');
+                    var $offcanvas =  $skin.closest('.wv-offcanvas');
+                    $offcanvas.offcanvas('hide');
                 }
             })
         })
