@@ -69,8 +69,6 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
         <i class="fa-solid fa-location-crosshairs"></i>
     </button>
 
-    <!-- 카카오맵 API 및 클러스터링 라이브러리 로드 -->
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<?php echo $config['cf_kakao_js_apikey']?>&libraries=clusterer,services"></script>
 
     <!-- 카카오맵 컨테이너 -->
     <div id="<?php echo $map_id; ?>" class="kakao-map"></div>

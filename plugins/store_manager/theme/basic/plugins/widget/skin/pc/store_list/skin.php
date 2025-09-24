@@ -17,7 +17,6 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
         // Map 옵션 설정
         $map_options = array(
-            'height_wrapper' => "$skin_selector",
             'clustering' => true,
             'map_id' => 'store-map-main',
             'initial_level' => 6,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
