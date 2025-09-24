@@ -11,16 +11,11 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 // 전달받은 옵션 처리
 $map_options = isset($data) && is_array($data) ? $data : array();
-$height_selector = isset($map_options['height_wrapper']) ? $map_options['height_wrapper'] : '#content-wrapper';
-$enable_clustering = isset($map_options['clustering']) ? $map_options['clustering'] : true;
 $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map-' . uniqid();
-$initial_level = isset($map_options['initial_level']) ? intval($map_options['initial_level']) : 8;
-$min_level = isset($map_options['min_level']) ? intval($map_options['min_level']) : 1;
-$max_level = isset($map_options['max_level']) ? intval($map_options['max_level']) : 14;
 ?>
-<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-location-map-skin position-relative h-100" style="<?php echo isset($data['margin_top'])?"margin-top:{$data['margin_top']};":""; ?>">
+<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-location-map-skin position-relative h-100" style="width: 100%; position: relative; ">
     <style>
-        <?php echo $skin_selector?> { width: 100%; position: relative;    }
+        <?php echo $skin_selector?> {}
         <?php echo $skin_selector?> .kakao-map { width: 100%; height: 100%; }
         <?php echo $skin_selector?> .current-location-btn { position: absolute; bottom: 20px; right: 20px; z-index: 1000; width: 44px; height: 44px; background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: var(--wv-6); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); backdrop-filter: blur(4px); transition: all 0.2s; }
         <?php echo $skin_selector?> .current-location-btn:hover { background: #f8f9fa; transform: scale(1.05); }
@@ -30,129 +25,37 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
 
         /* 매장 정보 패널 스타일 */
         <?php echo $skin_selector?> .store-info-panel {display: none;position:absolute; left:50%;bottom:var(--wv-17);z-index:1001;transform: translateX(-50%);}
-
         <?php echo $skin_selector?> .store-info-panel.active {display: block;}
-        <?php echo $skin_selector?> .store-list-btn {transition: all 0.3s ease;width: var(--wv-119);height: var(--wv-33);border-radius: var(--wv-43);gap: var(--wv-4);display: inline-flex;
-                                        padding: var(--wv-8) var(--wv-18);
-                                        justify-content: center;
-                                        align-items: center;
-                                        font-size: var(--wv-12);font-weight: 500;background-color: #0d171b;color:#fff;
-                                        position:absolute; left:50%;bottom:var(--wv-17); ;border-top:1px solid #ddd; ;z-index:1000;transform: translateX(-50%);
-                                    }
-
+        <?php echo $skin_selector?> .store-list-btn {transition: all 0.3s ease;width: var(--wv-119);height: var(--wv-33);border-radius: var(--wv-43);gap: var(--wv-4);display: inline-flex;padding: var(--wv-8) var(--wv-18);justify-content: center;align-items: center;font-size: var(--wv-12);font-weight: 500;background-color: #0d171b;color:#fff;                                        position:absolute; left:50%;bottom:var(--wv-17); ;border-top:1px solid #ddd; ;z-index:1000;transform: translateX(-50%);}
         @keyframes wv-map-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         /* 매장 목록 패널 스타일 */
-        <?php echo $skin_selector?> .store-list {
-                                        position: absolute;
-                                        top: 0;
-                                        left: 0;
-                                        width: 100%;
-                                        height: 100%;
-                                        background-color: rgba(255, 255, 255, 0.95);
-                                        z-index: 2001;
-                                        overflow-y: auto;
-                                        backdrop-filter: blur(4px);
-                                    }
+        <?php echo $skin_selector?> .store-list {position: absolute;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(255, 255, 255, 0.95);z-index: 2001;overflow-y: auto;backdrop-filter: blur(4px);}
 
-        <?php echo $skin_selector?> .store-list-header {
-                                        position: sticky;
-                                        top: 0;
-                                        background-color: white;
-                                        padding: var(--wv-20);
-                                        border-bottom: 1px solid #ddd;
-                                        display: flex;
-                                        justify-content: space-between;
-                                        align-items: center;
-                                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                    }
+        <?php echo $skin_selector?> .store-list-header {position: sticky;top: 0;background-color: white;padding: var(--wv-20);border-bottom: 1px solid #ddd;display: flex;justify-content: space-between;align-items: center;box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
 
-        <?php echo $skin_selector?> .store-list-header h3 {
-                                        margin: 0;
-                                        font-size: var(--wv-18);
-                                        font-weight: 600;
-                                        color: #333;
-                                    }
+        <?php echo $skin_selector?> .store-list-header h3 {margin: 0;font-size: var(--wv-18);font-weight: 600;color: #333;}
 
-        <?php echo $skin_selector?> .store-list-close {
-                                        background: none;
-                                        border: none;
-                                        font-size: var(--wv-24);
-                                        cursor: pointer;
-                                        color: #666;
-                                        width: var(--wv-40);
-                                        height: var(--wv-40);
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        border-radius: 50%;
-                                        transition: all 0.2s;
-                                    }
+        <?php echo $skin_selector?> .store-list-close {background: none;border: none;font-size: var(--wv-24);cursor: pointer;color: #666;width: var(--wv-40);height: var(--wv-40);display: flex;align-items: center;justify-content: center;border-radius: 50%;transition: all 0.2s;}
 
-        <?php echo $skin_selector?> .store-list-close:hover {
-                                        background-color: #f0f0f0;
-                                        color: #333;
-                                    }
+        <?php echo $skin_selector?> .store-list-close:hover {background-color: #f0f0f0;color: #333;}
 
-        <?php echo $skin_selector?> .store-list-content {
-                                        padding: var(--wv-20);
-                                    }
-         <?php echo $skin_selector?> .store-list {
-             position: absolute;
-             top: 0;
-             left: 0;
-             width: 100%;
-             height: 100%;
-             background-color: rgba(255, 255, 255, 0.95);
-             z-index: 2001;
-             overflow-y: auto;
-             backdrop-filter: blur(4px);
-         }
+        <?php echo $skin_selector?> .store-list-content {padding: var(--wv-20);}
+         <?php echo $skin_selector?> .store-list {position: absolute;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(255, 255, 255, 0.95);z-index: 2001;overflow-y: auto;backdrop-filter: blur(4px);}
 
-        <?php echo $skin_selector?> .store-list-header {
-                                        position: sticky;
-                                        top: 0;
-                                        background-color: white;
-                                        padding: var(--wv-20);
-                                        border-bottom: 1px solid #ddd;
-                                        display: flex;
-                                        justify-content: space-between;
-                                        align-items: center;
-                                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                    }
+        <?php echo $skin_selector?> .store-list-header {position: sticky;top: 0;background-color: white;padding: var(--wv-20);border-bottom: 1px solid #ddd;display: flex;justify-content: space-between;align-items: center;box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
 
-        <?php echo $skin_selector?> .store-list-header h3 {
-                                        margin: 0;
-                                        font-size: var(--wv-18);
-                                        font-weight: 600;
-                                        color: #333;
-                                    }
+        <?php echo $skin_selector?> .store-list-header h3 {margin: 0;font-size: var(--wv-18);font-weight: 600;color: #333;}
 
-        <?php echo $skin_selector?> .store-list-close {
-                                        background: none;
-                                        border: none;
-                                        font-size: var(--wv-24);
-                                        cursor: pointer;
-                                        color: #666;
-                                        width: var(--wv-40);
-                                        height: var(--wv-40);
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        border-radius: 50%;
-                                        transition: all 0.2s;
-                                    }
+        <?php echo $skin_selector?> .store-list-close {background: none;border: none;font-size: var(--wv-24);cursor: pointer;color: #666;width: var(--wv-40);height: var(--wv-40);display: flex;align-items: center;justify-content: center;border-radius: 50%;transition: all 0.2s;}
 
-        <?php echo $skin_selector?> .store-list-close:hover {
-                                        background-color: #f0f0f0;
-                                        color: #333;
-                                    }
+        <?php echo $skin_selector?> .store-list-close:hover {background-color: #f0f0f0;color: #333;}
 
-        <?php echo $skin_selector?> .store-list-content {
-                                        padding: var(--wv-20);
-                                    }
+        <?php echo $skin_selector?> .store-list-content {padding: var(--wv-20);}
+
         @media (max-width: 991.98px) {
-        <?php echo $skin_selector?> .current-location-btn { bottom: 15px; right: 15px; width: 40px; height: 40px; }
-        <?php echo $skin_selector?> .current-location-btn i { font-size: 16px; }
+            <?php echo $skin_selector?> .current-location-btn { bottom: 15px; right: 15px; width: 40px; height: 40px; }
+            <?php echo $skin_selector?> .current-location-btn i { font-size: 16px; }
         }
     </style>
 
@@ -193,9 +96,7 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
     <script>
         // 카카오맵 라이브러리 로드 확인
         function checkKakaoLibraries() {
-
             if (typeof kakao !== 'undefined' && kakao.maps && typeof kakao.maps.MarkerClusterer === 'function') {
-
                 return true;
             } else {
                 return false;
@@ -205,12 +106,11 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
         $(document).ready(function(){
             var $skin = $("<?php echo $skin_selector?>");
             var mapId = '<?php echo $map_id; ?>';
-            var heightSelector = '<?php echo $height_selector; ?>';
-            var initialLevel = <?php echo $initial_level; ?>;
-            var minLevel = <?php echo $min_level; ?>;
-            var maxLevel = <?php echo $max_level; ?>;
+            var initialLevel = <?php echo isset($map_options['initial_level']) ? intval($map_options['initial_level']) : 8; ?>;
+            var minLevel = <?php echo isset($map_options['min_level']) ? intval($map_options['min_level']) : 1; ?>;
+            var maxLevel = <?php echo isset($map_options['max_level']) ? intval($map_options['max_level']) : 14; ?>;
+            var isClusterEnabled = <?php echo (isset($map_options['clustering']) ? $map_options['clustering'] : false) ? 'true' : 'false'; ?>;
             var map, clusterer;
-            var isClusterEnabled = <?php echo $enable_clustering ? 'true' : 'false'; ?>;
             var markers = [];
             var selectedMarkerId = null;
 
@@ -226,20 +126,10 @@ $max_level = isset($map_options['max_level']) ? intval($map_options['max_level']
                 isClusterEnabled = false;
             }
 
-            // 지도 높이 설정
-            function setMapHeight() {
-                var $heightWrapper = $(heightSelector);
-                if ($heightWrapper.length) {
-                    var wrapperHeight = $heightWrapper.outerHeight();
-                    var currentHeight = wrapperHeight > 0 ? wrapperHeight : 400;
-                    // $skin.css('height', currentHeight + 'px');
-                }
-            }
+
 
             // 지도 초기화
             function initMap() {
-                setMapHeight();
-
                 var mapContainer = $skin.find('.kakao-map')[0];
                 var mapOption = {
                     center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심점

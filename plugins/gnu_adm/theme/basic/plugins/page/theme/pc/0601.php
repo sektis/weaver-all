@@ -12,7 +12,8 @@ $page_title = '계약 및 상품 설정';
     <div class="content-inner-wrapper">
         <div class="hstack justify-content-between">
             <p class="fs-[18/25/-0.72/600/#0D171B] ff-Pretendard">계약 담당자 관리</p>
-            <a href="#" class="top-menu-btn" data-wv-ajax-url='<?php echo wv()->store_manager->made()->plugin_url?>/ajax.php?made=member&action=render_part_form&part=member&fields=manager_form'
+            <a href="#" class="top-menu-btn"  data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+               data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"admin/manager_form","wr_id":""}'
                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"   ><i class="fa-solid fa-plus"></i> 추가하기</a>
         </div>
         <div style="background-color: #efefef;height: 1px" class="wv-mx-fit mt-[16px]"></div>

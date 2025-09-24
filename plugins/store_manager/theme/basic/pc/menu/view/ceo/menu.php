@@ -27,14 +27,7 @@ global $current_store_wr_id,$current_store;
                     </span>
                     </a>
                     <a href="#"
-                       data-wv-ajax-data='{
-                                               "made":"sub01_01",
-                                               "part":"menu",
-                                               "action":"render_part_ceo_form",
-                                               "fields":"ceo/image",
-                                               "wr_id":"<?php echo $current_store_wr_id; ?>"
-                                               }'
-                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[436px]"  class="h-[40px] d-flex-center border col" style="border-radius:var(--wv-4) ">
+                        class="h-[40px] d-flex-center border col" style="border-radius:var(--wv-4) ">
                     <span>
                     <i class="fa-solid fa-arrows-up-down me-1"></i>
                     순서 변경

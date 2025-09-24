@@ -23,8 +23,8 @@ if(wv_info('path')=='bbs' and $bo_table=='push1'){
 
 $wv_main_menu_array = array(
     array('name' => '홈', 'url' => '/','icon'=>WV_URL.'/img/foot_1.png'),
-    array('name' => '<span class="text-[#FF5F5A]">DUM</span> 매장', 'url' => '/?wv_page_id=0101','icon'=>WV_URL.'/img/foot_2.png'),
-    array('name' => '<span class="text-[#FF774D]">DUM</span> 포장', 'url' => '/?wv_page_id=0102','icon'=>WV_URL.'/img/foot_3.png'),
+    array('name' => '<span class="text-[#FF5F5A] ff-montserrat">DUM</span> 매장', 'url' => '/?wv_page_id=0101','icon'=>WV_URL.'/img/foot_2.png'),
+    array('name' => '<span class="text-[#FF774D] ff-montserrat">DUM</span> 포장', 'url' => '/?wv_page_id=0102','icon'=>WV_URL.'/img/foot_3.png'),
     array('name' => '현금이벤트', 'url' => '/?wv_page_id=0103','icon'=>WV_URL.'/img/foot_4.png'),
     array('name' => '마이페이지', 'url' => '/?wv_page_id=0104','icon'=>WV_URL.'/img/foot_5.png'),
 

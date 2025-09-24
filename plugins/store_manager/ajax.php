@@ -56,70 +56,6 @@ if($action == 'get_stores_by_bounds'){
     ));
 }
 
-if($action=='render_part_form'){
-    if(!$type){
-        $type='form';
-    }
-    $store = wv()->store_manager->made($made)->get($wr_id);
-
-    ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),$type,$_REQUEST);
-    $render_content = ob_get_clean();
-    $skin_data = array(
-        'store'=>$store,
-        'render_content' => $render_content,
-        'made'=>$made
-    );
-    echo wv_widget('store_manager_form', $skin_data);
-    exit;
-}
-
-if($action=='render_part_ceo_form'){
-    if(!$type){
-        $type='form';
-    }
-    $store = wv()->store_manager->made($made)->get($wr_id);
-
-    ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),$type,$_REQUEST);
-    $render_content = ob_get_clean();
-    $skin_data = array(
-        'store'=>$store,
-        'render_content' => $render_content,
-        'made'=>$made,
-    );
-    $skin_data = array_merge($skin_data,$_REQUEST);
-    echo wv_widget('store_manager_ceo_form', $skin_data);
-    exit;
-}
-if($action=='render_part_ceo_view'){
-    if(!$type){
-        $type='form';
-    }
-    $store = wv()->store_manager->made($made)->get($wr_id);
-
-    ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),$type,$_REQUEST);
-    $render_content = ob_get_clean();
-    $skin_data = array(
-        'store'=>$store,
-        'render_content' => $render_content,
-        'made'=>$made,
-    );
-    echo wv_widget('store_manager_ceo_view', $skin_data);
-    exit;
-}
-if($action=='render_part'){
-    if(!$type){
-        $type='form';
-    }
-    $store = wv()->store_manager->made($made)->get($wr_id);
-    ob_start();
-    echo $store->{$part}->render_part(explode(',',$fields),'form',$_REQUEST);
-    $render_content = ob_get_clean();
-    echo $render_content;
-    exit;
-}
 if($action=='form'){
     if(!$made or !$part or !$field){
         alert('필수파라메터 누락');
@@ -127,6 +63,7 @@ if($action=='form'){
     echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($field,'form',$_REQUEST);
     exit;
 }
+
 if($action=='view'){
     if(!$made or !$part or !$field){
         alert('필수파라메터 누락');
@@ -134,6 +71,7 @@ if($action=='view'){
     echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($field,'view',$_REQUEST);
     exit;
 }
+
 if($action=='update'){
     if(!$made){
         alert('필수파라메터 누락');
@@ -142,24 +80,28 @@ if($action=='update'){
     wv_json_exit(array('reload'=>true,'msg'=>'완료'));
     exit;
 }
+
 if($action=='delete'){
     $wr_id = wv()->store_manager->made($made)->delete(array('wr_id'=>$wr_id));
     exit;
 }
+
 if($action=='get_current_store'){
     $arr = wv()->store_manager->made('sub01_01')->get_current_store();
     echo $arr['name'];
-
     exit;
 }
+
 if($action=='set_current_store'){
     $arr = wv()->store_manager->made('sub01_01')->set_current_store($wr_id);
     exit;
 }
+
 if($action=='init_current_store'){
     $arr = wv()->store_manager->made('sub01_01')->init_current_store();
     exit;
 }
+
 if($action=='widget'){
     echo wv_widget($widget, $_REQUEST);
     exit;
