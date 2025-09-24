@@ -171,14 +171,21 @@ $(document).ready(function () {
 
 // 부모 리로드 처리 함수
 function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
+
     if (isFromCloseEvent) {
         // modal/offcanvas 닫힐 때: parent-elem 사용
         var parentElemId = $currentElement.data('parent-elem');
+
+
+
+
 
         if (parentElemId) {
             var $parentElement = $('#' + parentElemId);
 
             if ($parentElement.length) {
+
+
                 // 부모가 offcanvas인 경우
                 if ($parentElement.hasClass('offcanvas') || $parentElement.hasClass('wv-offcanvas')) {
                     wv_reload_offcanvas(parentElemId);
@@ -220,7 +227,8 @@ function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
     }
 
     // 적절한 부모를 찾지 못하면 페이지 새로고침
-    location.reload();
+    // alert(1)
+    // location.reload();
 }
 
 // 옵션 파싱 공통 함수
@@ -654,7 +662,7 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
     `);
     var $parent = processedOptions.$clickElement.closest('.wv-offcanvas');
     if($parent.length){
-        offcanvasEl.data('parent-elem',  $parent.attr('id'));
+        offcanvasEl.attr('data-parent-elem',  $parent.attr('id'));
     }
     offcanvasEl.attr('data-wv-reload-url', url);
     offcanvasEl.data('wv-reload-options', processedOptions);
@@ -715,6 +723,11 @@ function wv_reload_offcanvas(offcanvasId) {
     var $offcanvas = $('#' + offcanvasId);
     if (!$offcanvas.length) return false;
 
+
+    // 리로드 카운트 증가
+    var currentCount = parseInt($offcanvas.attr('data-wv-reload-count') || '0');
+    $offcanvas.attr('data-wv-reload-count', currentCount + 1);
+
     var url = $offcanvas.data('wv-reload-url');
     var options = $offcanvas.data('wv-reload-options');
     var data = $offcanvas.data('wv-reload-data');
@@ -742,7 +755,7 @@ function wv_reload_offcanvas(offcanvasId) {
     }
 
     $.ajax(ajaxSettings);
-    console.log(1)
+    console.log($offcanvas)
     return true;
 }
 
@@ -757,6 +770,9 @@ function wv_reload_current_offcanvas() {
 function wv_reload_modal(modalId) {
     var $modal = $('#' + modalId);
     if (!$modal.length) return false;
+
+    var currentCount = parseInt($modal.attr('data-wv-reload-count') || '0');
+    $modal.attr('data-wv-reload-count', currentCount + 1);
 
     var url = $modal.data('wv-reload-url');
     var options = $modal.data('wv-reload-options');

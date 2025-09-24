@@ -270,7 +270,7 @@ $(function(){
             if(settings.reload_ajax){
                 var $formElement = settings.reload_ajax;
                 // 폼 기준으로 부모 offcanvas/modal 찾아서 리로드
-                wv_handle_parent_reload_from_form($formElement);
+                wv_handle_parent_reload($formElement);
                reload=false;
             }
 
