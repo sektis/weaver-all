@@ -19,6 +19,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         'service_time'=>'TEXT DEFAULT NULL',
 
     );
+    protected $checkbox_fields = array('enabled');
 
     protected $status_text_array = array(
         '1'=>'진행 중',
@@ -99,7 +100,13 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
  background-color:'.($row['status']==1?$cont_item->row['color_type']['bg']:'#f9f9f9').'" >'.$this->status_service_text_array[$row['status']].'</div>';
         $arr['memo_list'] =  implode('<br>',array_column($row['memo'],'text'));
 
-
+        if(isset($row['service_time']) && !empty($row['service_time'])){
+            $arr['service_time_summary'] = generate_time_summary($row['service_time']);
+            $arr['service_time_list'] = generate_time_list($row['service_time']);
+        } else {
+            $arr['service_time_summary'] = array();
+            $arr['service_time_list'] = array();
+        }
 
 
         return $arr;

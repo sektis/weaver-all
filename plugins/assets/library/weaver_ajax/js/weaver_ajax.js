@@ -201,31 +201,45 @@ $(function(){
         clearTimeout(timer);
 
         $loader.hide();
+        var reload = false;
+
+
         try {
             var parsed_json = JSON.parse(xhr.responseText);
 
-            if( isset(parsed_json.reload)){
-                // console.log(settings.reload)
-                if(parsed_json.reload && !settings.reload_ajax   ){
-
-
-                    if((isset(settings.reload) && settings.reload!=false)){
-                        if(parsed_json.msg){
-                            alert(parsed_json.msg);
-                        }
-                        location.reload();
-                    }
-
-                }
-
+            if( isset(parsed_json.reload) && parsed_json.reload==true){
+                reload = true;
             }
         } catch (e) {
 
         }
 
-        if(isset(settings.reload) && settings.reload!=false ){
-            location.reload();
+        if(reload==false){
+            if(isset(settings.reload) && settings.reload===true ){
+                reload=true;
+            }
         }
+
+        if(isset(settings.reload_ajax )){
+
+            if(settings.reload_ajax===true){
+                // ajax날라올때
+            }else{
+                // 타겟
+            }
+
+        }
+
+        console.log(reload)
+
+        if(msg){
+            alert(msg);
+        }
+        if(reload){
+            // location.reload()
+        }
+
+
 
         if(settings.use_redirect==true && org_url!=last_url){
             var org_url = settings.url.replace(/\/+$/,"").replace(g5_url,'')

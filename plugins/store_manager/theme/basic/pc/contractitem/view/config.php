@@ -75,17 +75,38 @@ global $g5;
         <?php if ($cont['status'] == 1) { ?>
             <div class="mt-[12px]" style="height: 1px;background-color: #efefef"></div>
             <?php if ($cont['service_content']) { ?>
-                <div class="mt-[12px] fs-[12/17/-0.48/600/] w-full" style="<?php echo $row['color_type_text']; ?>">
-                    <p>제공 <?php echo $row['is_free'] ? '특가혜택' : '서비스'; ?></p>
+                <div class="mt-[12px] fs-[12/17/-0.48/600/] w-full" >
+                    <p style="<?php echo $row['color_type_text']; ?>">제공 <?php echo $row['is_free'] ? '특가혜택' : '서비스'; ?></p>
 
-                    <div class="hstack align-items-start border justify-content-start w-full mt-[4px]" style="padding: var(--wv-10) var(--wv-12);gap:var(--wv-4); ">
-                        <?php if ($row['icon_small']['path']) { ?>
-                            <div><img src="<?php echo $row['icon_small']['path']; ?>" class="w-[16px]" alt=""></div>
-                        <?php } ?>
-                        <p><?php echo $cont['service_content']; ?></p>
+                    <div class="border justify-content-start w-full mt-[4px]" style="padding: var(--wv-10) var(--wv-12);gap:var(--wv-4); ">
+                        <div class="hstack align-items-start " style="<?php echo $row['color_type_text']; ?>">
+                            <?php if ($row['icon_small']['path']) { ?>
+                                <div><img src="<?php echo $row['icon_small']['path']; ?>" class="w-[16px]" alt=""></div>
+                            <?php } ?>
+                            <p><?php echo $cont['service_content']; ?></p>
+                        </div>
+
+
+                        <?php if (array_filter($cont['service_time'])) { ?>
+                            <div class="my-[8px]" style="height: 1px;background-color: #efefef"></div>
+                            <div class="fs-[12/17/-0.48/500/#0D171B] hstack align-items-start" style="gap:var(--wv-4)"  >
+                                <div><img src="<?php echo $this->manager->plugin_url; ?>/img/clock.png" class="w-[14px]" alt=""></div>
+                                <p>이용 가능한 시간 :</p>
+                                <div>
+
+                                    <?php $i=0; foreach ($cont['service_time_list'] as $each){ ?>
+                                        <p class="hstack" style="gap:var(--wv-5)"><span>(<?php echo $each['name']; ?>)</span><span><?php echo $each['time']; ?></span></p>
+                                        <?php $i++;} ?>
+                                    <?php if($i==0){ ?>
+                                        <p>미등록</p>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                        <?php }?>
                     </div>
                 </div>
             <?php }?>
+
 
             <div class="text-end mt-[8px]">
                 <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'

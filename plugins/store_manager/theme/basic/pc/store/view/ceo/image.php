@@ -19,7 +19,7 @@ global $current_store_wr_id;
                 <p class="text1">매장 소개 이미지</p>
                 <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
                    data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"store","field":"ceo/image","wr_id":"<?php echo $current_store_wr_id; ?>"}'
-                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
+                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>
             </div>
             <div class="row" style="--bs-gutter-x: var(--wv-10);--bs-gutter-y: var(--wv-10)">
                 <?php foreach ($row['image'] as $img){ ?>

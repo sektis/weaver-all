@@ -47,20 +47,20 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             <span class="time-label">시작</span>
                             <?php
                             $ds = isset($open_time['daily']['start']) ? $open_time['daily']['start'] : array();
-                            echo $this->wv_biz_time_select($field_name.'[daily][start][period]', $ds, 'period');
-                            echo $this->wv_biz_time_select($field_name.'[daily][start][hour]', $ds, 'hour');
+                            echo wv_store_manager_time_select($field_name.'[daily][start][period]', $ds, 'period');
+                            echo wv_store_manager_time_select($field_name.'[daily][start][hour]', $ds, 'hour');
                             echo '<span>:</span>';
-                            echo $this->wv_biz_time_select($field_name.'[daily][start][minute]', $ds, 'minute');
+                            echo wv_store_manager_time_select($field_name.'[daily][start][minute]', $ds, 'minute');
                             ?>
                         </div>
                         <div class="time-row">
                             <span class="time-label">종료</span>
                             <?php
                             $de = isset($open_time['daily']['end']) ? $open_time['daily']['end'] : array();
-                            echo $this->wv_biz_time_select($field_name.'[daily][end][period]', $de, 'period');
-                            echo $this->wv_biz_time_select($field_name.'[daily][end][hour]', $de, 'hour');
+                            echo wv_store_manager_time_select($field_name.'[daily][end][period]', $de, 'period');
+                            echo wv_store_manager_time_select($field_name.'[daily][end][hour]', $de, 'hour');
                             echo '<span>:</span>';
-                            echo $this->wv_biz_time_select($field_name.'[daily][end][minute]', $de, 'minute');
+                            echo wv_store_manager_time_select($field_name.'[daily][end][minute]', $de, 'minute');
                             ?>
                         </div>
                     </div>
@@ -73,20 +73,20 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             <span class="time-label">시작</span>
                             <?php
                             $ws = isset($open_time['weekday']['start']) ? $open_time['weekday']['start'] : array();
-                            echo $this->wv_biz_time_select($field_name.'[weekday][start][period]', $ws, 'period');
-                            echo $this->wv_biz_time_select($field_name.'[weekday][start][hour]', $ws, 'hour');
+                            echo wv_store_manager_time_select($field_name.'[weekday][start][period]', $ws, 'period');
+                            echo wv_store_manager_time_select($field_name.'[weekday][start][hour]', $ws, 'hour');
                             echo '<span>:</span>';
-                            echo $this->wv_biz_time_select($field_name.'[weekday][start][minute]', $ws, 'minute');
+                            echo wv_store_manager_time_select($field_name.'[weekday][start][minute]', $ws, 'minute');
                             ?>
                         </div>
                         <div class="time-row">
                             <span class="time-label">종료</span>
                             <?php
                             $we = isset($open_time['weekday']['end']) ? $open_time['weekday']['end'] : array();
-                            echo $this->wv_biz_time_select($field_name.'[weekday][end][period]', $we, 'period');
-                            echo $this->wv_biz_time_select($field_name.'[weekday][end][hour]', $we, 'hour');
+                            echo wv_store_manager_time_select($field_name.'[weekday][end][period]', $we, 'period');
+                            echo wv_store_manager_time_select($field_name.'[weekday][end][hour]', $we, 'hour');
                             echo '<span>:</span>';
-                            echo $this->wv_biz_time_select($field_name.'[weekday][end][minute]', $we, 'minute');
+                            echo wv_store_manager_time_select($field_name.'[weekday][end][minute]', $we, 'minute');
                             ?>
                         </div>
                     </div>
@@ -97,20 +97,20 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             <span class="time-label">시작</span>
                             <?php
                             $wes = isset($open_time['weekend']['start']) ? $open_time['weekend']['start'] : array();
-                            echo $this->wv_biz_time_select($field_name.'[weekend][start][period]', $wes, 'period');
-                            echo $this->wv_biz_time_select($field_name.'[weekend][start][hour]', $wes, 'hour');
+                            echo wv_store_manager_time_select($field_name.'[weekend][start][period]', $wes, 'period');
+                            echo wv_store_manager_time_select($field_name.'[weekend][start][hour]', $wes, 'hour');
                             echo '<span>:</span>';
-                            echo $this->wv_biz_time_select($field_name.'[weekend][start][minute]', $wes, 'minute');
+                            echo wv_store_manager_time_select($field_name.'[weekend][start][minute]', $wes, 'minute');
                             ?>
                         </div>
                         <div class="time-row">
                             <span class="time-label">종료</span>
                             <?php
                             $wee = isset($open_time['weekend']['end']) ? $open_time['weekend']['end'] : array();
-                            echo $this->wv_biz_time_select($field_name.'[weekend][end][period]', $wee, 'period');
-                            echo $this->wv_biz_time_select($field_name.'[weekend][end][hour]', $wee, 'hour');
+                            echo wv_store_manager_time_select($field_name.'[weekend][end][period]', $wee, 'period');
+                            echo wv_store_manager_time_select($field_name.'[weekend][end][hour]', $wee, 'hour');
                             echo '<span>:</span>';
-                            echo $this->wv_biz_time_select($field_name.'[weekend][end][minute]', $wee, 'minute');
+                            echo wv_store_manager_time_select($field_name.'[weekend][end][minute]', $wee, 'minute');
                             ?>
                         </div>
                     </div>
@@ -135,20 +135,20 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                                     <span class="time-label">시작:</span>
                                     <?php
                                     $ds = isset($d['start']) ? $d['start'] : array();
-                                    echo $this->wv_biz_time_select($field_name.'['.$k.'][start][period]', $ds, 'period');
-                                    echo $this->wv_biz_time_select($field_name.'['.$k.'][start][hour]', $ds, 'hour');
+                                    echo wv_store_manager_time_select($field_name.'['.$k.'][start][period]', $ds, 'period');
+                                    echo wv_store_manager_time_select($field_name.'['.$k.'][start][hour]', $ds, 'hour');
                                     echo '<span>:</span>';
-                                    echo $this->wv_biz_time_select($field_name.'['.$k.'][start][minute]', $ds, 'minute');
+                                    echo wv_store_manager_time_select($field_name.'['.$k.'][start][minute]', $ds, 'minute');
                                     ?>
                                 </div>
                                 <div class="time-row">
                                     <span class="time-label">종료:</span>
                                     <?php
                                     $de = isset($d['end']) ? $d['end'] : array();
-                                    echo $this->wv_biz_time_select($field_name.'['.$k.'][end][period]', $de, 'period');
-                                    echo $this->wv_biz_time_select($field_name.'['.$k.'][end][hour]', $de, 'hour');
+                                    echo wv_store_manager_time_select($field_name.'['.$k.'][end][period]', $de, 'period');
+                                    echo wv_store_manager_time_select($field_name.'['.$k.'][end][hour]', $de, 'hour');
                                     echo '<span>:</span>';
-                                    echo $this->wv_biz_time_select($field_name.'['.$k.'][end][minute]', $de, 'minute');
+                                    echo wv_store_manager_time_select($field_name.'['.$k.'][end][minute]', $de, 'minute');
                                     ?>
                                 </div>
                             </div>

@@ -1,6 +1,24 @@
 // bootstrap5
-$(document).ready(function () {
 
+// 페이지 로드시 URL hash 확인
+
+$(document).ready(function () {
+    if (location.hash) {
+        var tabElement = document.querySelector('[data-bs-target="' + location.hash + '"]');
+        if (tabElement) {
+            var tab = new bootstrap.Tab(tabElement);
+            tab.show();
+        }
+    }
+
+    // 탭 변경시 URL hash 업데이트
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(tabElement) {
+        tabElement.addEventListener('shown.bs.tab', function(event) {
+            // URL hash 업데이트 (페이지는 스크롤되지 않음)
+            var target = event.target.getAttribute('data-bs-target');
+            history.replaceState(null, null, target);
+        });
+    });
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
     const popoverList = [...popoverTriggerList].map(popoverTriggerEl => {new bootstrap.Popover(popoverTriggerEl);popoverTriggerEl.setAttribute('tabindex','-1')})
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -138,8 +156,13 @@ $(document).ready(function () {
 
 })
 // 옵션 파싱 공통 함수
-function parseWvAjaxOptions(options) {
+function parseWvAjaxOptions(options,$from) {
     var processedOptions = {};
+
+    if($from!=undefined){
+        processedOptions.$clickElement = $from;
+    }
+
 
     if (typeof options === 'string') {
         // 문자열 옵션 파싱
@@ -167,6 +190,9 @@ function parseWvAjaxOptions(options) {
             }
             else if (option.indexOf('reload_ajax:') === 0) {
                 processedOptions.reload_ajax = option.substring(12).trim();
+                if(processedOptions.reload_ajax==='true'){
+                    processedOptions.reload_ajax = true;
+                }
             }
             else if (option.indexOf('ajax_option:') === 0) {
                 try {
@@ -188,6 +214,28 @@ function parseWvAjaxOptions(options) {
     } else {
         // 객체면 그대로 사용
         processedOptions = options || {};
+    }
+    // type 찾기 (processedOptions.other에서 추출)
+    var type;
+    if (processedOptions.other) {
+        for (var i = 0; i < processedOptions.other.length; i++) {
+            var option = processedOptions.other[i];
+            if (option === 'modal' || option === 'offcanvas') {
+                type = option;
+                // other 배열에서 제거
+                processedOptions.other.splice(i, 1);
+                break;
+            }
+        }
+    }
+    processedOptions.type = type;
+
+    if(processedOptions.type && (processedOptions.target||processedOptions.append||processedOptions.replace||processedOptions.replace_with)){
+        alert(processedOptions.type+'에서는 dom 변경 불가');
+    }
+
+    if(processedOptions.reload_ajax===true && !processedOptions.$clickElement){
+        alert('reload element not found');
     }
 
     return processedOptions;
@@ -239,36 +287,25 @@ $(document).on('click', '[data-wv-ajax-url]', function (e) {
     }
 
     // 옵션 처리
-    var type = '';
-    var processedOptions = parseWvAjaxOptions(optionAttr);
+
+    var processedOptions = parseWvAjaxOptions(optionAttr,$this);
 
     // 클릭 요소 정보 추가 (reload에서 사용)
-    processedOptions.$clickElement = $this;
 
-    // type 찾기 (processedOptions.other에서 추출)
-    if (processedOptions.other) {
-        for (var i = 0; i < processedOptions.other.length; i++) {
-            var option = processedOptions.other[i];
-            if (option === 'modal' || option === 'offcanvas') {
-                type = option;
-                // other 배열에서 제거
-                processedOptions.other.splice(i, 1);
-                break;
-            }
-        }
-    }
+
+
 
     // target 기본값 설정 (원래 코드 로직 유지)
     if (!processedOptions.target) {
-        processedOptions.target = (type === 'modal' || type === 'offcanvas') ? '#site-wrapper' : '';
+        processedOptions.target = (processedOptions.type === 'modal' || processedOptions.type === 'offcanvas') ? '#site-wrapper' : '';
     }
 
     // modal이나 offcanvas인 경우 중복 방지 처리
-    if (type === 'modal' || type === 'offcanvas') {
+    if (processedOptions.type === 'modal' || processedOptions.type === 'offcanvas') {
         // ID 생성 (트리거 고유 기준)
         if (!processedOptions.id) {
             var triggerKey = url;
-            processedOptions.id = (type === 'modal' ? 'wv-modal-' : 'wv-offcanvas-') +
+            processedOptions.id = (processedOptions.type === 'modal' ? 'wv-modal-' : 'wv-offcanvas-') +
                 btoa(triggerKey).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12) + $this.index();
         }
 
@@ -287,9 +324,9 @@ $(document).on('click', '[data-wv-ajax-url]', function (e) {
     ajaxData.no_layout = 1;
 
     // 실행
-    if (type === 'modal') {
+    if (processedOptions.type === 'modal') {
         wv_ajax_modal(url, processedOptions, ajaxData, true);
-    } else if (type === 'offcanvas') {
+    } else if (processedOptions.type === 'offcanvas') {
         wv_ajax_offcanvas(url, processedOptions, ajaxData, true);
     } else {
         wv_ajax(url, processedOptions, ajaxData, true)
@@ -325,6 +362,7 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
                 return false;
             }
             if (processedOptions.reload_ajax) {
+
                 wv_handle_reload(processedOptions.reload_ajax, processedOptions.$clickElement);
                 return false;
             }
@@ -394,13 +432,13 @@ function wv_handle_reload(reloadValue, $clickElement) {
     }
 
     if (!$target.length) {
-        console.warn('Reload target not found:', reloadValue);
+        alert('Reload target not found:', reloadValue);
         return false;
     }
 
     var targetId = $target.attr('id');
     if (!targetId) {
-        console.warn('Target element has no ID for reload');
+        alert('Target element has no ID for reload');
         return false;
     }
 

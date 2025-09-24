@@ -1,5 +1,5 @@
 <?php
-function generate_time_summary($time_data){
+function generate_time_summary($time_data, $week_check = false){
     if(!is_array($time_data)) {
         return '';
     }
@@ -22,17 +22,33 @@ function generate_time_summary($time_data){
     $weekend_end = isset($time_data['weekend']['end']) ? $time_data['weekend']['end'] : $default_end;
 
     // 평일 시간이 있으면 추가
-    if($weekday_start && $weekday_end){
-        $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
-//            $summary[] = '(평일) ' . $weekday_time;
-        $summary[] = array('name'=>'평일','time'=>$weekday_time);
+    if($week_check){
+        // enabled 체크하는 경우
+        if(isset($time_data['weekday']['enabled']) && $time_data['weekday']['enabled'] && $weekday_start && $weekday_end){
+            $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
+            $summary[] = array('name'=>'평일','time'=>$weekday_time);
+        }
+    } else {
+        // 기존 방식
+        if($weekday_start && $weekday_end){
+            $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
+            $summary[] = array('name'=>'평일','time'=>$weekday_time);
+        }
     }
 
     // 주말 시간이 있으면 추가
-    if($weekend_start && $weekend_end){
-        $weekend_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
-//            $summary[] = '(주말) ' . $weekend_time;
-        $summary[] = array('name'=>'주말','time'=>$weekend_time);
+    if($week_check){
+        // enabled 체크하는 경우
+        if(isset($time_data['weekend']['enabled']) && $time_data['weekend']['enabled'] && $weekend_start && $weekend_end){
+            $weekend_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
+            $summary[] = array('name'=>'주말','time'=>$weekend_time);
+        }
+    } else {
+        // 기존 방식
+        if($weekend_start && $weekend_end){
+            $weekend_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
+            $summary[] = array('name'=>'주말','time'=>$weekend_time);
+        }
     }
 
     // 3. 요일별 설정이 있으면 추가
@@ -43,7 +59,6 @@ function generate_time_summary($time_data){
 
             if($day_start && $day_end){
                 $day_time = wv_store_manager_format_time($day_start) . ' ~ ' . wv_store_manager_format_time($day_end);
-//                    $summary[] = '(' . $day_name . ') ' . $day_time;
                 $summary[] = array('name'=>$day_name,'time'=>$day_time);
             }
         }
@@ -51,7 +66,7 @@ function generate_time_summary($time_data){
 
     return $summary;
 }
-function generate_time_list($time_data){
+function generate_time_list($time_data, $week_check = false){
     if(!is_array($time_data)) {
         return '';
     }
@@ -67,28 +82,43 @@ function generate_time_list($time_data){
     $default_end = isset($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
     if($default_start && $default_end){
         $weekday_time = wv_store_manager_format_time($default_start) . ' ~ ' . wv_store_manager_format_time($default_end);
-//            $summary[] = '(평일) ' . $weekday_time;
         $summary[] = array('name'=>'매일','time'=>$weekday_time);
     }
 
     // 2. 평일/주말 설정 확인 및 덮어씌우기
     $weekday_start = isset($time_data['weekday']['start']) ? $time_data['weekday']['start'] : null;
     $weekday_end = isset($time_data['weekday']['end']) ? $time_data['weekday']['end'] : null;
-    if($weekday_start && $weekday_end){
-        $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
-//            $summary[] = '(평일) ' . $weekday_time;
-        $summary[] = array('name'=>'평일','time'=>$weekday_time);
+
+    if($week_check){
+        // enabled 체크하는 경우
+        if(isset($time_data['weekday']['enabled']) && $time_data['weekday']['enabled'] && $weekday_start && $weekday_end){
+            $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
+            $summary[] = array('name'=>'평일','time'=>$weekday_time);
+        }
+    } else {
+        // 기존 방식
+        if($weekday_start && $weekday_end){
+            $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
+            $summary[] = array('name'=>'평일','time'=>$weekday_time);
+        }
     }
 
     $weekend_start = isset($time_data['weekend']['start']) ? $time_data['weekend']['start'] : $default_start;
     $weekend_end = isset($time_data['weekend']['end']) ? $time_data['weekend']['end'] : $default_end;
 
-    if($weekend_start && $weekend_end){
-        $weekday_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
-//            $summary[] = '(평일) ' . $weekday_time;
-        $summary[] = array('name'=>'주말','time'=>$weekday_time);
+    if($week_check){
+        // enabled 체크하는 경우
+        if(isset($time_data['weekend']['enabled']) && $time_data['weekend']['enabled'] && $weekend_start && $weekend_end){
+            $weekday_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
+            $summary[] = array('name'=>'주말','time'=>$weekday_time);
+        }
+    } else {
+        // 기존 방식
+        if($weekend_start && $weekend_end){
+            $weekday_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
+            $summary[] = array('name'=>'주말','time'=>$weekday_time);
+        }
     }
-
 
     // 3. 요일별 설정이 있으면 추가
     foreach($days_kr as $day_key => $day_name){
@@ -98,7 +128,6 @@ function generate_time_list($time_data){
 
             if($day_start && $day_end){
                 $day_time = wv_store_manager_format_time($day_start) . ' ~ ' . wv_store_manager_format_time($day_end);
-//                    $summary[] = '(' . $day_name . ') ' . $day_time;
                 $summary[] = array('name'=>$day_name,'time'=>$day_time);
             }
         }

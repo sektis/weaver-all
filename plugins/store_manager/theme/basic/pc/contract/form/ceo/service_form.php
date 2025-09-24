@@ -84,7 +84,7 @@ if(!$row['id']){
                                     </div>
                                 </div>
                                 <div class=" ">
-                                    <?php echo $this->store->contract->render_part('service_time','form');; ?>
+                                    <?php echo $this->store->contract->render_part('service_time','form',array('contract_id'=>$row['id']));; ?>
                                 </div>
 
 

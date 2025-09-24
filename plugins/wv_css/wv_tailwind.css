@@ -39,6 +39,9 @@
   .end-\[12px\] {
     inset-inline-end: var(--wv-12) !important;
   }
+  .my-\[8px\] {
+    margin-block: var(--wv-8) !important;
+  }
   .my-\[16px\] {
     margin-block: var(--wv-16) !important;
   }
@@ -476,6 +479,13 @@
     letter-spacing: -0.02em !important;
     font-weight: 400 !important;
     color: #797979 !important;
+  }
+  .fs-\[12\/17\/-0\.48\/500\/\#0D171B\] {
+    font-size: var(--wv-12) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #0D171B !important;
   }
   .fs-\[12\/17\/-0\.48\/500\/\#97989C\] {
     font-size: var(--wv-12) !important;
