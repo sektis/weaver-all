@@ -65,7 +65,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 var bounds = map.getBounds();
                 var center = map.getCenter();
                 var level = map.getLevel();
-                console.log('map changed')
+
                 $(document).trigger('wv_location_map_changed', {
                     bounds: bounds,
                     center: center,
@@ -190,7 +190,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 
             function setupExternalCommunication() {
                 // 외부에서 bounds 정보 요청시 응답
-                $(document).on('wv_location_map_request_bounds', function(event, data) {
+                $skin.on('wv_location_map_request_bounds', function(event, data) {
 
                         if (map) {
                             var bounds = map.getBounds();
@@ -208,7 +208,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 });
 
                 // 외부에서 특정 위치로 이동 요청시 처리
-                $(document).on('wv_location_map_move_to', function(event, data) {
+                $skin.on('wv_location_map_move_to', function(event, data) {
 
                     var movePosition = new kakao.maps.LatLng(data.lat, data.lng);
                     map.setCenter(movePosition);
@@ -223,13 +223,14 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 });
 
                 // 외부에서 마커 데이터 업데이트 이벤트 수신
-                $(document).on('wv_location_map_markers_update', function(event, data) {
+                $skin.on('wv_location_map_markers_update', function(event, data) {
 
                         clearMarkers();
                         addMarkers(data.markers);
 
                 });
             }
+
 
             function clearMarkers() {
                 if (clusterer) {

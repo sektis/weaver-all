@@ -58,15 +58,15 @@ $rows = $result['list'];
         <div id="<?php echo $skin_id?>-swiper" class="swiper h-100" >
             <div class="swiper-wrapper">
                 <div class="swiper-slide position-relative"   >
-                    <a href="">전체</a>
+                    <a href="#" class="scroll-category-link <?php echo $data['category_wr_id']>0?'':'active'; ?>" data-category-wr-id="all">전체</a>
                 </div>
                     <?php   foreach ($rows as $cate){?>
                         <div class="swiper-slide position-relative"   >
-                            <a href="#" class="scroll-category-link <?php echo $data['category_wr_id']==$cate['wr_id']?'active':''; ?>"><?php echo $cate['storecategory']['name']; ?></a>
+                            <a href="#" class="scroll-category-link <?php echo $data['category_wr_id']==$cate['wr_id']?'active':''; ?>" data-category-wr-id="<?php echo $cate['wr_id']; ?>"><?php echo $cate['storecategory']['name']; ?></a>
                         </div>
                     <?php }?>
                 <div class="swiper-slide position-relative"   >
-                    <a href="">전체</a>
+                    <a href="#" class="scroll-category-link <?php echo $data['category_wr_id']>0?'':'active'; ?>" data-category-wr-id="other">기타</a>
                 </div>
             </div>
         </div>
@@ -133,6 +133,17 @@ $rows = $result['list'];
             });
 
 
+            $(".scroll-category-link",$skin).click(function (e) {
+                e.preventDefault();
+                var idx =  $depth_link.index($(this))+1;;
+
+                // 해당 슬라이드로 이동
+                swiper.slideTo(idx);
+
+                // active 클래스 관리
+                $('.scroll-category-link').removeClass('active');
+                $(this).addClass('active');
+            })
 
 
             const swiperElement = document.querySelector("<?php echo $skin_selector?>-swiper");

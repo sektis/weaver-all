@@ -70,6 +70,9 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                 var $skin = $("<?php echo $skin_selector?>");
                 var currentMode = '<?php echo $initial_mode; ?>'; // 'map' 또는 'list'
                 var map_loaded = false;
+                var $map_event_target = '';
+
+
 
                 // 검색 데이터 저장 (스위칭 시 재사용)
                 var searchData = {
@@ -78,11 +81,26 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     where: ''
                 };
 
+                $('.scroll-category-link',$skin).click(function () {
+                    searchData.category_wr_id = $(this).data('category-wr-id');
+                })
+
                 // 지도 이벤트 리스너
                 $(document).on('wv_location_map_changed', function(event, data) {
-                    if (currentMode === 'map') {
-                        fetchStoresByBounds(data);
-                    }
+
+                    searchData = $.extend({}, searchData, {
+                        sw_lat: data.bounds.getSouthWest().getLat(),
+                        sw_lng: data.bounds.getSouthWest().getLng(),
+                        ne_lat: data.bounds.getNorthEast().getLat(),
+                        ne_lng: data.bounds.getNorthEast().getLng(),
+                        center: {
+                            lat: data.center.getLat(),
+                            lng: data.center.getLng()
+                        },
+
+                    });
+
+                    view_reload()
                 });
 
                 // 초기 로드
@@ -104,6 +122,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     $.post('<?php echo wv()->store_manager->ajax_url?>', {'action': 'widget','widget': 'location/map','data': mapOptions}, function(data) {
                         $(".stores-map", $skin).html(data);
                         map_loaded=true;
+                        $map_event_target = $(".stores-map>*",$skin)
                         console.log('map loaded');
                     }, 'html');
                 }
@@ -132,48 +151,41 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                         $mapArea.addClass('active');
 
                         currentMode = 'map';
-                        // 지도가 로드되지 않았다면 로드
-                        if (!map_loaded) {
-                            loadMap();
-                        }
-
                     } else {
                         // 지도 → 목록
                         $mapArea.removeClass('active');
                         $listArea.addClass('active');
                         currentMode = 'list';
+                    }
+                }
 
+                function view_reload(data){
+                    if(currentMode=='map'){
+                        // 지도가 로드되지 않았다면 로드
+                        if (!map_loaded) {
+                            loadMap();
+                        }
+                        fetchStoresByBounds();
+                    }else{
                         loadList();
                     }
                 }
 
                 // 바운드 변경에 따른 매장 데이터 조회
-                function fetchStoresByBounds(data) {
-                    var ajaxUrl = '<?php echo wv()->store_manager->made('sub01_01')->plugin_url?>/ajax.php';
+                function fetchStoresByBounds() {
 
                     var requestData = $.extend({}, searchData, {
                         action: 'get_stores_by_bounds',
-                        sw_lat: data.bounds.getSouthWest().getLat(),
-                        sw_lng: data.bounds.getSouthWest().getLng(),
-                        ne_lat: data.bounds.getNorthEast().getLat(),
-                        ne_lng: data.bounds.getNorthEast().getLng(),
-                        curr_coords: data.center
                     });
 
                     $.ajax({
-                        url: ajaxUrl,
+                        url: '<?php echo wv()->store_manager->ajax_url?>',
                         type: 'POST',
                         dataType: 'json',
                         data: requestData,
                         success: function(response) {
-                            if (response.result && response.content && response.content.lists) {
-                                // 지도에 매장 마커 업데이트 이벤트 발송
-                                triggerStoreUpdateEvent(response);
-                            }
+                            triggerStoreUpdateEvent(response);
                         },
-                        error: function(xhr, status, error) {
-                            console.error('매장 데이터 조회 실패:', error);
-                        }
                     });
                 }
 
@@ -186,22 +198,15 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                         category_icon_wrap_on: responseContent.content.category_icon_wrap_on,
                         timestamp: new Date().getTime()
                     };
-
-                    $(document).trigger('wv_location_place_updated', [eventData]);
+console.log('send')
+                    $map_event_target.trigger('wv_location_map_updated', [eventData]);
                 }
 
-                // 카테고리 변경 이벤트 처리
-                $(document).on('category_changed', function(event, categoryWrId) {
-                    searchData.category_wr_id = categoryWrId;
 
-                    // 현재 활성화된 뷰 새로고침
-                    if (currentMode === 'map') {
-                        // 지도의 경우 바운드 변경 이벤트로 자동 업데이트될 것임
-                    } else {
-                        loadList();
-                    }
-                });
+
+
             });
+
         </script>
     </div>
 </div>
