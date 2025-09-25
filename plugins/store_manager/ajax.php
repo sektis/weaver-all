@@ -103,7 +103,7 @@ if($action=='init_current_store'){
 }
 
 if($action=='widget'){
-    echo wv_widget($widget, $_REQUEST);
+    echo wv_widget($widget, $_REQUEST['data']?$_REQUEST['data']:$_REQUEST);
     exit;
 }
 // 잘못된 action

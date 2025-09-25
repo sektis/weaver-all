@@ -42,7 +42,7 @@ $rows = $result['list'];
         <?php echo $skin_selector?> .swiper:has(.swiper-slide-fully-visible):has(.swiper-slide-visible.swiper-slide-next):has(.swiper-slide[style*=width]){margin-left: calc(var(--wv-swiper-gap) / 2 *-1);margin-right: calc(var(--wv-swiper-gap) / 2 *-1)}
         <?php echo $skin_selector?> .swiper-slide:not(.swiper-slide-active) .aos-init{animation-name: none}
         <?php echo $skin_selector?> .swiper-slide a{font-size: var(--wv-14);font-weight: 500;line-height: var(--wv-20);letter-spacing: calc(var(--wv-0_56) * -1);user-select: none;display: block;padding: var(--wv-12) 0 }
-        <?php echo $skin_selector?> .swiper-slide:not(.swiper-slide-active) a{color:#97989C }
+        <?php echo $skin_selector?> .swiper-slide a:not(.active){color:#97989C }
 
         @media (min-width: 992px) {
 
@@ -62,7 +62,7 @@ $rows = $result['list'];
                 </div>
                     <?php   foreach ($rows as $cate){?>
                         <div class="swiper-slide position-relative"   >
-                            <a href=""><?php echo $cate['storecategory']['name']; ?></a>
+                            <a href="#" class="scroll-category-link <?php echo $data['category_wr_id']==$cate['wr_id']?'active':''; ?>"><?php echo $cate['storecategory']['name']; ?></a>
                         </div>
                     <?php }?>
                 <div class="swiper-slide position-relative"   >
@@ -81,16 +81,23 @@ $rows = $result['list'];
             var $skin = $("<?php echo $skin_selector?>");
             var latest_slide_index = '';
 
+            var $depth_link = $('.scroll-category-link',$skin);
+            var $depth_link_active = $('.scroll-category-link.active',$skin);
+            var init_slide_num = $depth_link.index($depth_link_active)+1;
 
             var swiper = new Swiper("<?php echo $skin_selector?>-swiper", {
                 slidesPerView: 'auto',
                 spaceBetween: 0,
                 observer: true,
                 observeParents: true,
+                initialSlide: init_slide_num,
+                centeredSlides:true,
+                centeredSlidesBounds:true,
+                centerInsufficientSlides:true,
                 observeSlideChildren: true,
                 watchSlidesProgress: true,
                 grabCursor:true,
-                loop:true,
+
                 slidesOffsetBefore:16,
                 // autoplay: {
                 //     delay: 3000,
@@ -124,6 +131,8 @@ $rows = $result['list'];
 
                 }
             });
+
+
 
 
             const swiperElement = document.querySelector("<?php echo $skin_selector?>-swiper");

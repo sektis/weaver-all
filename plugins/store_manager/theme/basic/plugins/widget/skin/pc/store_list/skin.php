@@ -1,5 +1,17 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
+$map_options = array(
+    'clustering' => true,
+    'map_id' => 'store-map-main',
+    'initial_level' => 6,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
+    'min_level' => 4,       // 최소 줌 레벨 (최대 확대)
+    'max_level' => 9       // 최대 줌 레벨 (최대 축소)
+);
+$list_option = array(
+    'view_list'=>$data['view_list'],
+    'q'=>$data['q'],
+    'category_wr_id'=>$data['category_wr_id'],
+)
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative  h-100 "  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
     <style>
@@ -12,34 +24,25 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
     </style>
 
     <div class="position-relative col col-lg-auto w-full md:w-full h-100"  >
-        <?php
 
 
-        // Map 옵션 설정
-        $map_options = array(
-            'clustering' => true,
-            'map_id' => 'store-map-main',
-            'initial_level' => 6,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
-            'min_level' => 4,       // 최소 줌 레벨 (최대 확대)
-            'max_level' => 9       // 최대 줌 레벨 (최대 축소)
-        );
-        $map_options = array_merge($map_options,$data);
-
-        ?>
-
-
-        <div class="position-absolute top-0 start-0 w-full bg-white" style="z-index: 99">
-        <?php
-        echo wv_widget('map_category');
-        ?>
-        </div>
-
-
-            <!-- Location 플러그인 Map 스킨 호출 -->
-            <div class="map-container   h-100"  >
-                <?php echo wv_widget('location/map',$map_options); ?>
+        <div class="vstack h-100">
+            <div class="col-auto"  >
+                <?php echo wv_widget('scroll_category',array('category_wr_id'=>$data['category_wr_id']));?>
             </div>
 
+
+            <div class="col">
+                <div class="h-100 stores-wrap">
+                    <div class="h-100 stores-map">
+
+                    </div>
+                    <div class="h-100 stores-list">
+
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
 
@@ -47,20 +50,29 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
             $(document).ready(function() {
 
                 var $skin = $("<?php echo $skin_selector?>");
-               // $(".map-container",$skin).css('height', $("#content-wrapper").outerHeight() + 'px');
 
-                /**
-                 * 🗺️ 지도 변경 이벤트 (통합)
-                 * 지도 이동, 줌 변경시 모두 이 이벤트로 처리
-                 */
                 $(document).on('wv_location_map_changeed', function(event, data) {
                     // Ajax로 매장 데이터 조회
                     fetchStoresByBounds(data);
                 });
 
-                /**
-                 * 📡 Ajax로 지도 영역 내 매장 조회
-                 */
+
+                function load_map(){
+                    var map_options = <?php echo json_encode($map_options)?>;
+                    $.post('<?php echo wv()->store_manager->ajax_url?>',{'action':'widget','widget':'location/map','data':map_options},function (data) {
+                        $(".stores-map",$skin).html(data)
+                    },'html')
+
+                }
+                function load_list(){
+                    $.post('<?php echo wv()->store_manager->ajax_url?>',{'action':'widget','widget':'map_list'},function (data) {
+                        $(".stores-list",$skin).html(data)
+                    },'html')
+
+                }
+                load_list()
+
+
                 function fetchStoresByBounds(data) {
                     var ajaxUrl = '<?php echo wv()->store_manager->made('sub01_01')->plugin_url?>/ajax.php';
 

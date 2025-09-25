@@ -42,7 +42,7 @@ $rows = $result['list'];
                                 <img src="<?php echo $manager->plugin_url; ?>/img/category_list/all.png" class="wh-100 object-fit-contain" alt="">
                             </div>
                             <p class="fs-[11/140%//500/] text-nowrap">전체</p>
-                            <a href="#" class="stretched-link"></a>
+                            <a href="<?php echo wv_page_url('0101',array('view_list'=>1)); ?>" class="stretched-link"></a>
                         </div>
                     </div>
                     <?php
@@ -55,7 +55,7 @@ $rows = $result['list'];
                                     <img src="<?php echo $cate['storecategory']['icon_main']['path']; ?>" class="wh-100 object-fit-contain" alt="">
                                 </div>
                                 <p class="fs-[11/140%//500/] text-nowrap"><?php echo $cate['storecategory']['name']; ?></p>
-                                <a href="#" class="stretched-link"></a>
+                                <a href="<?php echo wv_page_url('0101',array('view_list'=>1,'category_wr_id'=>$cate['wr_id'])); ?>" class="stretched-link"></a>
                             </div>
                         </div>
                         <?php
@@ -66,7 +66,7 @@ $rows = $result['list'];
                                 <img src="<?php echo $manager->plugin_url; ?>/img/category_list/other.png" class="wh-100 object-fit-contain" alt="">
                             </div>
                             <p class="fs-[11/140%//500/] text-nowrap">기타</p>
-                            <a href="#" class="stretched-link"></a>
+                            <a href="<?php echo wv_page_url('0101',array('view_list'=>1,'category_wr_id'=>'other')); ?>" class="stretched-link"></a>
                         </div>
                     </div>
                 </div>

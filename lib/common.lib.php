@@ -812,7 +812,10 @@ if(!function_exists('wv_movie_display')){
 if(!function_exists('wv_page_url')){
     function wv_page_url($wv_page_id,$query='',$wvd=''){
 
-        $query_arr = html_entity_decode($query);
+
+
+        $query_arr = $query;
+
 
         $page_qstr = "/?";
         $page_qstr_arr = array('wv_page_id'=>$wv_page_id);
@@ -823,9 +826,10 @@ if(!function_exists('wv_page_url')){
         }
         if($query){
             if(!is_array($query)){
-
-                parse_str($query_arr,$query_arr);
-
+                $query = html_entity_decode($query);
+                parse_str($query,$query_arr);
+            }else{
+                $query_arr = $query;
             }
 
             $page_qstr_arr = wv_merge_without_override($page_qstr_arr,$query_arr);

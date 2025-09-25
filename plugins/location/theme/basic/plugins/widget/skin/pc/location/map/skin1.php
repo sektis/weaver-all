@@ -11,6 +11,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 // 전달받은 옵션 처리
 $map_options = isset($data) && is_array($data) ? $data : array();
+$map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map-' . uniqid();
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-location-map-skin position-relative h-100" style="width: 100%; position: relative;">
     <style>
@@ -29,17 +30,17 @@ $map_options = isset($data) && is_array($data) ? $data : array();
     </style>
 
     <!-- 로딩 오버레이 -->
-    <div class="loading-overlay" id="loading-overlay-<?php echo $skin_id; ?>">
+    <div class="loading-overlay" id="loading-overlay-<?php echo $map_id; ?>">
         <div class="loading-spinner"></div>
     </div>
 
     <!-- 내 위치 버튼 -->
-    <button type="button" class="current-location-btn" id="btn-current-location-<?php echo $skin_id; ?>" title="현재 위치로 이동">
+    <button type="button" class="current-location-btn" id="btn-current-location-<?php echo $map_id; ?>" title="현재 위치로 이동">
         <i class="fa-solid fa-location-crosshairs"></i>
     </button>
 
     <!-- 카카오맵 컨테이너 -->
-    <div class="kakao-map"></div>
+    <div id="<?php echo $map_id; ?>" class="kakao-map"></div>
 
     <script>
         // 카카오맵 라이브러리 로드 확인
@@ -53,7 +54,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 
         $(document).ready(function(){
             var $skin = $("<?php echo $skin_selector?>");
-            var skinId = '<?php echo $skin_id; ?>';
+            var mapId = '<?php echo $map_id; ?>';
             var initialLevel = <?php echo isset($map_options['initial_level']) ? intval($map_options['initial_level']) : 8; ?>;
             var minLevel = <?php echo isset($map_options['min_level']) ? intval($map_options['min_level']) : 1; ?>;
             var maxLevel = <?php echo isset($map_options['max_level']) ? intval($map_options['max_level']) : 14; ?>;
@@ -63,20 +64,6 @@ $map_options = isset($data) && is_array($data) ? $data : array();
             var clusterer = null;
             var markers = [];
             var currentLocationMarker = null;
-
-            // 이벤트 발송 함수
-            function triggerMapChangedEvent() {
-                var bounds = map.getBounds();
-                var center = map.getCenter();
-                var level = map.getLevel();
-                console.log('map changed')
-                $(document).trigger('wv_location_map_changed', {
-                    map_id: skinId,
-                    bounds: bounds,
-                    center: center,
-                    level: level
-                });
-            }
 
             function initMap() {
                 if (!checkKakaoLibraries()) {
@@ -107,7 +94,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
             }
 
             function createMap(lat, lng) {
-                var container = $skin.find('.kakao-map')[0];
+                var container = document.getElementById(mapId);
                 var options = {
                     center: new kakao.maps.LatLng(lat, lng),
                     level: initialLevel
@@ -148,12 +135,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 setupExternalCommunication();
 
                 // 로딩 오버레이 숨기기
-                $skin.find('.loading-overlay').fadeOut();
-
-                // 지도 초기화 완료 후 즉시 이벤트 발송
-                setTimeout(function() {
-                    triggerMapChangedEvent();
-                }, 100);
+                $('#loading-overlay-' + mapId).fadeOut();
             }
 
             function addCurrentLocationMarker(lat, lng) {
@@ -174,39 +156,43 @@ $map_options = isset($data) && is_array($data) ? $data : array();
             function setupMapEvents() {
                 var boundsChangeTimeout;
 
+
                 // 지도 이동/줌 이벤트 (500ms 지연처리)
                 kakao.maps.event.addListener(map, 'bounds_changed', function() {
                     clearTimeout(boundsChangeTimeout);
                     boundsChangeTimeout = setTimeout(function() {
-                        triggerMapChangedEvent();
+                        var bounds = map.getBounds();
+                        var center = map.getCenter();
+                        var level = map.getLevel();
+
+                        // 이벤트 발송
+                        $(document).trigger('wv_location_map_changed', {
+                            map_id: mapId,
+                            bounds: bounds,
+                            center: center,
+                            level: level
+                        });
+                        console.log(1)
                     }, 500);
                 });
 
                 // 현재 위치 버튼 이벤트
-                $skin.find('.current-location-btn').click(function() {
+                $('#btn-current-location-' + mapId).click(function() {
                     getCurrentLocation();
-                    // 현재 위치 이동 후 즉시 이벤트 발송
-                    setTimeout(function() {
-                        triggerMapChangedEvent();
-                    }, 100);
                 });
-
-                // 외부에서 사용할 수 있도록 전역 함수로 등록
-                window['triggerMapEvent_' + skinId] = triggerMapChangedEvent;
             }
 
             function setupExternalCommunication() {
                 // 외부에서 bounds 정보 요청시 응답
                 $(document).on('wv_location_map_request_bounds', function(event, data) {
-                    if (!data.map_id || data.map_id === skinId) {
+                    if (!data.map_id || data.map_id === mapId) {
                         if (map) {
                             var bounds = map.getBounds();
                             var center = map.getCenter();
                             var level = map.getLevel();
 
-
                             $(document).trigger('wv_location_map_bounds_received', {
-                                map_id: skinId,
+                                map_id: mapId,
                                 bounds: bounds,
                                 center: center,
                                 level: level
@@ -217,22 +203,18 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 
                 // 외부에서 특정 위치로 이동 요청시 처리
                 $(document).on('wv_location_map_move_to', function(event, data) {
-                    if ((!data.map_id || data.map_id === skinId) && map && data.lat && data.lng) {
+                    if ((!data.map_id || data.map_id === mapId) && map && data.lat && data.lng) {
                         var movePosition = new kakao.maps.LatLng(data.lat, data.lng);
                         map.setCenter(movePosition);
                         if (data.level) {
                             map.setLevel(data.level);
                         }
-                        // 외부 이동 후 즉시 이벤트 발송
-                        setTimeout(function() {
-                            triggerMapChangedEvent();
-                        }, 100);
                     }
                 });
 
                 // 외부에서 마커 데이터 업데이트 이벤트 수신
                 $(document).on('wv_location_map_markers_update', function(event, data) {
-                    if ((!data.map_id || data.map_id === skinId) && data.markers) {
+                    if ((!data.map_id || data.map_id === mapId) && data.markers) {
                         clearMarkers();
                         addMarkers(data.markers);
                     }
@@ -268,7 +250,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                     (function(markerItem) {
                         kakao.maps.event.addListener(marker, 'click', function() {
                             $(document).trigger('wv_location_map_marker_clicked', {
-                                map_id: skinId,
+                                map_id: mapId,
                                 item: markerItem,
                                 position: position
                             });
