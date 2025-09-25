@@ -175,7 +175,26 @@ $(document).ready(function () {
     });
 
 })
+$(document).loaded('[data-on-value]', function(i, e) {
+    var $switch = $(e);
+    var $checkbox = $switch.find('input[type="checkbox"]');
+    var $label = $switch.find('label');
+    var $text_target = $label;
+    if(!$label.length && $switch.is('label')){
+        $label = $switch;
+        $text_target = $('span',$label)
+    }
+    var onValue = $switch.data('on-value') || '';
+    var offValue = $switch.data('off-value') || '';
 
+    // 초기 라벨 설정
+    $text_target.html($checkbox.is(':checked') ? onValue : offValue);
+
+    // 변경 이벤트 리스너 추가
+    $checkbox.on('change', function() {
+        $text_target.html($(this).is(':checked') ? onValue : offValue);
+    });
+});
 // 부모 리로드 처리 함수
 function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
 

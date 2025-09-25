@@ -53,7 +53,7 @@ $rows = $result['list'];
         }
     </style>
 
-    <div class="position-relative col col-lg-auto w-full md:w-full" style="">
+    <div class="position-relative col col-lg-auto w-full md:w-full" style="border-top:1px solid #efefef">
 
         <div id="<?php echo $skin_id?>-swiper" class="swiper h-100" >
             <div class="swiper-wrapper">

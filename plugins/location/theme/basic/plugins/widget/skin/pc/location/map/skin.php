@@ -22,10 +22,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
         <?php echo $skin_selector?> .loading-overlay {position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000;}
         <?php echo $skin_selector?> .loading-spinner {width: 32px; height: 32px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: wv-map-spin 1s linear infinite;}
         @keyframes wv-map-spin {0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);}}
-        @media (max-width: 991.98px) {
-        <?php echo $skin_selector?> .current-location-btn {bottom: 15px; right: 15px; width: 40px; height: 40px;}
-        <?php echo $skin_selector?> .current-location-btn i {font-size: 16px;}
-        }
+        @media (max-width: 991.98px) {}
     </style>
 
     <!-- 로딩 오버레이 -->
@@ -53,7 +50,6 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 
         $(document).ready(function(){
             var $skin = $("<?php echo $skin_selector?>");
-            var skinId = '<?php echo $skin_id; ?>';
             var initialLevel = <?php echo isset($map_options['initial_level']) ? intval($map_options['initial_level']) : 8; ?>;
             var minLevel = <?php echo isset($map_options['min_level']) ? intval($map_options['min_level']) : 1; ?>;
             var maxLevel = <?php echo isset($map_options['max_level']) ? intval($map_options['max_level']) : 14; ?>;
@@ -71,7 +67,6 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 var level = map.getLevel();
                 console.log('map changed')
                 $(document).trigger('wv_location_map_changed', {
-                    map_id: skinId,
                     bounds: bounds,
                     center: center,
                     level: level
@@ -191,14 +186,12 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                     }, 100);
                 });
 
-                // 외부에서 사용할 수 있도록 전역 함수로 등록
-                window['triggerMapEvent_' + skinId] = triggerMapChangedEvent;
             }
 
             function setupExternalCommunication() {
                 // 외부에서 bounds 정보 요청시 응답
                 $(document).on('wv_location_map_request_bounds', function(event, data) {
-                    if (!data.map_id || data.map_id === skinId) {
+
                         if (map) {
                             var bounds = map.getBounds();
                             var center = map.getCenter();
@@ -206,36 +199,35 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 
 
                             $(document).trigger('wv_location_map_bounds_received', {
-                                map_id: skinId,
                                 bounds: bounds,
                                 center: center,
                                 level: level
                             });
                         }
-                    }
+
                 });
 
                 // 외부에서 특정 위치로 이동 요청시 처리
                 $(document).on('wv_location_map_move_to', function(event, data) {
-                    if ((!data.map_id || data.map_id === skinId) && map && data.lat && data.lng) {
-                        var movePosition = new kakao.maps.LatLng(data.lat, data.lng);
-                        map.setCenter(movePosition);
-                        if (data.level) {
-                            map.setLevel(data.level);
-                        }
-                        // 외부 이동 후 즉시 이벤트 발송
-                        setTimeout(function() {
-                            triggerMapChangedEvent();
-                        }, 100);
+
+                    var movePosition = new kakao.maps.LatLng(data.lat, data.lng);
+                    map.setCenter(movePosition);
+                    if (data.level) {
+                        map.setLevel(data.level);
                     }
+                    // 외부 이동 후 즉시 이벤트 발송
+                    setTimeout(function() {
+                        triggerMapChangedEvent();
+                    }, 100);
+
                 });
 
                 // 외부에서 마커 데이터 업데이트 이벤트 수신
                 $(document).on('wv_location_map_markers_update', function(event, data) {
-                    if ((!data.map_id || data.map_id === skinId) && data.markers) {
+
                         clearMarkers();
                         addMarkers(data.markers);
-                    }
+
                 });
             }
 
@@ -268,7 +260,6 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                     (function(markerItem) {
                         kakao.maps.event.addListener(marker, 'click', function() {
                             $(document).trigger('wv_location_map_marker_clicked', {
-                                map_id: skinId,
                                 item: markerItem,
                                 position: position
                             });

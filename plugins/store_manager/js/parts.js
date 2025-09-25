@@ -13,21 +13,7 @@ $(document).on('click','.wv-data-list-delete-btn',function (e) {
 $(document).ready(function () {
 
 
-    $("body").loaded('.form-switch', function(i, e) {
-        var $switch = $(e);
-        var $checkbox = $switch.find('input[type="checkbox"]');
-        var $label = $switch.find('.form-check-label');
-        var onValue = $switch.data('on-value') || '';
-        var offValue = $switch.data('off-value') || '';
 
-        // 초기 라벨 설정
-        $label.text($checkbox.is(':checked') ? onValue : offValue);
-
-        // 변경 이벤트 리스너 추가
-        $checkbox.on('change', function() {
-            $label.text($(this).is(':checked') ? onValue : offValue);
-        });
-    });
 
     $("body").loaded('.wv-ps-file', function (i, e) {
         var $ps_file = $(e);

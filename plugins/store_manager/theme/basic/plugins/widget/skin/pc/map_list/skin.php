@@ -37,11 +37,7 @@ if ($bounds) {
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget store-list-widget">
     <style>
-        <?php echo $skin_selector?> {
-            padding: 0;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-        }
+        <?php echo $skin_selector?> {}
 
         <?php echo $skin_selector?> .store-item {
             padding: var(--wv-16);
