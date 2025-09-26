@@ -26,7 +26,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
     </style>
 
     <!-- 로딩 오버레이 -->
-    <div class="loading-overlay" id="loading-overlay-<?php echo $skin_id; ?>">
+    <div class="loading-overlay">
         <div class="loading-spinner"></div>
     </div>
 
@@ -55,10 +55,13 @@ $map_options = isset($data) && is_array($data) ? $data : array();
             var maxLevel = <?php echo isset($map_options['max_level']) ? intval($map_options['max_level']) : 14; ?>;
             var isClusterEnabled = <?php echo (isset($map_options['clustering']) ? $map_options['clustering'] : false) ? 'true' : 'false'; ?>;
 
-            var map;
-            var clusterer = null;
+            var map, clusterer;
             var markers = [];
-            var currentLocationMarker = null;
+            var selectedMarkerId = null;
+
+            // 카테고리 아이콘 래핑 이미지 경로 (전역 변수)
+            var markerIconWrap = '';
+            var markerIconWrapOn = '';
 
             // 이벤트 발송 함수
             function triggerMapChangedEvent() {
@@ -81,6 +84,15 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 
                 // 현재 위치 가져오기 및 지도 생성
                 getCurrentLocation();
+            }
+
+            function showLoading(show) {
+                var $loading = $('.loading-overlay',$skin);
+                if (show) {
+                    $loading.show();
+                } else {
+                    $loading.hide();
+                }
             }
 
             function getCurrentLocation() {
@@ -115,23 +127,25 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 map.setMaxLevel(maxLevel);
 
                 // 클러스터러 초기화
-                if (isClusterEnabled) {
-                    clusterer = new kakao.maps.MarkerClusterer({
-                        map: map,
-                        averageCenter: true,
-                        minLevel: 5,
-                        disableClickZoom: false,
-                        styles: [{
-                            width: '30px', height: '30px',
-                            background: 'rgba(51, 204, 255, .8)',
-                            borderRadius: '15px',
-                            color: '#fff',
-                            textAlign: 'center',
-                            fontWeight: 'bold',
-                            lineHeight: '31px'
-                        }]
-                    });
-                }
+                // if (isClusterEnabled) {
+                //     clusterer = new kakao.maps.MarkerClusterer({
+                //         map: map,
+                //         averageCenter: true,
+                //         minLevel: 5,
+                //         disableClickZoom: false,
+                //         styles: [{
+                //             width: '30px', height: '30px',
+                //             background: 'rgba(51, 204, 255, .8)',
+                //             borderRadius: '15px',
+                //             color: '#fff',
+                //             textAlign: 'center',
+                //             fontWeight: 'bold',
+                //             lineHeight: '31px'
+                //         }]
+                //     });
+                // }
+                // 클러스터러 초기화 (안전한 방식)
+                initClusterer();
 
                 // 현재 위치 마커 생성
                 addCurrentLocationMarker(lat, lng);
@@ -143,13 +157,67 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 setupExternalCommunication();
 
                 // 로딩 오버레이 숨기기
-                $skin.find('.loading-overlay').fadeOut();
-
+                showLoading(false);
                 // 지도 초기화 완료 후 즉시 이벤트 발송
                 setTimeout(function() {
                     triggerMapChangedEvent();
                 }, 100);
             }
+
+            function initClusterer() {
+                if (!isClusterEnabled) {
+                    return;
+                }
+
+                try {
+                    // 카카오맵 클러스터러 로드 확인
+                    if (typeof kakao !== 'undefined' &&
+                        kakao.maps &&
+                        typeof kakao.maps.MarkerClusterer === 'function') {
+
+                        clusterer = new kakao.maps.MarkerClusterer({
+                            map: map,
+                            averageCenter: true,
+                            minLevel: Math.max(minLevel + 2, 6),
+                            disableClickZoom: true,  // 기본 클릭 줌 비활성화
+                            calculator: [10, 30, 50],
+                        });
+                        kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
+                            var clusterMarkers = cluster.getMarkers();
+                            if (clusterMarkers.length > 0) {
+                                var bounds = new kakao.maps.LatLngBounds();
+
+                                // 클러스터 내 모든 마커의 위치를 포함하는 영역 계산
+                                for (var i = 0; i < clusterMarkers.length; i++) {
+                                    bounds.extend(clusterMarkers[i].getPosition());
+                                }
+
+                                // 영역 중심점 계산
+                                var centerLat = (bounds.getNorthEast().getLat() + bounds.getSouthWest().getLat()) / 2;
+                                var centerLng = (bounds.getNorthEast().getLng() + bounds.getSouthWest().getLng()) / 2;
+                                var clusterCenter = new kakao.maps.LatLng(centerLat, centerLng);
+
+                                // 현재 줌 레벨보다 1-2 단계 확대
+                                var currentLevel = map.getLevel();
+                                var newLevel = Math.max(currentLevel - 2, minLevel + 1);
+
+                                // 부드러운 이동과 줌 조정
+                                map.panTo(clusterCenter);
+                                setTimeout(function() {
+                                    map.setLevel(newLevel);
+                                }, 300);  // 이동 후 줌 조정
+                            }
+                        });
+                    } else {
+                        isClusterEnabled = false;
+                        clusterer = null;
+                    }
+                } catch (error) {
+                    isClusterEnabled = false;
+                    clusterer = null;
+                }
+            }
+
 
             function addCurrentLocationMarker(lat, lng) {
                 var position = new kakao.maps.LatLng(lat, lng);
@@ -227,81 +295,268 @@ $map_options = isset($data) && is_array($data) ? $data : array();
 
                 // 범용 위치 데이터 업데이트 이벤트 수신 (가공된 데이터)
                 $skin.on('wv_location_map_updated', function(event, data) {
-                    console.log('received wv_location_map_updated', data);
-                    if (data && data.lists) {
-                        clearMarkers();
-                        addMarkers(data.lists);
-                        console.log('markers updated:', data.lists.length);
+                    if (data.marker_wrap) {
+                        markerIconWrap = data.marker_wrap;
+                    }
+                    if (data.marker_wrap_on) {
+                        markerIconWrapOn = data.marker_wrap_on;
+                    }
+
+
+
+                    if (data.lists && Array.isArray(data.lists)) {
+                        updateMarkers(data.lists, data);
                     }
                 });
             }
 
-            function clearMarkers() {
-                if (clusterer) {
-                    clusterer.clear();
+
+            function updateMarkers(lists, response) {
+                if (!map) return;
+
+                // 새로운 매장 목록에서 id 추출
+                var newPlaceIds = lists.map(function(place) {
+                    return place.id;
+                });
+
+                // 기존 마커들에서 id 추출
+                var existingPlaceIds = markers.map(function(marker) {
+                    return marker.placeData ? marker.placeData.id : null;
+                }).filter(function(id) { return id !== null; });
+
+                // 1. 제거할 마커들 (기존에 있지만 새 목록에 없는 것들)
+                var markersToRemove = markers.filter(function(marker) {
+                    return marker.placeData && newPlaceIds.indexOf(marker.placeData.id) === -1;
+                });
+
+                // 2. 추가할 매장들 (새 목록에 있지만 기존에 없는 것들)
+                var placesToAdd = lists.filter(function(place) {
+                    return existingPlaceIds.indexOf(place.id) === -1;
+                });
+
+                // 3. 제거할 마커들 처리
+                markersToRemove.forEach(function(marker) {
+                    if (isClusterEnabled && clusterer) {
+                        try {
+                            clusterer.removeMarker(marker);
+                        } catch (error) {
+                            marker.setMap(null);
+                        }
+                    } else {
+                        marker.setMap(null);
+                    }
+
+                    // markers 배열에서 제거
+                    var index = markers.indexOf(marker);
+                    if (index > -1) {
+                        markers.splice(index, 1);
+                    }
+                });
+
+                // 4. 새로운 마커들 추가
+                var processedMarkers = 0;
+                var totalNewMarkers = placesToAdd.length;
+
+                if (totalNewMarkers === 0) {
+                    return; // 추가할 마커가 없으면 종료
                 }
-                for (var i = 0; i < markers.length; i++) {
-                    markers[i].setMap(null);
-                }
-                markers = [];
+
+                placesToAdd.forEach(function(place, index) {
+                    if (!place.lat || !place.lng) {
+                        processedMarkers++;
+                        return;
+                    }
+
+                    var position = new kakao.maps.LatLng(place.lat, place.lng);
+                    var categoryIcon = place.marker.image ? place.marker.image : null;
+
+                    // 커스텀 마커 이미지 생성 (비동기)
+                    createCustomMarkerImage(categoryIcon, false, function(markerImage) {
+                        // 마커 생성
+                        var marker = new kakao.maps.Marker({
+                            position: position,
+                            title: place.name,
+                            image: markerImage
+                        });
+
+                        // 마커에 place 정보와 이미지 정보 저장
+                        marker.placeData = place;
+                        marker.categoryIcon = categoryIcon;
+                        marker.markerId = 'marker_' + place.id;
+
+                        // 선택된 마커 이미지 미리 생성
+                        createCustomMarkerImage(categoryIcon, true, function(selectedMarkerImage) {
+                            marker.selectedImage = selectedMarkerImage;
+                        });
+
+                        // 마커 클릭 이벤트
+                        kakao.maps.event.addListener(marker, 'click', function() {
+                            handleMarkerClick(marker, place, response);
+                        });
+
+                        // 클러스터링 적용 또는 개별 마커 표시
+                        if (isClusterEnabled && clusterer) {
+                            try {
+                                clusterer.addMarker(marker);
+                            } catch (error) {
+                                marker.setMap(map);
+                            }
+                        } else {
+                            marker.setMap(map);
+                        }
+
+                        markers.push(marker);
+                        processedMarkers++;
+
+                        // 모든 새 마커 처리 완료 시
+                        if (processedMarkers === totalNewMarkers) {
+                            // 처리 완료
+                        }
+                    });
+                });
             }
 
-            function addMarkers(markersData) {
-                for (var i = 0; i < markersData.length; i++) {
-                    var item = markersData[i];
-                    if (!item.lat || !item.lng) continue;
+            /**
+             * 이미지 합성 함수 - 배경 위에 카테고리 아이콘을 올려서 새로운 마커 이미지 생성
+             */
+            function createCompositeMarkerImage(backgroundImageUrl, categoryIconUrl, isSelected, callback) {
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                var loadedImages = 0;
+                var totalImages = 2;
 
-                    var position = new kakao.maps.LatLng(
-                        parseFloat(item.lat),
-                        parseFloat(item.lng)
-                    );
+                // 캔버스 크기 설정 (마커 크기)
+                canvas.width = 36;
+                canvas.height = 36;
 
-                    // 마커 생성 옵션
-                    var markerOptions = {
-                        position: position,
-                        title: item.name || '위치'
-                    };
+                var backgroundImg = new Image();
+                var categoryImg = new Image();
 
-                    // 커스텀 마커 이미지 처리
-                    if (item.marker && item.marker.image) {
-                        markerOptions.image = new kakao.maps.MarkerImage(
-                            item.marker.image,
-                            new kakao.maps.Size(
-                                item.marker.width || 24,
-                                item.marker.height || 24
-                            ),
-                            {
-                                offset: new kakao.maps.Point(
-                                    (item.marker.width || 24) / 2,
-                                    (item.marker.height || 24) / 2
-                                )
-                            }
-                        );
+                function onImageLoad() {
+                    loadedImages++;
+                    if (loadedImages === totalImages) {
+                        // 모든 이미지가 로드되면 합성
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        // 배경 이미지 그리기 (전체 크기)
+                        ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+                        // 카테고리 아이콘 그리기 (중앙 위치, 조금 작게)
+                        var iconSize = 20; // 카테고리 아이콘 크기
+                        var iconX = (canvas.width - iconSize) / 2;
+                        var iconY = (canvas.height - iconSize) / 2;
+                        ctx.drawImage(categoryImg, iconX, iconY, iconSize, iconSize);
+
+                        // Canvas를 데이터 URL로 변환
+                        var dataUrl = canvas.toDataURL('image/png');
+
+                        // 마커 이미지 생성
+                        var size = new kakao.maps.Size(36, 36);
+                        var option = { offset: new kakao.maps.Point(18, 36) };
+                        var markerImage = new kakao.maps.MarkerImage(dataUrl, size, option);
+
+                        callback(markerImage);
                     }
-
-                    var marker = new kakao.maps.Marker(markerOptions);
-
-                    // 마커 클릭 이벤트
-                    (function(markerItem) {
-                        kakao.maps.event.addListener(marker, 'click', function() {
-                            $(document).trigger('wv_location_map_marker_clicked', {
-                                item: markerItem,
-                                position: position
-                            });
-                        });
-                    })(item);
-
-                    markers.push(marker);
                 }
 
-                // 클러스터러에 마커 추가
-                if (clusterer) {
-                    clusterer.addMarkers(markers);
+                backgroundImg.onload = onImageLoad;
+                categoryImg.onload = onImageLoad;
+
+                backgroundImg.onerror = function() {
+                    // 배경 이미지 로드 실패시 기본 마커 사용
+                    callback(createDefaultMarkerImage(isSelected));
+                };
+
+                categoryImg.onerror = function() {
+                    // 카테고리 이미지 로드 실패시 기본 마커 사용
+                    callback(createDefaultMarkerImage(isSelected));
+                };
+
+                backgroundImg.src = backgroundImageUrl;
+                categoryImg.src = categoryIconUrl;
+            }
+
+            /**
+             * 커스텀 마커 이미지 생성 (수정된 버전)
+             */
+            function createCustomMarkerImage(categoryIcon, isSelected, callback) {
+                // 카테고리 아이콘과 래핑 이미지가 모두 있는 경우 합성 마커 생성
+                if (categoryIcon && markerIconWrap && markerIconWrapOn) {
+                    var backgroundImageUrl = isSelected ? markerIconWrapOn : markerIconWrap;
+                    createCompositeMarkerImage(backgroundImageUrl, categoryIcon, isSelected, callback);
                 } else {
-                    for (var j = 0; j < markers.length; j++) {
-                        markers[j].setMap(map);
-                    }
+                    // 기본 마커 사용
+                    callback(createDefaultMarkerImage(isSelected));
                 }
+            }
+
+            function handleMarkerClick(clickedMarker, place, response) {
+
+                // 기존 선택 해제
+                clearSelectedMarkers();
+
+                // 현재 마커 선택 표시
+                selectedMarkerId = clickedMarker.markerId;
+                clickedMarker.isSelected = true;
+
+                // 선택된 마커 이미지로 변경
+                if (clickedMarker.selectedImage) {
+                    clickedMarker.setImage(clickedMarker.selectedImage);
+                } else {
+                    // 선택된 이미지가 아직 준비되지 않은 경우 새로 생성
+                    createCustomMarkerImage(clickedMarker.categoryIcon, true, function(selectedMarkerImage) {
+                        clickedMarker.setImage(selectedMarkerImage);
+                    });
+                }
+
+            }
+
+            /**
+             * 선택된 마커 해제
+             */
+            function clearSelectedMarkers() {
+                markers.forEach(function(marker) {
+                    if (marker.isSelected) {  // 조건 수정: 모든 선택된 마커 해제
+                        marker.isSelected = false;
+                        // 원래 이미지로 복원 (비선택 상태)
+                        createCustomMarkerImage(marker.categoryIcon, false, function(originalImage) {
+                            marker.setImage(originalImage);
+                        });
+                    }
+                });
+                selectedMarkerId = null;
+            }
+
+            /**
+             * 기본 마커 이미지 생성
+             */
+            function createDefaultMarkerImage(isSelected) {
+                var size = new kakao.maps.Size(36, 36);
+                var option = { offset: new kakao.maps.Point(18, 36) };
+                var defaultIcon = isSelected ?
+                    'data:image/svg+xml;base64,' + btoa(getDefaultSelectedMarkerSvg()) :
+                    'data:image/svg+xml;base64,' + btoa(getDefaultMarkerSvg());
+                return new kakao.maps.MarkerImage(defaultIcon, size, option);
+            }
+
+            /**
+             * 기본 마커 SVG
+             */
+            function getDefaultMarkerSvg() {
+                return '<svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="18" cy="18" r="16" fill="#ff6b6b" stroke="#fff" stroke-width="2"/>' +
+                    '<circle cx="18" cy="18" r="8" fill="#fff"/>' +
+                    '</svg>';
+            }
+
+            /**
+             * 선택된 마커 SVG
+             */
+            function getDefaultSelectedMarkerSvg() {
+                return '<svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="18" cy="18" r="16" fill="#007bff" stroke="#fff" stroke-width="2"/>' +
+                    '<circle cx="18" cy="18" r="8" fill="#fff"/>' +
+                    '</svg>';
             }
 
             // 초기화 실행

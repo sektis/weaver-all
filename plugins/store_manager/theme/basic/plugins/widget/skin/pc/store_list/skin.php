@@ -26,9 +26,8 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
         #content-wrapper>.container{height: 100%}
 
         <?php echo $skin_selector?> {}
-        <?php echo $skin_selector?> .view-toggle-btn{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:1000;background:#fffffff2;border:1px solid #ddd;border-radius:var(--wv-8);padding:var(--wv-12) var(--wv-20);cursor:pointer;box-shadow:0 4px 12px #00000026;backdrop-filter:blur(4px);transition:all .2s;font-weight:500;color:#333}
-        <?php echo $skin_selector?> .view-toggle-btn:hover{background:#f8f9fa;transform:translateX(-50%) translateY(-2px);box-shadow:0 6px 16px #0003}
-        <?php echo $skin_selector?> .view-toggle-btn i {margin-right: var(--wv-8);}
+        <?php echo $skin_selector?> .view-toggle-btn{position:absolute;bottom: var(--wv-43);left:50%;transform:translateX(-50%);z-index:1000;background:#0d171b;border-radius:var(--wv-43);padding:var(--wv-8) var(--wv-18);cursor:pointer;box-shadow: 0 var(--wv-4) var(--wv-4) 0 rgba(103, 103, 103, 0.25);;backdrop-filter:blur(4px);transition:all .2s;
+                                        color:#fff;font-size: var(--wv-12);font-weight:500}
         <?php echo $skin_selector?> .stores-wrap {position: relative;}
         <?php echo $skin_selector?> .stores-map, <?php echo $skin_selector?> .stores-list{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;visibility:hidden;transition:all .3s ease}
         <?php echo $skin_selector?> .stores-map.active, <?php echo $skin_selector?> .stores-list.active {opacity: 1;visibility: visible;}
@@ -56,9 +55,9 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     </div>
 
 
-                    <label class="view-toggle-btn"   data-on-value='<i class="fa-solid fa-list" id="toggle-icon"></i> 목록으로 보기'  data-off-value='<i class="fa-solid fa-map" id="toggle-icon"></i> 지도로 보기'>
+                    <label class="view-toggle-btn"   data-on-value='<img src="<?php echo wv()->store_manager->plugin_url; ?>/img/burger_white.png" class="w-[16px]"> 목록으로 보기'  data-off-value='<img src="<?php echo wv()->store_manager->plugin_url; ?>/img/map_white.png" class="w-[16px]"> 지도로 보기'>
                         <input class="d-none view-toggle" type="checkbox" value="1" <?php echo $initial_mode=='map' ? 'checked' : ''; ?>>
-                        <span></span>
+                        <span class="hstack" style="gap:var(--wv-5)"></span>
                     </label>
 
                 </div>
@@ -189,14 +188,9 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
 
                 // 매장 데이터를 범용 마커 데이터로 가공하여 전송
                 function triggerStoreUpdateEvent(responseContent) {
-                    // store 데이터를 범용 마커 데이터로 변환
-                    var processedData = {
-                        count: responseContent.content.count,
-                        lists: responseContent.content.lists
-                    };
 
-                    console.log('send processed data:', processedData.count);
-                    $map_event_target.trigger('wv_location_map_updated', [processedData]);
+
+                    $map_event_target.trigger('wv_location_map_updated', [responseContent.content]);
                 }
 
             });

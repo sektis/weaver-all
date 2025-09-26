@@ -40,8 +40,6 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
 
 
         $arr['category_item'] = $cate_item->row;
-
-        $arr['category_icon'] =  $this->manager->plugin_url.'/img/category_list/small/'.$cate_item->wr_id.'.png';
         $first_image = array_values($row['image'])[0];
 
         $arr['main_image'] =  $first_image['path'];

@@ -69,9 +69,7 @@ if($action == 'get_stores_by_bounds'){
                 'lat' => $lat,
                 'lng' => $lng,
                 'marker' => array(
-                    'image'=>isset($item['store']['category_icon']) ? $item['store']['category_icon'] : '',
-                    'width'=>30,
-                    'height'=>30
+                    'image'=>$item['store']['category_item']['icon']['path'],
                 ),
 
             );
