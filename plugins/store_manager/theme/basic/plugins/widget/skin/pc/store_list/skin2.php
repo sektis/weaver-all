@@ -83,6 +83,24 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     searchData.category_wr_id = $(this).data('category-wr-id');
                 })
 
+                // 지도 이벤트 리스너
+                $(document).on('wv_location_map_changed', function(event, data) {
+
+                    searchData = $.extend({}, searchData, {
+                        sw_lat: data.bounds.getSouthWest().getLat(),
+                        sw_lng: data.bounds.getSouthWest().getLng(),
+                        ne_lat: data.bounds.getNorthEast().getLat(),
+                        ne_lng: data.bounds.getNorthEast().getLng(),
+                        center: {
+                            lat: data.center.getLat(),
+                            lng: data.center.getLng()
+                        },
+
+                    });
+
+                    view_reload()
+                });
+
                 // 초기 로드
                 if (currentMode === 'map') {
                     loadMap();
@@ -151,24 +169,6 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     }
                 }
 
-                // 지도 이벤트 리스너
-                $(document).on('wv_location_map_changed', function(event, data) {
-
-                    searchData = $.extend({}, searchData, {
-                        sw_lat: data.bounds.getSouthWest().getLat(),
-                        sw_lng: data.bounds.getSouthWest().getLng(),
-                        ne_lat: data.bounds.getNorthEast().getLat(),
-                        ne_lng: data.bounds.getNorthEast().getLng(),
-                        center: {
-                            lat: data.center.getLat(),
-                            lng: data.center.getLng()
-                        },
-
-                    });
-
-                    view_reload()
-                });
-
                 // 바운드 변경에 따른 매장 데이터 조회
                 function fetchStoresByBounds() {
 
@@ -192,7 +192,22 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     // store 데이터를 범용 마커 데이터로 변환
                     var processedData = {
                         count: responseContent.content.count,
-                        lists: responseContent.content.lists
+                        lists: responseContent.content.lists.map(function(store) {
+                            return {
+                                id: store.wr_id || store.id,
+                                lat: store.location ? store.location.lat : (store.lat || ''),
+                                lng: store.location ? store.location.lng : (store.lng || ''),
+                                name: store.store ? store.store.name : (store.name || '매장'),
+                                marker: {
+                                    // 카테고리에 따른 마커 이미지 (추후 확장 가능)
+                                    image: responseContent.content.category_icon_wrap,
+                                    width: 30,
+                                    height: 30
+                                },
+                                // 원본 데이터도 포함 (필요시 사용)
+                                raw_data: store
+                            };
+                        })
                     };
 
                     console.log('send processed data:', processedData.count);
