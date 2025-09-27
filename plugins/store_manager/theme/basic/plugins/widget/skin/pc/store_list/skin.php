@@ -8,14 +8,11 @@ $map_options = array(
     'min_level' => 4,       // 최소 줌 레벨 (최대 확대)
     'max_level' => 9       // 최대 줌 레벨 (최대 축소)
 );
+if($data['map_otion']){
+    $map_options = array_merge($map_options,$data['map_otion']);
+}
 
-// 검색 조건 및 표시 옵션
-$se = array(
-    'q' => isset($data['q']) ? $data['q'] : '',
-    'category_wr_id' => isset($data['category_wr_id']) ? $data['category_wr_id'] : '',
-    'list_view' => isset($data['list_view']) ? $data['list_view'] : false,
-    'where' => isset($data['where']) ? $data['where'] : array()
-);
+$location_current = wv()->location->get('current');
 
 // 초기 표시 모드 결정 (list_view가 있으면 목록, 없으면 지도)
 $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
@@ -31,6 +28,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
         <?php echo $skin_selector?> .stores-wrap {position: relative;}
         <?php echo $skin_selector?> .stores-map, <?php echo $skin_selector?> .stores-list{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;visibility:hidden;transition:all .3s ease}
         <?php echo $skin_selector?> .stores-map.active, <?php echo $skin_selector?> .stores-list.active {opacity: 1;visibility: visible;}
+        <?php echo $skin_selector?> .list-each {position: absolute;bottom: var(--wv-17);left:50%;transform: translateX(-50%);border-radius: var(--wv-4);background: #fff;box-shadow: 0 0 var(--wv-4) 0 rgba(67, 67, 67, 0.25);width: 90%;z-index: 1001;padding: var(--wv-12) var(--wv-10) var(--wv-20)}
 
         @media (min-width: 992px) {}
         @media (max-width: 991.98px) {}
@@ -48,6 +46,8 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     <div class="h-100 stores-map <?php echo $initial_mode === 'map' ? 'active' : ''; ?>">
 
                     </div>
+
+                    <div class="list-each" style="display: none"></div>
 
                     <!-- 목록 영역 -->
                     <div class="h-100 stores-list <?php echo $initial_mode === 'list' ? 'active' : ''; ?>">
@@ -69,17 +69,21 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                 var $skin = $("<?php echo $skin_selector?>");
                 var currentMode = '<?php echo $initial_mode; ?>'; // 'map' 또는 'list'
                 var map_loaded = false;
-                var $map_event_target = '';
+                var $map_event_target = $(".stores-map>*",$skin);
+                var $list_each = $(".list-each",$skin);
+                var $location_current = <?php echo json_encode($location_current)?>;
 
                 // 검색 데이터 저장 (스위칭 시 재사용)
                 var searchData = {
                     q: '<?php echo addslashes($data['q']); ?>',
                     category_wr_id: '<?php echo (int) $data['category_wr_id']; ?>',
-                    where: ''
+                    limit_km: '<?php echo (int) $data['limit_km']?$data['limit_km']:0; ?>',
+                    center:$location_current
                 };
 
                 $('.scroll-category-link',$skin).click(function () {
                     searchData.category_wr_id = $(this).data('category-wr-id');
+                    view_reload()
                 })
 
                 // 초기 로드
@@ -101,21 +105,19 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     $.post('<?php echo wv()->store_manager->ajax_url?>', {'action': 'widget','widget': 'location/map','data': mapOptions}, function(data) {
                         $(".stores-map", $skin).html(data);
                         map_loaded=true;
-                        $map_event_target = $(".stores-map>*",$skin)
-                        console.log('map loaded');
+                        $map_event_target = $(".stores-map>*",$skin);
+
                     }, 'html');
                 }
 
                 // 목록 로드 함수
                 function loadList() {
-                    var listData = $.extend({}, searchData, {
-                        action: 'widget',
-                        widget: 'map_list'
-                    });
+                    $(".stores-list", $skin).html('');
+                    var listData = $.extend({}, searchData, {action: 'get_store_list',widget: 'map_list',limit_km:0});
 
                     $.post('<?php echo wv()->store_manager->ajax_url?>', listData, function(data) {
                         $(".stores-list", $skin).html(data);
-                        console.log('list loaded');
+
                     }, 'html');
                 }
 
@@ -136,17 +138,23 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                         $listArea.addClass('active');
                         currentMode = 'list';
                     }
+                    view_reload()
                 }
 
-                function view_reload(data){
+                function view_reload(){
+                    view_list_each();
                     if(currentMode=='map'){
                         // 지도가 로드되지 않았다면 로드
                         if (!map_loaded) {
                             loadMap();
+                        }else{
+                            fetchStoresByBounds();
                         }
-                        fetchStoresByBounds();
+                        console.log('map loaded');
+
                     }else{
                         loadList();
+                        console.log('list loaded');
                     }
                 }
 
@@ -168,11 +176,28 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     view_reload()
                 });
 
+                // 지도 마커 클릭 이벤트 리스너
+                $(document).on('wv_location_map_marker_clicked', function(event, data) {
+
+                    view_list_each(data.place.list_each)
+
+                });
+
+                function view_list_each(html){
+                    if(html){
+                        $list_each.html(html);
+                        $list_each.show();
+                    }else{
+                        $list_each.hide();
+                    }
+                }
+
                 // 바운드 변경에 따른 매장 데이터 조회
                 function fetchStoresByBounds() {
 
                     var requestData = $.extend({}, searchData, {
-                        action: 'get_stores_by_bounds',
+                        action: 'get_store_list',
+
                     });
 
                     $.ajax({

@@ -1582,6 +1582,7 @@ class StoreManager extends Makeable{
         $defaults = array(
             'page'       => 1,
             'rows'       => 20,
+            'select'     => array(),  // 새로 추가
             'where'      => array(),
             'where_default'      => array('w.wr_is_comment=0'),
             'select_w'   => 'w.*',
@@ -1858,7 +1859,15 @@ class StoreManager extends Makeable{
         $select_sql = $select_w;
         if ($select_s !== '') $select_sql .= ', '.$select_s;
 
-        // 조인 select 추가
+// 일반 select 배열 추가 (신규)
+        $user_selects = $opts['select'];
+        if(is_array($user_selects) && count($user_selects)){
+            $select_sql .= ', '.implode(', ', $user_selects);
+        } else if(is_string($user_selects) && trim($user_selects) !== ''){
+            $select_sql .= ', '.trim($user_selects);
+        }
+
+// 조인 select 추가
         if(count($join_selects)){
             $select_sql .= ', '.implode(', ', $join_selects);
         }

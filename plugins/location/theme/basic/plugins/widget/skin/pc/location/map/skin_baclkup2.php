@@ -210,7 +210,8 @@ $map_id = isset($map_options['map_id']) ? $map_options['map_id'] : 'location-map
                 var mapOption = {
                     center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심점
                     level: initialLevel,
-
+                    minLevel: minLevel,
+                    maxLevel: maxLevel
                 };
 
                 map = new kakao.maps.Map(mapContainer, mapOption);

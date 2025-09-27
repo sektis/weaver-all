@@ -1,16 +1,10 @@
 <?php
 include_once '_common.php';
 
-if($action == 'get_stores_by_bounds'){
+if($action == 'get_store_list'){
 
-    // 입력값 검증
-    if (!$sw_lat || !$sw_lng || !$ne_lat || !$ne_lng) {
-        alert('잘못된 좌표 정보입니다.');
-    }
 
-    if ($sw_lat >= $ne_lat || $sw_lng >= $ne_lng) {
-        alert('좌표 범위가 올바르지 않습니다.');
-    }
+
 
     // Store Manager에서 매장 목록 조회
     $manager = wv()->store_manager->made('sub01_01');
@@ -19,28 +13,52 @@ if($action == 'get_stores_by_bounds'){
 
     // get_list 옵션
     $options = array(
+        'select'=>array(),
         'where' =>    array(
             " location_lat  <>'' ",
             " location_lng <>'' "
         ),
-        'where_location' => array('and' =>
+        'select_store'=>array('list_each','service'),
+        'order_by' => 'w.wr_datetime DESC',
+        'rows' => $rows?$rows:30,
+        'with_list_part'=>false
+    );
+
+    if($category_wr_id and $category_wr_id!='all'){
+        if($category_wr_id=='other'){
+            $options['where_store'] = array('category_wr_id' => ">11");
+        }else{
+            $options['where_store'] = array('category_wr_id' => "={$category_wr_id}");
+        }
+
+    }
+
+    $need_bound_check=false;
+    if ($sw_lat and $sw_lng and $ne_lat and $ne_lng) {
+        if ($sw_lat >= $ne_lat || $sw_lng >= $ne_lng) {
+            alert('좌표 범위가 올바르지 않습니다.');
+        }
+        $need_bound_check=true;
+
+
+        $options['where_location'] = array('and' =>
             array(
                 'lat' => "BETWEEN {$sw_lat} AND {$ne_lat} ",
 
                 'lng' => "BETWEEN {$sw_lng} AND {$ne_lng} "
             ),
-        ),
-        'select_store'=>array('list_each','service'),
-        'order_by' => 'w.wr_datetime DESC',
-        'rows' => 1000,  // 최대 1000개까지,
-        'with_list_part'=>false
-    );
-    if($curr_coords){
-        $distance_options = wv_make_current_location_distance_options($curr_coords);
-        $options = array_merge($options, $distance_options);
+        );
+//        $distance_option = wv_make_distance_options($center['lat'],$center['lng'],'', $limit_km);
+
+    }elseif($center){
+        $options = wv_make_distance_options($center['lat'],$center['lng'],$options, $limit_km);
     }
 
+
+
     $result = $manager->get_list($options);
+
+
     // 응답 데이터 정리
     $stores = array();
 
@@ -59,7 +77,7 @@ if($action == 'get_stores_by_bounds'){
             if (!$lat || !$lng) continue;
 
             // 범위 재검증 (혹시나 하는 이중체크)
-            if ($lat < $sw_lat || $lat > $ne_lat || $lng < $sw_lng || $lng > $ne_lng) {
+            if ($need_bound_check and ($lat < $sw_lat || $lat > $ne_lat || $lng < $sw_lng || $lng > $ne_lng)) {
                 continue;
             }
 
@@ -71,12 +89,13 @@ if($action == 'get_stores_by_bounds'){
                 'marker' => array(
                     'image'=>$item['store']['category_item']['icon']['path'],
                 ),
+                'list_each'=>$item['store']['list_each']
 
             );
         }
     }
-    // 성공 응답
-    wv_json_exit(array(
+
+    $return = array(
         'result' => true,
         'content' => array(
             'count' => $result['total_count'],
@@ -85,7 +104,14 @@ if($action == 'get_stores_by_bounds'){
             'marker_wrap_on'=>wv()->store_manager->made('sub01_01')->plugin_url.'/img//category_icon_wrap_on.png',
             'timestamp' => time()
         )
-    ));
+    );
+
+    if($widget){
+        echo wv_widget($widget, $return);
+        exit;
+    }
+    // 성공 응답
+    wv_json_exit($return);
 }
 
 if($action=='form'){

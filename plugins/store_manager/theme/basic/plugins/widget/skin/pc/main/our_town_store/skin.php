@@ -18,12 +18,12 @@ foreach ($saved_favo_towns as $k=> $v){
         'region_3depth_name'=> "='".wv_trans_sido($v['region_3depth_name'],1)."'",
     );
 }
+$current = wv()->location->get('current');
+$distance_options = wv_make_distance_options($current['lat'],$current['lng'],'',0);
 
-$distance_options = wv_make_current_location_distance_options(  wv()->location->get('current'));
 
 
-
-//$options = array_merge($options, $distance_options);
+$options = array_merge($options, $distance_options);
 
 $result = wv()->store_manager->made('sub01_01')->get_list($options);
 

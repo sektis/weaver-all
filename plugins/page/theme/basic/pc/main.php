@@ -6,7 +6,7 @@
     <?php
     $data = array(
     );
-    echo wv_widget('main/map',$data);
+//    echo wv_widget('main/map',$data);
     ?>
 
     <?php

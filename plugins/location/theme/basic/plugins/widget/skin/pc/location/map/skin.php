@@ -68,8 +68,8 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 var bounds = map.getBounds();
                 var center = map.getCenter();
                 var level = map.getLevel();
-
-                $(document).trigger('wv_location_map_changed', {
+                console.log('map changed')
+                $skin.trigger('wv_location_map_changed', {
                     bounds: bounds,
                     center: center,
                     level: level
@@ -264,7 +264,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                         var center = map.getCenter();
                         var level = map.getLevel();
 
-                        $(document).trigger('wv_location_map_bounds_received', {
+                        $skin.trigger('wv_location_map_bounds_received', {
                             bounds: bounds,
                             center: center,
                             level: level
@@ -508,6 +508,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                         clickedMarker.setImage(selectedMarkerImage);
                     });
                 }
+                $skin.trigger('wv_location_map_marker_clicked', {place});
 
             }
 

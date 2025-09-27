@@ -11,7 +11,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         @media (max-width: 991.98px) {}
     </style>
 
-    <div class="position-relative col col-lg-auto w-[328px]    " style="padding: var(--wv-12) var(--wv-10);border-radius: var(--wv-4);box-shadow: 0 0 var(--wv-4) 0 rgba(67, 67, 67, 0.25);background-color: #fff;overflow:hidden;">
+    <div class="position-relative col col-lg-auto w-full   " style=" ">
 
         <div >
             <div class="row" style="--bs-gutter-x: var(--wv-12)">
@@ -26,6 +26,9 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                             <div>
                                 <p class="fs-[14//-0.56/700/#0D171B]"><?php echo $row['name']; ?></p>
                                 <p class="fs-[12//-0.48/500/#0D171B] mt-[2px]"><?php echo $row['category_item']['name']; ?></p>
+                                <?php if($row['distance_km']){ ?>
+                                <p class="fs-[12//-0.48/500/#0D171B] mt-[2px]"><?php echo $row['distance_km']; ?></p>
+                                <?php } ?>
                             </div>
 
                             <a href=""></a>
