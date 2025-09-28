@@ -6,14 +6,9 @@ use weaver\store_manager\StoreSchemaInterface;
 class Invite extends StoreSchemaBase implements StoreSchemaInterface{
 
     protected $columns = array(
-        'invitee_member_wr_id' => "INT(11) NOT NULL",
+        'invite_member_wr_id' => "INT(11) NOT NULL",
         'invite_code' => "VARCHAR(50) DEFAULT NULL",
-        'invite_status' => "VARCHAR(20) NOT NULL DEFAULT 'pending'",
-        'reward_given' => "TINYINT(1) NOT NULL DEFAULT 0",
         'invite_date' => "DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP",
-        'accepted_date' => "DATETIME DEFAULT NULL",
-        'reward_date' => "DATETIME DEFAULT NULL",
-        'memo' => "TEXT DEFAULT NULL"
     );
 
     protected $checkbox_fields = array('reward_given');
@@ -21,14 +16,9 @@ class Invite extends StoreSchemaBase implements StoreSchemaInterface{
     public function get_indexes(){
         return array(
             array(
-                'name' => 'idx_invitee_member_wr_id',
+                'name' => 'idx_invite_member_wr_id',
                 'type' => 'INDEX',
-                'cols' => array('invitee_member_wr_id')
-            ),
-            array(
-                'name' => 'idx_invite_status',
-                'type' => 'INDEX',
-                'cols' => array('invite_status')
+                'cols' => array('invite_member_wr_id')
             ),
             array(
                 'name' => 'idx_invite_date',

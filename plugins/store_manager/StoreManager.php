@@ -810,7 +810,7 @@ class StoreManager extends Makeable{
         if(!isset($data['wr_id'])){
             alert('wr_id 누락');
         }
-
+//dd($data);
 
         try {
             wv_execute_query_safe("START TRANSACTION", "transaction_start");

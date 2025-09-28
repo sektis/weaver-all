@@ -7,10 +7,24 @@ $invite_manager = wv()->store_manager->made('invite');
 
 // 나를 초대한 내역들
 $invited_me = $invite_manager->get_list(array(
-    'where_invite' => array('invitee_member_wr_id' => '='.$current_member_wr_id),
+    'where_invite' => array('invite_member_wr_id' => '='.$current_member_wr_id),
     'order_by' => 'w.wr_datetime DESC',
-    'rows' => 50
+    'rows' => 10
 ));
+//$sql = "select mb_id from g5_write_member where mb_id<>'admin' order by wr_id asc limit 200";
+//$result = sql_query($sql,1);
+//while ($row= sql_fetch_array($result)){
+//    $data=array(
+//        'wr_id'=>'',
+//        'wr_content'=>'/',
+//        'mb_id'=>$row['mb_id'],
+//        'invite'=>array(
+//                'invite_member_wr_id'=>646
+//        )
+//    );
+//    wv('store_manager')->made('invite')->set($data);
+//}
+
 ?>
 <div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
     <style>

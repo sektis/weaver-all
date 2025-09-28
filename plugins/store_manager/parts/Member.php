@@ -67,9 +67,7 @@ class Member extends StoreSchemaBase{
         // 새 회원 생성시 invite_code 생성
         $invite_code = $this->generate_unique_invite_code();
         if($invite_code){
-            $ext_table = $this->manager->get_ext_table_name();
-            $physical_col = $this->manager->get_physical_col('member', 'invite_code');
-            sql_query("UPDATE {$ext_table} SET {$physical_col} = '{$invite_code}' WHERE wr_id = '{$wr_id}'");
+            $data['invite_code'] = $invite_code;
         }
     }
 
