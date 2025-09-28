@@ -46,12 +46,15 @@ global $g5;
 
                         <div>
                             <p class="fs-[14/20/-0.56/600/#0D171B]">최근 검색</p>
+                            <div class="mt-[12px]">
+                                <?php echo $current_member->member->render_part('search_store_history','form'); ?>
+                            </div>
                         </div>
 
                         <div class="mt-[25px]">
                             <div class="hstack">
                                 <img src="<?php echo $this->manager->plugin_url; ?>/img/location.png" class="w-[16px]" alt="">
-                                <p class="fs-[14/20/-0.56/600/]"><?php echo $current_member->memeber->mb_mb_name; ?>님 <span class="text-[#19BBC0]">주변</span> 인증 가능한 매장</p>
+                                <p class="fs-[14/20/-0.56/600/]"><?php echo $current_member->mb_name; ?>님 <span class="text-[#19BBC0]">주변</span> 인증 가능한 매장</p>
                             </div>
                         </div>
 
@@ -66,13 +69,8 @@ global $g5;
     <script>
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
-            $("form", $skin).ajaxForm({
-                // reload: false,
-                // reload_ajax:true,
-                // success: function () {
-                //     var $offcanvas = $skin.closest('.wv-offcanvas');
-                //     $offcanvas.offcanvas('hide');
-                // }
+            $("form", $skin).submit(function (e) {
+                e.preventDefault();
             })
         })
     </script>

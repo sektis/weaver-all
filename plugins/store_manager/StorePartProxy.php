@@ -170,6 +170,8 @@ class StorePartProxy{
             }
         }
 
+
+
         if (!isset($merged['wr_id']) && $this->wr_id > 0) {
             $merged['wr_id'] = $this->wr_id;
         }

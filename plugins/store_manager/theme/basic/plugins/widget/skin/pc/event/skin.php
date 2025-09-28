@@ -111,7 +111,7 @@ global $current_member,$member_manager,$current_member_wr_id;
 
                             </div>
                             <a href="#"  data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
-                               data-wv-ajax-data='{ "action":"view","made":"sub01_01","part":"store","field":"cert_enable_stores","wr_id":"<?php echo $current_member_wr_id; ?>" }'
+                               data-wv-ajax-data='{ "action":"view","made":"sub01_01","part":"store","field":"cert_enable_stores","current_member_wr_id":"<?php echo $current_member_wr_id; ?>" }'
                                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]" class="stretched-link"></a>
                         </div>
 
