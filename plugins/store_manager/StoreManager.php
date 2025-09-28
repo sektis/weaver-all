@@ -1886,6 +1886,10 @@ class StoreManager extends Makeable{
             $select_sql .= ', '.implode(', ', $join_selects);
         }
 
+        // GROUP BY 추가
+        $group_by = isset($opts['group_by']) ? trim($opts['group_by']) : '';
+        $group_sql = $group_by !== '' ? " GROUP BY {$group_by} " : '';
+
         $order_sql = $order_by !== '' ? " ORDER BY {$order_by} " : '';
         $limit_sql = $rows > 0 ? " LIMIT {$from_record}, {$rows} " : '';
 
@@ -1894,7 +1898,7 @@ class StoreManager extends Makeable{
           FROM {$write_table} AS w
           LEFT JOIN {$base_table} AS s ON s.wr_id = w.wr_id
           {$join_sql}
-          WHERE {$where_sql} {$order_sql} {$limit_sql} ";
+          WHERE {$where_sql} {$group_sql} {$order_sql} {$limit_sql} ";
 
         $q = sql_query($sql,1);
         if(!$q){

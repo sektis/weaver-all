@@ -551,4 +551,24 @@ function get_dayoffs_statistics($dayoffs_data) {
     return $stats;
 }
 
+function wv_store_manager_mask_number($number, $show_last = 2, $mask_char = '*'){
+    $number = (string)$number;
+    $length = strlen($number);
+
+    // 숫자 길이가 보여줄 자릿수보다 작거나 같으면 그대로 반환
+    if($length <= $show_last){
+        return $number;
+    }
+
+    // 마스킹할 자릿수 계산
+    $mask_count = $length - $show_last;
+
+    // 마스킹 문자열 생성
+    $mask_string = str_repeat($mask_char, $mask_count);
+
+    // 뒤에서 보여줄 부분 추출
+    $show_part = substr($number, -$show_last);
+
+    return $mask_string . $show_part;
+}
 

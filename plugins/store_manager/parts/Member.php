@@ -15,6 +15,7 @@ class Member extends StoreSchemaBase{
         'bank_name'=>"VARCHAR(255) DEFAULT NULL",
         'ban_account_number'=>"VARCHAR(255) DEFAULT NULL",
         'invite_code'=>"VARCHAR(7) DEFAULT NULL",
+        'search_store_history'=>"text not null default ''",
         'mb_id' => "",
         'mb_password' => "",
         'mb_password_init' => "",

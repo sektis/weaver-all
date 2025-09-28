@@ -177,6 +177,9 @@
   .h-\[22px\] {
     height: var(--wv-22) !important;
   }
+  .h-\[32px\] {
+    height: var(--wv-32) !important;
+  }
   .h-\[33px\] {
     height: var(--wv-33) !important;
   }
@@ -281,6 +284,9 @@
   }
   .w-\[38px\] {
     width: var(--wv-38) !important;
+  }
+  .w-\[40px\] {
+    width: var(--wv-40) !important;
   }
   .w-\[42px\] {
     width: var(--wv-42) !important;
@@ -414,6 +420,9 @@
     --tw-border-style: solid !important;
     border-style: solid !important;
   }
+  .border-\[\#19BBC0\] {
+    border-color: #19BBC0 !important;
+  }
   .border-\[\#EFEFEF\] {
     border-color: #EFEFEF !important;
   }
@@ -512,6 +521,9 @@
   }
   .pt-\[16px\] {
     padding-top: var(--wv-16) !important;
+  }
+  .pt-\[20px\] {
+    padding-top: var(--wv-20) !important;
   }
   .pb-\[16px\] {
     padding-bottom: var(--wv-16) !important;
@@ -666,6 +678,13 @@
     font-weight: 700 !important;
     color: #0D171B !important;
   }
+  .fs-\[14\/20\/-0\.14\/500\/\#FFF\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-20) !important;
+    letter-spacing: -0.01em !important;
+    font-weight: 500 !important;
+    color: #FFF !important;
+  }
   .fs-\[14\/20\/-0\.56\/400\/\#97989C\] {
     font-size: var(--wv-14) !important;
     line-height: var(--wv-20) !important;
@@ -784,6 +803,13 @@
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
     color: #0D171B !important;
+  }
+  .fs-\[16\/22\/-0\.64\/600\/\#6C7DF3\] {
+    font-size: var(--wv-16) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #6C7DF3 !important;
   }
   .fs-\[16\/22\/-0\.64\/600\/\#97989C\] {
     font-size: var(--wv-16) !important;
@@ -924,6 +950,12 @@
     line-height: var(--wv-22) !important;
     letter-spacing: -0.04em !important;
     font-weight: 500 !important;
+  }
+  .fs-\[16\/22\/-0\.64\/600\/\] {
+    font-size: var(--wv-16) !important;
+    line-height: var(--wv-22) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
   }
   .fs-\[20\/28\/-0\.8\/600\/\] {
     font-size: var(--wv-20) !important;
@@ -1118,6 +1150,9 @@
   }
   .text-\[\#6c7df3\] {
     color: #6c7df3 !important;
+  }
+  .text-\[\#19BBC0\] {
+    color: #19BBC0 !important;
   }
   .text-\[\#777\] {
     color: #777 !important;

@@ -1,4 +1,4 @@
-<div class="wv-mx-fit" style="border-top: 1px solid #efefef">
+<div class="" style="border-top: 1px solid #efefef">
 
 
     <?php echo wv_widget('event') ?>
