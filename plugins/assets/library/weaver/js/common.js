@@ -420,6 +420,76 @@ $(document).ready(function () {
         }
     })
 
+    // wv-scroll-more 더보기 버튼 기능
+// plugins/assets/library/weaver/js/common.js 파일에 추가할 코드
+
+// wv-scroll-more 무한 스크롤 기능
+// plugins/assets/library/weaver/js/common.js 파일에 추가할 코드
+
+// wv-scroll-more 스크롤 끝 더보기 버튼 기능
+// plugins/assets/library/weaver/js/common.js 파일에 추가할 코드
+
+    $(document).loaded('.wv-scroll-more', function () {
+        var $container = $(this);
+
+        // .wv-scroll-more-hidden 클래스가 함께 있으면 더 이상 체크하지 않음
+        if ($container.hasClass('wv-scroll-more-hidden')) {
+            return;
+        }
+
+        // 이미 초기화된 경우 스킵
+        if ($container.hasClass('wv-scroll-more-initialized')) {
+            return;
+        }
+
+        // 초기화 마크
+        $container.addClass('wv-scroll-more-initialized');
+
+        // 더보기 버튼이 이미 있는지 확인
+        var $existing_btn = $container.find('.wv-scroll-more-btn-wrap');
+        if ($existing_btn.length > 0) {
+            return; // 이미 버튼이 있으면 중복 생성하지 않음
+        }
+
+        // 스크롤 이벤트 리스너
+        $container.on('scroll', function() {
+            var container = this;
+            var scroll_top = container.scrollTop;
+            var scroll_height = container.scrollHeight;
+            var client_height = container.clientHeight;
+
+            // 스크롤이 하단에 도달했는지 확인 (5px 여유)
+            var is_at_bottom = scroll_top + client_height >= scroll_height - 5;
+
+            if (is_at_bottom) {
+                show_more_button();
+            }
+        });
+
+        // 더보기 버튼 생성 및 표시 함수
+        function show_more_button() {
+            // 이미 버튼이 있으면 중복 생성하지 않음
+            if ($container.find('.wv-scroll-more-btn-wrap').length > 0) {
+                return;
+            }
+
+            // 더보기 버튼 HTML 생성
+            var more_button_html = '<div class="wv-scroll-more-btn-wrap text-center mt-3 p-3">' +
+                '<button type="button" class="btn btn-outline-secondary wv-scroll-more-btn">' +
+                '<i class="fa fa-plus me-2"></i>더보기' +
+                '</button>' +
+                '</div>';
+
+            // 컨테이너 하단에 더보기 버튼 추가
+            $container.append(more_button_html);
+
+            var $more_btn = $container.find('.wv-scroll-more-btn');
+
+  
+        }
+    });
+
+
     $(document).on('input','input.wv-only-number',function (e) {
         this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
     })

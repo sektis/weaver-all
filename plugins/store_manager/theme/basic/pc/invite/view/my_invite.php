@@ -9,7 +9,7 @@ $invite_manager = wv()->store_manager->made('invite');
 $invited_me = $invite_manager->get_list(array(
     'where_invite' => array('invite_member_wr_id' => '='.$current_member_wr_id),
     'order_by' => 'w.wr_datetime DESC',
-    'rows' => 10
+    'rows' =>9999
 ));
 //$sql = "select mb_id from g5_write_member where mb_id<>'admin' order by wr_id asc limit 200";
 //$result = sql_query($sql,1);
@@ -67,48 +67,40 @@ $invited_me = $invite_manager->get_list(array(
 
                     <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
 
-                    <div class="wv-offcanvas-body col overflow-auto">
+                    <div class="wv-offcanvas-body col    overflow-hidden">
                         <!-- 나를 초대한 사람 목록 -->
-                        <div class="px-3 py-3">
-                            <div class="d-flex align-items-center justify-content-between mb-3">
-                                <h6 class="mb-0 fw-semibold fs-[14/20/-0.56/600/#0D171B]">나를 초대한 사람</h6>
-                                <span class="badge bg-secondary"><?php echo count($invited_me['list']); ?>명</span>
-                            </div>
 
-                            <?php if(count($invited_me['list']) > 0): ?>
-                                <div class="invite-list">
-                                    <?php foreach($invited_me['list'] as $invite): ?>
-                                        <div class="invite-item">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <div class="flex-grow-1">
-                                                    <div class="fw-semibold mb-1 fs-[14/20/-0.56/600/#0D171B]">
-                                                        <?php echo $invite['invite']['inviter_name'] ?: $invite['mb_id']; ?>
-                                                    </div>
-                                                    <div class="text-muted small fs-[12/17/-0.48/400/#97989C]">
-                                                        <?php echo date('Y.m.d H:i', strtotime($invite['wr_datetime'])); ?>
-                                                    </div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="mb-0 fw-semibold fs-[14/20/-0.56/600/#0D171B]">나를 초대한 사람</h6>
+                            <span class="badge bg-secondary"><?php echo number_format($invited_me['total_count']); ?>명</span>
+                        </div>
+
+                        <div class="h-100 "  >
+                        <?php if(count($invited_me['list']) > 0): ?>
+                            <div class="invite-list h-100 wv-scroll-more" style="overflow-y: auto">
+                                <?php foreach($invited_me['list'] as $invite): ?>
+                                    <div class="invite-item">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold mb-1 fs-[14/20/-0.56/600/#0D171B]">
+                                                    <?php echo $invite['invite']['inviter_name'] ?: $invite['mb_id']; ?>
                                                 </div>
-                                                <div>
-                                                <span class="invite-status <?php echo $invite['invite']['invite_status']; ?>">
-                                                    <?php echo $invite['invite']['invite_status_ko']; ?>
-                                                </span>
+                                                <div class="text-muted small fs-[12/17/-0.48/400/#97989C]">
+                                                    <?php echo date('Y.m.d H:i', strtotime($invite['wr_datetime'])); ?>
                                                 </div>
                                             </div>
                                         </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php else: ?>
-                                <div class="text-center py-5 text-muted">
-                                    <i class="fas fa-user-plus fa-2x mb-3 opacity-50"></i>
-                                    <p class="mb-0 fs-[14/20/-0.56/400/#97989C]">초대받은 내역이 없습니다.</p>
-                                    <small class="fs-[12/17/-0.48/400/#97989C]">친구의 초대를 기다려보세요!</small>
-                                </div>
-                            <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-user-plus fa-2x mb-3 opacity-50"></i>
+                                <p class="mb-0 fs-[14/20/-0.56/400/#97989C]">초대받은 내역이 없습니다.</p>
+                                <small class="fs-[12/17/-0.48/400/#97989C]">친구의 초대를 기다려보세요!</small>
+                            </div>
+                        <?php endif; ?>
                         </div>
-                    </div>
-
-                    <div class="mt-auto col-auto pb-[50px] hstack gap-[6px]">
-                        <button type="button" data-bs-dismiss="offcanvas" class="w-full h-[54px] fs-[16/22/-0.64/700/#FFF] wv-submit-btn transition " style="border:0;border-radius: var(--wv-4)">확인</button>
                     </div>
                 </div>
             </form>
@@ -119,20 +111,8 @@ $invited_me = $invite_manager->get_list(array(
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
 
-            // 오프캔버스 이벤트 리스너
-            $skin.closest('.offcanvas').on('show.bs.offcanvas', function () {
-                console.log('초대현황 오프캔버스 열림');
-            });
 
-            $skin.closest('.offcanvas').on('hide.bs.offcanvas', function () {
-                console.log('초대현황 오프캔버스 닫힘');
-            });
 
-            // form submit 방지 (읽기 전용)
-            $("form", $skin).on('submit', function(e) {
-                e.preventDefault();
-                $(this).closest('.offcanvas').offcanvas('hide');
-            });
         });
     </script>
 </div>

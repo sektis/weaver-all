@@ -68,6 +68,23 @@ class Member extends StoreSchemaBase{
         $invite_code = $this->generate_unique_invite_code();
         if($invite_code){
             $data['invite_code'] = $invite_code;
+            $data['new_member'] = 1;
+        }
+    }
+    public function after_set($wr_id, $data){
+        if($data['new_member']){
+            $ext_table = $this->manager->get_ext_table_name();;
+            $check = sql_fetch("SELECT wr_id FROM {$ext_table} WHERE invite_code = '{$data['invite_code']}'");
+            $data=array(
+                'wr_id'=>'',
+                'wr_content'=>'/',
+                'mb_id'=>$row['mb_id'],
+                'invite'=>array(
+                        'invite_cote'=>$data['invite_code'],
+                        'invite_member_wr_id'=>$check['wr_id']
+                )
+            );
+            wv('store_manager')->made('invite')->set($data);
         }
     }
 

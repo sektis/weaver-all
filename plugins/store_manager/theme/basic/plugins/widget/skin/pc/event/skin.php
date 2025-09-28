@@ -93,9 +93,15 @@ global $current_member,$member_manager,$current_member_wr_id;
 
             <div class="tab-pane  " id="event-2" >
                 <div class="tab-pane-inner  ">
-                    <p class="fs-[14/20/-0.56/600/#0D171B]"><?php echo $cont['item']['item_name_montserrat']; ?> 서비스</p>
-                    <div class="mt-[12px]">
-                      dsaas
+                    <div>
+                        <img src="<?php echo $wv_skin_url; ?>/ban2.png" class="w-100" alt="">
+                    </div>
+                    <div class="mt-[30px] wv-mx-fit">
+                        <?php echo wv_widget('content/cert_notice'); ?>
+                    </div>
+
+                    <div class="wv-mx-fit">
+                        <?php echo wv_widget('content/copyright'); ?>
                     </div>
                 </div>
             </div>
