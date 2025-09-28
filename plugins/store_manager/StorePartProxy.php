@@ -29,7 +29,7 @@ class StorePartProxy{
     protected $virtual_keys = null;
 
     /** @var array 목록 파트일 때의 리스트 (지연 로딩) */
-    public $list = array();
+//    public $list = array('');
 
     /**
      * @param StoreManager $manager

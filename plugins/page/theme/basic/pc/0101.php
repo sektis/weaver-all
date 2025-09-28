@@ -4,6 +4,7 @@ $data = array(
     'view_type'=>$view_type,
     'q'=>$q,
     'category_wr_id'=>$category_wr_id,
+    'contractitem_wr_id'=>2,
 );
 echo wv_widget('store_list',$data);
 ?>

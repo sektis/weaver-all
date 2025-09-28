@@ -45,6 +45,9 @@
   .my-\[16px\] {
     margin-block: var(--wv-16) !important;
   }
+  .ms-\[18px\] {
+    margin-inline-start: var(--wv-18) !important;
+  }
   .mt-\[1em\] {
     margin-top: 1em !important;
   }
@@ -159,6 +162,9 @@
   .list-item {
     display: list-item !important;
   }
+  .h-\[2px\] {
+    height: var(--wv-2) !important;
+  }
   .h-\[21px\] {
     height: var(--wv-21) !important;
   }
@@ -195,6 +201,9 @@
   .h-\[48px\] {
     height: var(--wv-48) !important;
   }
+  .h-\[52px\] {
+    height: var(--wv-52) !important;
+  }
   .h-\[54px\] {
     height: var(--wv-54) !important;
   }
@@ -210,11 +219,20 @@
   .h-\[150px\] {
     height: var(--wv-150) !important;
   }
+  .h-\[276px\] {
+    height: var(--wv-276) !important;
+  }
+  .w-\[4px\] {
+    width: var(--wv-4) !important;
+  }
   .w-\[9px\] {
     width: var(--wv-9) !important;
   }
   .w-\[12px\] {
     width: var(--wv-12) !important;
+  }
+  .w-\[13px\] {
+    width: var(--wv-13) !important;
   }
   .w-\[14px\] {
     width: var(--wv-14) !important;
@@ -323,6 +341,9 @@
   }
   .w-full {
     width: 100% !important;
+  }
+  .min-w-\[45px\] {
+    min-width: var(--wv-45) !important;
   }
   .transform {
     transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y) !important;
@@ -474,6 +495,9 @@
   .pt-\[16px\] {
     padding-top: var(--wv-16) !important;
   }
+  .pb-\[16px\] {
+    padding-bottom: var(--wv-16) !important;
+  }
   .pb-\[50px\] {
     padding-bottom: var(--wv-50) !important;
   }
@@ -553,6 +577,20 @@
     letter-spacing: -0.04em !important;
     font-weight: 500 !important;
     color: #97989C !important;
+  }
+  .fs-\[13\/17\/-0\.52\/600\/\#97989C\] {
+    font-size: var(--wv-13) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #97989C !important;
+  }
+  .fs-\[13\/18\/-0\.13\/500\/\#0D171B\] {
+    font-size: var(--wv-13) !important;
+    line-height: var(--wv-18) !important;
+    letter-spacing: -0.01em !important;
+    font-weight: 500 !important;
+    color: #0D171B !important;
   }
   .fs-\[13\/19\/-0\.13\/500\/\#0D171B\] {
     font-size: var(--wv-13) !important;
@@ -652,6 +690,20 @@
     font-weight: 600 !important;
     color: #FC5555 !important;
   }
+  .fs-\[14\/20\/-0\.56\/600\/\#FFF\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-20) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #FFF !important;
+  }
+  .fs-\[14\/100\%\/-0\.56\/500\/\#0D171B\] {
+    font-size: var(--wv-14) !important;
+    line-height: 100%px !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 500 !important;
+    color: #0D171B !important;
+  }
   .fs-\[14\/100\%\/-0\.56\/600\/\#0D171B\] {
     font-size: var(--wv-14) !important;
     line-height: 100%px !important;
@@ -736,6 +788,13 @@
     font-weight: 700 !important;
     color: #0D171B !important;
   }
+  .fs-\[20\/28\/-0\.8\/600\/\#000\] {
+    font-size: var(--wv-20) !important;
+    line-height: var(--wv-28) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #000 !important;
+  }
   .fs-\[20\/130\%\/-0\.8\/700\/\#0D171B\] {
     font-size: var(--wv-20) !important;
     line-height: 130%px !important;
@@ -771,6 +830,12 @@
     font-weight: 600 !important;
     color: #0D171B !important;
   }
+  .fs-\[10\/11\/-0\.5\/700\/\] {
+    font-size: var(--wv-10) !important;
+    line-height: var(--wv-11) !important;
+    letter-spacing: -0.05em !important;
+    font-weight: 700 !important;
+  }
   .fs-\[12\/17\/-0\.48\/500\/\] {
     font-size: var(--wv-12) !important;
     line-height: var(--wv-17) !important;
@@ -792,6 +857,12 @@
   .fs-\[14\/17\/-0\.56\/600\/\] {
     font-size: var(--wv-14) !important;
     line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+  }
+  .fs-\[14\/20\/-0\.56\/600\/\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-20) !important;
     letter-spacing: -0.04em !important;
     font-weight: 600 !important;
   }
@@ -994,6 +1065,9 @@
   }
   .text-\[\#777\] {
     color: #777 !important;
+  }
+  .text-\[\#989898\] {
+    color: #989898 !important;
   }
   .text-\[\#FC5555\] {
     color: #FC5555 !important;

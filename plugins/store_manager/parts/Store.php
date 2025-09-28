@@ -44,14 +44,21 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
 
         $arr['main_image'] =  $first_image['path'];
 
-        $arr['list_each'] =  function () use($row){
-            return $this->store->store->render_part('list_each','view');
+        $arr['list_each'] =  function ($data) use($row) {
+            return $this->store->store->render_part('list_each','view',array_merge($row,$data));
         };
-        $arr['list_main'] =function ()use($row){
-            return $this->store->store->render_part('list_main','view',array('row'=>$row));
+        $arr['list_main'] =function ($data) {
+            return $this->store->store->render_part('list_main','view',$data);
         };
 
+        $arr['contract_non_free_list'] = function ()use($row) {
 
+            $non_free_items = wv_get_keys_by_nested_value($this->store->contract->list,0,true,'item','is_free');
+            uasort($non_free_items, function($a, $b) {
+                return $a['contractitem_wr_id'] - $b['contractitem_wr_id'];
+            });
+            return $non_free_items;
+        };
 
         return $arr;
     }

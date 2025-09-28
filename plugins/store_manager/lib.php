@@ -1,4 +1,9 @@
 <?php
+function is_valid_time_data($time_data) {
+    if(!is_array($time_data)) return false;
+    if(!isset($time_data['period']) || !isset($time_data['hour']) || !isset($time_data['minute'])) return false;
+    return !empty($time_data['period']) && !empty($time_data['hour']) && !empty($time_data['minute']);
+}
 function generate_time_grouped($time_data, $enable_check = false){
     if(!is_array($time_data)) {
         return array();
@@ -13,39 +18,73 @@ function generate_time_grouped($time_data, $enable_check = false){
     $weekends = array('sat', 'sun'); // 주말
     $all_days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 
-    // 각 요일의 실제 시간 정보 수집
+    // 시간 데이터 유효성 검사 함수
+
+
+    // 각 요일의 실제 시간 계산
     $day_times = array();
-    $individual_days = array(); // 개별 설정된 요일들
 
     foreach($all_days as $day_key){
         $start = null;
         $end = null;
 
-        // 1. 해당 요일의 개별 설정이 있는지 먼저 확인
-        if(isset($time_data[$day_key]['enabled']) && $time_data[$day_key]['enabled']){
-            $start = isset($time_data[$day_key]['start']) ? $time_data[$day_key]['start'] : null;
-            $end = isset($time_data[$day_key]['end']) ? $time_data[$day_key]['end'] : null;
-            $individual_days[] = $day_key; // 개별 설정된 요일로 기록
+        // 1. 개별 요일 설정 확인
+        if($enable_check){
+            if(isset($time_data[$day_key]['enabled']) && $time_data[$day_key]['enabled'] == 1){
+                $start = isset($time_data[$day_key]['start']) && is_valid_time_data($time_data[$day_key]['start']) ? $time_data[$day_key]['start'] : null;
+                $end = isset($time_data[$day_key]['end']) && is_valid_time_data($time_data[$day_key]['end']) ? $time_data[$day_key]['end'] : null;
+            }
+        } else {
+            if(isset($time_data[$day_key]['start']) && isset($time_data[$day_key]['end']) &&
+                is_valid_time_data($time_data[$day_key]['start']) && is_valid_time_data($time_data[$day_key]['end'])){
+                $start = $time_data[$day_key]['start'];
+                $end = $time_data[$day_key]['end'];
+            }
         }
-        // 2. 개별 설정이 없으면 평일/주말/매일 설정 확인 (enable_check가 false인 경우만)
-        else if(!$enable_check){
+
+        // 2. 개별 설정이 없으면 그룹 설정 확인
+        if(!$start || !$end){
             if(in_array($day_key, $weekdays)){
                 // 평일인 경우
-                if(isset($time_data['weekday']['enabled']) && $time_data['weekday']['enabled']){
-                    $start = isset($time_data['weekday']['start']) ? $time_data['weekday']['start'] : null;
-                    $end = isset($time_data['weekday']['end']) ? $time_data['weekday']['end'] : null;
-                } else if(isset($time_data['daily']['enabled']) && $time_data['daily']['enabled']){
-                    $start = isset($time_data['daily']['start']) ? $time_data['daily']['start'] : null;
-                    $end = isset($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
+                if($enable_check){
+                    if(isset($time_data['weekday']['enabled']) && $time_data['weekday']['enabled'] == 1){
+                        $start = isset($time_data['weekday']['start']) && is_valid_time_data($time_data['weekday']['start']) ? $time_data['weekday']['start'] : null;
+                        $end = isset($time_data['weekday']['end']) && is_valid_time_data($time_data['weekday']['end']) ? $time_data['weekday']['end'] : null;
+                    } else if(isset($time_data['daily']['enabled']) && $time_data['daily']['enabled'] == 1){
+                        $start = isset($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['start']) ? $time_data['daily']['start'] : null;
+                        $end = isset($time_data['daily']['end']) && is_valid_time_data($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
+                    }
+                } else {
+                    if(isset($time_data['weekday']['start']) && isset($time_data['weekday']['end']) &&
+                        is_valid_time_data($time_data['weekday']['start']) && is_valid_time_data($time_data['weekday']['end'])){
+                        $start = $time_data['weekday']['start'];
+                        $end = $time_data['weekday']['end'];
+                    } else if(isset($time_data['daily']['start']) && isset($time_data['daily']['end']) &&
+                        is_valid_time_data($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['end'])){
+                        $start = $time_data['daily']['start'];
+                        $end = $time_data['daily']['end'];
+                    }
                 }
             } else if(in_array($day_key, $weekends)){
                 // 주말인 경우
-                if(isset($time_data['weekend']['enabled']) && $time_data['weekend']['enabled']){
-                    $start = isset($time_data['weekend']['start']) ? $time_data['weekend']['start'] : null;
-                    $end = isset($time_data['weekend']['end']) ? $time_data['weekend']['end'] : null;
-                } else if(isset($time_data['daily']['enabled']) && $time_data['daily']['enabled']){
-                    $start = isset($time_data['daily']['start']) ? $time_data['daily']['start'] : null;
-                    $end = isset($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
+                if($enable_check){
+                    if(isset($time_data['weekend']['enabled']) && $time_data['weekend']['enabled'] == 1){
+                        $start = isset($time_data['weekend']['start']) && is_valid_time_data($time_data['weekend']['start']) ? $time_data['weekend']['start'] : null;
+                        $end = isset($time_data['weekend']['end']) && is_valid_time_data($time_data['weekend']['end']) ? $time_data['weekend']['end'] : null;
+                    } else if(isset($time_data['daily']['enabled']) && $time_data['daily']['enabled'] == 1){
+                        $start = isset($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['start']) ? $time_data['daily']['start'] : null;
+                        $end = isset($time_data['daily']['end']) && is_valid_time_data($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
+                    }
+                } else {
+                    if(isset($time_data['weekend']['start']) && isset($time_data['weekend']['end']) &&
+                        is_valid_time_data($time_data['weekend']['start']) && is_valid_time_data($time_data['weekend']['end'])){
+                        $start = $time_data['weekend']['start'];
+                        $end = $time_data['weekend']['end'];
+                    } else if(isset($time_data['daily']['start']) && isset($time_data['daily']['end']) &&
+                        is_valid_time_data($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['end'])){
+                        $start = $time_data['daily']['start'];
+                        $end = $time_data['daily']['end'];
+                    }
                 }
             }
         }
@@ -59,102 +98,98 @@ function generate_time_grouped($time_data, $enable_check = false){
         return array();
     }
 
-    // 유니크한 시간들 찾기
-    $unique_times = array_unique($day_times);
-
-    // 1. 모든 요일(7일)이 같은 시간이고, 개별 설정이 없는 경우만 "매일"
-    if(count($unique_times) == 1 && count($day_times) == 7 && empty($individual_days)){
-        return array(
-            array('name' => '매일', 'time' => reset($unique_times))
-        );
-    }
-
-    // 2. 평일/주말 패턴 확인 - 개별 설정이 없는 경우만
-    if(empty($individual_days)){
-        $weekday_times = array();
-        $weekend_times = array();
-
-        foreach($weekdays as $day){
-            if(isset($day_times[$day])){
-                $weekday_times[$day] = $day_times[$day];
-            }
-        }
-
-        foreach($weekends as $day){
-            if(isset($day_times[$day])){
-                $weekend_times[$day] = $day_times[$day];
-            }
-        }
-
-        $weekday_unique = array_unique($weekday_times);
-        $weekend_unique = array_unique($weekend_times);
-
-        // 평일 5일이 모두 같고, 주말 2일이 모두 같고, 서로 다른 경우
-        if(count($weekday_times) == 5 && count($weekday_unique) == 1 &&
-            count($weekend_times) == 2 && count($weekend_unique) == 1 &&
-            reset($weekday_unique) !== reset($weekend_unique)){
-
-            return array(
-                array('name' => '평일', 'time' => reset($weekday_unique)),
-                array('name' => '주말', 'time' => reset($weekend_unique))
-            );
-        }
-
-        // 평일만 5일 모두 같은 경우
-        if(count($weekday_times) == 5 && count($weekday_unique) == 1 && count($weekend_times) == 0){
-            return array(
-                array('name' => '평일', 'time' => reset($weekday_unique))
-            );
-        }
-
-        // 주말만 2일 모두 같은 경우
-        if(count($weekend_times) == 2 && count($weekend_unique) == 1 && count($weekday_times) == 0){
-            return array(
-                array('name' => '주말', 'time' => reset($weekend_unique))
-            );
-        }
-    }
-
-    // 3. 개별 요일들끼리 같은 시간 그룹핑
     $result = array();
-    $processed_days = array();
 
-    foreach($all_days as $day_key){
-        if(!isset($day_times[$day_key]) || in_array($day_key, $processed_days)){
-            continue;
+    // 평일 완전성 및 일관성 체크
+    $weekday_times = array();
+    $weekday_count = 0;
+    foreach($weekdays as $day){
+        if(isset($day_times[$day])){
+            $weekday_times[] = $day_times[$day];
+            $weekday_count++;
         }
+    }
 
-        $current_time = $day_times[$day_key];
-        $same_time_days = array($day_key);
-        $processed_days[] = $day_key;
-
-        // 같은 시간을 가진 다른 요일들 찾기
-        foreach($all_days as $other_day){
-            if($other_day != $day_key &&
-                isset($day_times[$other_day]) &&
-                !in_array($other_day, $processed_days) &&
-                $day_times[$other_day] === $current_time){
-
-                $same_time_days[] = $other_day;
-                $processed_days[] = $other_day;
+    if($weekday_count > 0){
+        // 평일 5개가 모두 있고 시간이 일관된 경우에만 "평일"로 묶기
+        if($weekday_count === 5){
+            $unique_weekday_times = array_unique($weekday_times);
+            if(count($unique_weekday_times) === 1){
+                // 평일 5개 모두 있고 시간이 일관됨
+                $result[] = array(
+                    'name' => '평일',
+                    'time' => $unique_weekday_times[0]
+                );
+            } else {
+                // 평일 5개 모두 있지만 시간이 다름 - 개별 표시
+                foreach($weekdays as $day){
+                    if(isset($day_times[$day])){
+                        $result[] = array(
+                            'name' => $days_kr[$day],
+                            'time' => $day_times[$day]
+                        );
+                    }
+                }
+            }
+        } else {
+            // 평일이 5개 모두 없음 - 개별 표시
+            foreach($weekdays as $day){
+                if(isset($day_times[$day])){
+                    $result[] = array(
+                        'name' => $days_kr[$day],
+                        'time' => $day_times[$day]
+                    );
+                }
             }
         }
+    }
 
-        // 요일명들을 한국어로 변환해서 콤마로 연결
-        $day_names = array();
-        foreach($same_time_days as $day){
-            $day_names[] = $days_kr[$day];
+    // 주말 완전성 및 일관성 체크
+    $weekend_times = array();
+    $weekend_count = 0;
+    foreach($weekends as $day){
+        if(isset($day_times[$day])){
+            $weekend_times[] = $day_times[$day];
+            $weekend_count++;
         }
+    }
 
-        $result[] = array(
-            'name' => implode(',', $day_names),
-            'time' => $current_time
-        );
+    if($weekend_count > 0){
+        // 주말 2개가 모두 있고 시간이 일관된 경우에만 "주말"로 묶기
+        if($weekend_count === 2){
+            $unique_weekend_times = array_unique($weekend_times);
+            if(count($unique_weekend_times) === 1){
+                // 주말 2개 모두 있고 시간이 일관됨
+                $result[] = array(
+                    'name' => '주말',
+                    'time' => $unique_weekend_times[0]
+                );
+            } else {
+                // 주말 2개 모두 있지만 시간이 다름 - 개별 표시
+                foreach($weekends as $day){
+                    if(isset($day_times[$day])){
+                        $result[] = array(
+                            'name' => $days_kr[$day],
+                            'time' => $day_times[$day]
+                        );
+                    }
+                }
+            }
+        } else {
+            // 주말이 2개 모두 없음 - 개별 표시
+            foreach($weekends as $day){
+                if(isset($day_times[$day])){
+                    $result[] = array(
+                        'name' => $days_kr[$day],
+                        'time' => $day_times[$day]
+                    );
+                }
+            }
+        }
     }
 
     return $result;
 }
-
 
 function generate_time_summary($time_data, $enable_check = false){
     if(!is_array($time_data)) {

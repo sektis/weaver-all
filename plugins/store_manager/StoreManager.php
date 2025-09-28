@@ -1520,7 +1520,8 @@ class StoreManager extends Makeable{
 
     public function get_physical_col($part_key, $logical){
         if(isset($this->parts[$part_key]) && $this->is_list_part_schema($this->parts[$part_key])) {
-            return $part_key; // 원본 그대로 반환
+//            return $part_key; // 원본 그대로 반환
+            return $logical; // 원본 그대로 반환
         }
 
         return isset($this->colmap[$part_key][$logical]) ? $this->colmap[$part_key][$logical] : $this->physical_col($part_key, $logical);
@@ -2192,6 +2193,7 @@ class StoreManager extends Makeable{
 
 
             $full_row = $proxy->ensure_rows();;
+
             // ✅ store 파트 관련 데이터만 추출
             $store_data = array();
 
@@ -2208,9 +2210,11 @@ class StoreManager extends Makeable{
                 if (!array_key_exists($key, $write_row) && $key !== 'wr_id') {
                     if (is_callable($value) ) {
 
-                        if(in_array($key,$ext_columns[$pkey])){
+                        if(in_array($key,$ext_columns[$pkey]) or array_key_exists($key,$ext_columns[$pkey])){
+
                             try {
-                                $store_data[$key] = $value();
+
+                                $store_data[$key] = $value(array_key_exists($key,$ext_columns[$pkey])?$ext_columns[$pkey][$key]:array());
                             } catch (\Exception $e) {
                                 $store_data[$key] = '';
                             }

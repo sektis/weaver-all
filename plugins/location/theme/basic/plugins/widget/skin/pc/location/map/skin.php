@@ -69,6 +69,8 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 var center = map.getCenter();
                 var level = map.getLevel();
                 console.log('map changed')
+                // 기존 선택 해제
+                clearSelectedMarkers();
                 $skin.trigger('wv_location_map_changed', {
                     bounds: bounds,
                     center: center,
@@ -285,13 +287,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                     }, 100);
                 });
 
-                // 범용 마커 데이터 업데이트 이벤트 수신
-                $skin.on('wv_location_map_markers_update', function(event, data) {
-                    if (data && data.markers) {
-                        clearMarkers();
-                        addMarkers(data.markers);
-                    }
-                });
+
 
                 // 범용 위치 데이터 업데이트 이벤트 수신 (가공된 데이터)
                 $skin.on('wv_location_map_updated', function(event, data) {
@@ -303,6 +299,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                     }
 
 
+                    clearSelectedMarkers()
 
                     if (data.lists && Array.isArray(data.lists)) {
                         updateMarkers(data.lists, data);
@@ -425,9 +422,9 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 var loadedImages = 0;
                 var totalImages = 2;
 
-                // 캔버스 크기 설정 (마커 크기)
-                canvas.width = 36;
-                canvas.height = 36;
+                // 캔버스 크기 설정 (마커 크기 + shadow 공간)
+                canvas.width = 44;  // shadow 공간 확보
+                canvas.height = 44; // shadow 공간 확보
 
                 var backgroundImg = new Image();
                 var categoryImg = new Image();
@@ -438,11 +435,22 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                         // 모든 이미지가 로드되면 합성
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                        // 배경 이미지 그리기 (전체 크기)
-                        ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+                        // Shadow 설정
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                        ctx.shadowBlur = 4;
+                        ctx.shadowOffsetX = 0;
+                        ctx.shadowOffsetY = 2;
+
+                        // 배경 이미지 그리기 (중앙에 36x36 크기로)
+                        var markerX = (canvas.width - 36) / 2;
+                        var markerY = (canvas.height - 36) / 2;
+                        ctx.drawImage(backgroundImg, markerX, markerY, 36, 36);
+
+                        // Shadow 제거 (카테고리 아이콘에는 shadow 안주기)
+                        ctx.shadowColor = 'transparent';
 
                         // 카테고리 아이콘 그리기 (중앙 위치, 조금 작게)
-                        var iconSize = 20; // 카테고리 아이콘 크기
+                        var iconSize = 20;
                         var iconX = (canvas.width - iconSize) / 2;
                         var iconY = (canvas.height - iconSize) / 2;
                         ctx.drawImage(categoryImg, iconX, iconY, iconSize, iconSize);
@@ -450,9 +458,9 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                         // Canvas를 데이터 URL로 변환
                         var dataUrl = canvas.toDataURL('image/png');
 
-                        // 마커 이미지 생성
-                        var size = new kakao.maps.Size(36, 36);
-                        var option = { offset: new kakao.maps.Point(18, 36) };
+                        // 마커 이미지 생성 (offset도 조정)
+                        var size = new kakao.maps.Size(44, 44);
+                        var option = { offset: new kakao.maps.Point(22, 44) };
                         var markerImage = new kakao.maps.MarkerImage(dataUrl, size, option);
 
                         callback(markerImage);
@@ -463,19 +471,16 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 categoryImg.onload = onImageLoad;
 
                 backgroundImg.onerror = function() {
-                    // 배경 이미지 로드 실패시 기본 마커 사용
                     callback(createDefaultMarkerImage(isSelected));
                 };
 
                 categoryImg.onerror = function() {
-                    // 카테고리 이미지 로드 실패시 기본 마커 사용
                     callback(createDefaultMarkerImage(isSelected));
                 };
 
                 backgroundImg.src = backgroundImageUrl;
                 categoryImg.src = categoryIconUrl;
             }
-
             /**
              * 커스텀 마커 이미지 생성 (수정된 버전)
              */

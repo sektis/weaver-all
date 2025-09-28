@@ -18,7 +18,7 @@ if($action == 'get_store_list'){
             " location_lat  <>'' ",
             " location_lng <>'' "
         ),
-        'select_store'=>array('list_each','service'),
+        'select_store'=>array('list_each'=>array('contractitem_wr_id'=>$contractitem_wr_id),'service'),
         'order_by' => 'w.wr_datetime DESC',
         'rows' => $rows?$rows:30,
         'with_list_part'=>false
@@ -32,6 +32,17 @@ if($action == 'get_store_list'){
         }
 
     }
+
+    if($contractitem_wr_id ){
+        $options['where_contract'] = array(
+            'and'=>array(
+                array('contractitem_wr_id' => "={$contractitem_wr_id}"),
+                array('status' => "=1"),
+            )
+        );
+
+    }
+
 
     $need_bound_check=false;
     if ($sw_lat and $sw_lng and $ne_lat and $ne_lng) {
@@ -48,10 +59,13 @@ if($action == 'get_store_list'){
                 'lng' => "BETWEEN {$sw_lng} AND {$ne_lng} "
             ),
         );
-//        $distance_option = wv_make_distance_options($center['lat'],$center['lng'],'', $limit_km);
 
-    }elseif($center){
-        $options = wv_make_distance_options($center['lat'],$center['lng'],$options, $limit_km);
+    }
+    $options = wv_make_distance_options($center['lat'],$center['lng'],$options, $limit_km);
+
+    if($order and $order!='near'){
+        $options['order_by'] = $order;
+
     }
 
 
@@ -107,7 +121,7 @@ if($action == 'get_store_list'){
     );
 
     if($widget){
-        echo wv_widget($widget, $return);
+        echo wv_widget($widget, array_merge($return,$_REQUEST));
         exit;
     }
     // 성공 응답

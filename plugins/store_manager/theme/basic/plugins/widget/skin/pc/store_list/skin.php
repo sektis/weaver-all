@@ -28,7 +28,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
         <?php echo $skin_selector?> .stores-wrap {position: relative;}
         <?php echo $skin_selector?> .stores-map, <?php echo $skin_selector?> .stores-list{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;visibility:hidden;transition:all .3s ease}
         <?php echo $skin_selector?> .stores-map.active, <?php echo $skin_selector?> .stores-list.active {opacity: 1;visibility: visible;}
-        <?php echo $skin_selector?> .list-each {position: absolute;bottom: var(--wv-17);left:50%;transform: translateX(-50%);border-radius: var(--wv-4);background: #fff;box-shadow: 0 0 var(--wv-4) 0 rgba(67, 67, 67, 0.25);width: 90%;z-index: 1001;padding: var(--wv-12) var(--wv-10) var(--wv-20)}
+        <?php echo $skin_selector?> .list-each {position: absolute;bottom: var(--wv-17);left:50%;transform: translateX(-50%);border-radius: var(--wv-4);background: #fff;box-shadow: 0 0 var(--wv-4) 0 rgba(67, 67, 67, 0.25);width: 90%;z-index: 1001;padding: var(--wv-12) var(--wv-10) var(--wv-14)}
 
         @media (min-width: 992px) {}
         @media (max-width: 991.98px) {}
@@ -77,6 +77,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                 var searchData = {
                     q: '<?php echo addslashes($data['q']); ?>',
                     category_wr_id: '<?php echo (int) $data['category_wr_id']; ?>',
+                    contractitem_wr_id: '<?php echo (int) $data['contractitem_wr_id']; ?>',
                     limit_km: '<?php echo (int) $data['limit_km']?$data['limit_km']:0; ?>',
                     center:$location_current
                 };
@@ -85,6 +86,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     searchData.category_wr_id = $(this).data('category-wr-id');
                     view_reload()
                 })
+
 
                 // 초기 로드
                 if (currentMode === 'map') {

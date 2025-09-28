@@ -24,11 +24,15 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                     <div class="vstack  h-100" style="padding: var(--wv-3) 0">
                         <div class="hstack">
                             <div>
-                                <p class="fs-[14//-0.56/700/#0D171B]"><?php echo $row['name']; ?></p>
+                                <div class="hstack">
+                                    <p class="fs-[14//-0.56/700/#0D171B]"><?php echo $row['name']; ?></p>
+                                    <?php if($row['distance_km']){ ?>
+                                         (<p class="fs-[12//-0.48/500/#0D171B] mt-[2px]"><?php echo number_format($row['distance_km'],2); ?>km</p>)
+                                    <?php } ?>
+                                </div>
+
                                 <p class="fs-[12//-0.48/500/#0D171B] mt-[2px]"><?php echo $row['category_item']['name']; ?></p>
-                                <?php if($row['distance_km']){ ?>
-                                <p class="fs-[12//-0.48/500/#0D171B] mt-[2px]"><?php echo $row['distance_km']; ?></p>
-                                <?php } ?>
+
                             </div>
 
                             <a href=""></a>
@@ -39,12 +43,25 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                             <p class="fs-[12//-0.48/500/#97989C]"><?php echo $this->store->location->address_name_full; ?></p>
                         </div>
                     </div>
-                    <div class="mt-[8px]" style="border-bottom: 1px solid #efefef"></div>
 
                 </div>
             </div>
-        </div>
 
+            <?php if($contractitem_wr_id) {
+                $contract = wv_get_keys_by_nested_value($this->store->contract->list,$contractitem_wr_id,true,'contractitem_wr_id');
+                $contract_key = key($contract);
+                $contract_row = reset($contract);
+                if($contract_row['service_content']){
+                ?>
+                    <div class="mt-[8px]" style="border-bottom: 1px solid #efefef"></div>
+                    <div class="mt-[12px]"><?php  echo $this->store->contract->render_part('service','view',array('contract_id'=>$contract_key)) ?></div>
+            <?php }
+            }?>
+
+        </div>
+        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+           data-wv-ajax-data='{ "action":"view","made":"sub01_01","part":"store","field":"detail","wr_id":"<?php echo $row['wr_id']; ?>","contractitem_wr_id":"<?php echo $contractitem_wr_id?>"}'
+           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" class="stretched-link"></a>
 
     </div>
 

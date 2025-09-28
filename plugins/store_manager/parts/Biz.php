@@ -27,17 +27,21 @@ class Biz extends StoreSchemaBase implements StoreSchemaInterface{
         if(isset($row['open_time']) && !empty($row['open_time'])){
             $arr['open_time_summary'] = generate_time_summary($row['open_time']);
             $arr['open_time_list'] = generate_time_list($row['open_time']);
+            $arr['open_time_group'] = generate_time_grouped($row['open_time']);
         } else {
             $arr['open_time_summary'] = array();
             $arr['open_time_list'] = array();
+            $arr['open_time_group'] = array();
         }
 
         if(isset($row['break_time']) && !empty($row['break_time'])){
             $arr['break_time_summary'] = generate_time_summary($row['break_time']);
             $arr['break_time_list'] = generate_time_list($row['break_time']);
+            $arr['break_time_group'] = generate_time_grouped($row['break_time']);
         } else {
             $arr['break_time_summary'] = array();
             $arr['break_time_list'] = array();
+            $arr['break_time_group'] = array();
         }
 
         return $arr;

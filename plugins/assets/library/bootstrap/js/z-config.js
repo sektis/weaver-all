@@ -195,6 +195,34 @@ $(document).loaded('[data-on-value]', function(i, e) {
         $text_target.html($(this).is(':checked') ? onValue : offValue);
     });
 });
+$(document).loaded('.wv-dropdown-select', function(i, e) {
+    var $wv_dropdown = $(e);
+    var $dropdown_menu = $('.dropdown-menu',$wv_dropdown);
+    var $label = $("span.dropdown-label",$wv_dropdown);
+    if(!$label.length){
+        $label=$wv_dropdown;
+    }
+    var $selected = $("a.selected",$dropdown_menu);
+    if(!$selected.length){
+        $selected = $("a",$dropdown_menu).first()
+    }
+    if($selected.length){
+        $label.html($selected.html());
+    }
+    $($dropdown_menu).on('click','a',function (e) {
+        e.preventDefault();
+        var $a = $(this);
+        if($a.html()!=$label.html()){
+            $("a",$dropdown_menu).removeClass('selected');
+            $a.addClass('selected');
+            $label.html($a.html());
+            $wv_dropdown.trigger('wv.dropdown.change');
+        }
+
+
+    })
+
+});
 // 부모 리로드 처리 함수
 function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
 
