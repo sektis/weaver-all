@@ -25,7 +25,7 @@ global $current_store_wr_id;
             <div>
 
                 <div class="fs-[16/22/-0.64/500/#0D171B]  vstack" style="row-gap: var(--wv-3)">
-                    <?php $i=0; foreach ($this->store->biz->open_time_list as $each){ ?>
+                    <?php $i=0; foreach ($this->store->biz->open_time_group as $each){ ?>
                         <p class="hstack" style="gap:var(--wv-5)"><span class="fs-[16/22/-0.64/600/#97989C] w-[50px]"><?php echo $each['name']; ?></span><span><?php echo $each['time']; ?></span></p>
                         <?php $i++;} ?>
                     <?php if($i==0){ ?>

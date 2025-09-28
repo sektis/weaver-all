@@ -1,4 +1,7 @@
 <?php
+uasort($row['menu'], function($a, $b) {
+    return  $b['is_main'] -$a['is_main'];
+});
 
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative d-flex-center flex-nowrap">
@@ -32,8 +35,8 @@
                 ?>
                 <div class="wv-ps-each <?php echo $demo_class; ?>">
                     <!-- 필수 hidden -->
-                    <input type="hidden" name="<?php echo str_replace('[inline_form]','',$field_name); ?>[id]" value="<?php echo $v['id']; ?>">
-                    <input type="hidden" name="<?php echo str_replace('[inline_form]','',$field_name); ?>[ord]" value="<?php echo $v['id']; ?>">
+
+                    <input type="hidden" name="menu[<?php echo $v['id']; ?>][id]" value="<?php echo $v['id']; ?>">
 
                     <div class="vstack border p-[16px]" style="row-gap: var(--wv-15)">
 

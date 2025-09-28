@@ -101,11 +101,9 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         $arr['memo_list'] =  implode('<br>',array_column($row['memo'],'text'));
 
         if(isset($row['service_time']) && !empty($row['service_time'])){
-            $arr['service_time_summary'] = generate_time_summary($row['service_time']);
             $arr['service_time_list'] = generate_time_list($row['service_time']);
             $arr['service_time_group'] = generate_time_grouped($row['service_time'],1);
         } else {
-            $arr['service_time_summary'] = array();
             $arr['service_time_list'] = array();
             $arr['service_time_group'] = array();
         }

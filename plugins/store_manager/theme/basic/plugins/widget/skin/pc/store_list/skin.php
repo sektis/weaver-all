@@ -82,6 +82,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     center:$location_current
                 };
 
+
                 $('.scroll-category-link',$skin).click(function () {
                     searchData.category_wr_id = $(this).data('category-wr-id');
                     view_reload()
@@ -115,7 +116,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                 // 목록 로드 함수
                 function loadList() {
                     $(".stores-list", $skin).html('');
-                    var listData = $.extend({}, searchData, {action: 'get_store_list',widget: 'map_list',limit_km:0});
+                    var listData = $.extend({}, searchData, {action: 'get_store_list',widget: 'map_list'});
 
                     $.post('<?php echo wv()->store_manager->ajax_url?>', listData, function(data) {
                         $(".stores-list", $skin).html(data);
@@ -144,7 +145,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                 }
 
                 function view_reload(){
-                    view_list_each();
+
                     if(currentMode=='map'){
                         // 지도가 로드되지 않았다면 로드
                         if (!map_loaded) {
@@ -176,6 +177,11 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     });
 
                     view_reload()
+                });
+                // 지도 이벤트 리스너
+                $(document).on('wv_location_map_change_start', function(event, data) {
+
+                    view_list_each();
                 });
 
                 // 지도 마커 클릭 이벤트 리스너

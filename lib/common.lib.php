@@ -1707,7 +1707,7 @@ if(!function_exists('wv_array_last')){
         if (empty($arr)) return null;
         $v = end($arr);
         reset($arr);
-        return $v;
+        return (string)$v;
     }
 }
 if(!function_exists('wv_array_has_all_keys')){

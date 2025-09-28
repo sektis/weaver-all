@@ -6,7 +6,8 @@ global $g5;
         <?php echo $skin_selector?> {}
         <?php echo $skin_selector?> [data-bs-toggle]{position: relative}
         <?php echo $skin_selector?> [data-bs-toggle]:not(.active){filter: grayscale(1)}
-        <?php echo $skin_selector?> [data-bs-toggle].active:after{content: '';width: 100%;bottom:0;left:0;height: var(--wv-2);background-color: red;position: absolute}
+        <?php echo $skin_selector?> [data-bs-toggle] .cont-under-line{opacity:0}
+        <?php echo $skin_selector?> [data-bs-toggle].active .cont-under-line{opacity: 1}
         <?php echo $skin_selector?> .tab-pane-inner{padding: var(--wv-29) var(--wv-16)}
 
         @media (min-width: 992px) {
@@ -17,7 +18,7 @@ global $g5;
     </style>
 
     <div class="position-relative col col-lg-auto  md:w-full h-100 " style="">
-        <div class="container  h-100">
+        <div class="container  h-100" style="overflow-x: hidden;overflow-y: auto">
             <form name="fpartsupdate" action='<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="made" value="<?php echo $made; ?>">
@@ -62,16 +63,16 @@ global $g5;
                                 ?>
                                 <a href="#"   class="<?php echo $i==0?'active':''; ?> fs-[14/20/-0.56/600/] col transition h-[42px] d-flex-center" data-bs-toggle="tab" data-bs-target="#cont-<?php echo $cont['id']; ?>" style="<?php echo $cont['item']['color_type_text'];?>">
                                     <?php echo $cont['item']['item_name_montserrat']; ?>
-                                    <span class="cont-under-line position-absolute   start-0 w-100 h-[2px]" style="bottom:-1px;<?php echo $cont['item']['color_type_bg']; ?>" ></span>
+                                    <span class="cont-under-line position-absolute   start-0 w-100 h-[2px]" style="bottom:-1px;background-color: <?php echo $cont['item']['color_type']['text']; ?>" ></span>
                                 </a>
                             <?php $i++;}?>
                         </div> 
                         <div class="wv-mx-fit" style="height: 1px;background-color: #efefef"></div>
                         <div class="tab-content menu-tab-content " id="myTabContent">
-                            <?php foreach ($this->store->store->contract_non_free_list as $cont){
+                            <?php $i=0; foreach ($this->store->store->contract_non_free_list as $cont){
                                 if(!$cont['service_content'])continue;
                                 ?>
-                            <div class="tab-pane fade show active" id="cont-<?php echo $cont['id']; ?>" >
+                            <div class="tab-pane fade <?php echo $i==0?'show active':''; ?> " id="cont-<?php echo $cont['id']; ?>" >
                                 <div class="tab-pane-inner  ">
                                     <p class="fs-[14/20/-0.56/600/#0D171B]"><?php echo $cont['item']['item_name_montserrat']; ?> 서비스</p>
                                     <div class="mt-[12px]">
@@ -79,7 +80,7 @@ global $g5;
                                     </div>
                                 </div>
                             </div>
-                            <?php }?>
+                            <?php $i++;}?>
 
                         </div>
                   
@@ -94,7 +95,7 @@ global $g5;
                             <div class="hstack align-items-start" style="gap:var(--wv-42)">
                                 <p class="fs-[13/17/-0.52/600/#97989C] min-w-[45px]">영업시간</p>
                                 <div class="vstack" style="row-gap: var(--wv-4)">
-                                    <?php  ; foreach ($this->store->biz->open_time_group as $each){ ?>
+                                    <?php   foreach ($this->store->biz->open_time_group as $each){ ?>
                                         <p class="hstack flex-wrap" style="gap:var(--wv-5);row-gap: 0"><span>(<?php echo $each['name']; ?>)</span><span><?php echo $each['time']; ?></span></p>
                                     <?php } ?>
                                 </div>
@@ -103,6 +104,9 @@ global $g5;
                             <div class="hstack align-items-start" style="gap:var(--wv-42)">
                                 <p class="fs-[13/17/-0.52/600/#97989C] min-w-[45px]">정기휴무</p>
                                 <div class="vstack" style="row-gap: var(--wv-4)">
+                                    <?php   foreach (generate_dayoffs_detailed_grouped($this->store->dayoffs->list) as $each){ ?>
+                                        <p class="hstack flex-wrap" style="gap:var(--wv-5);row-gap: 0"><span>(<?php echo $each['name']; ?>)</span><span><?php echo $each['targets']; ?></span></p>
+                                    <?php } ?>
 
                                 </div>
                             </div>
@@ -124,6 +128,64 @@ global $g5;
                         </div>
                     </div>
 
+                    <div class="mt-[11px]">
+                        <div class="border" style="border-radius: var(--wv-4);">
+                            <div class="h-[112px]" >
+                                <?php
+                                $address_skin_data = array(
+                                    'lat' => $this->store->location->lat,
+                                    'lng' => $this->store->location->lng,
+                                    'address_name' => 'dasdsa',
+                                    'icon'=>$this->store->store->category_item['icon']['path'],
+                                    'icon_wrap'=>wv()->store_manager->made('sub01_01')->plugin_url.'/img/category_icon_wrap.png'
+                                );
+
+                                echo wv_widget('location/address',$address_skin_data);
+                                ?>
+                            </div>
+                            <div class="hstack fs-[12/17/-0.48/600/#0D171B]">
+                                <a href="" class="col h-[42px] d-flex-center copy-address " data-address="<?php echo $this->store->location->address_name_full; ?>">
+                                    <img src="<?php echo $this->manager->plugin_url; ?>/img/copy.png" class="w-[14px] me-[4px]" alt="">
+                                    주소복사
+                                </a>
+                                <a href="" class="col h-[42px] d-flex-center ">
+                                    <img src="<?php echo $this->manager->plugin_url; ?>/img/map_view.png" class="w-[14px] me-[4px]" alt="">
+                                    지도보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="" class="mt-[12px] hstack border d-flex-center h-[42px]" style="border-radius: var(--wv-4);gap:var(--wv-4)">
+                        <img src="<?php echo $this->manager->plugin_url; ?>/img/comment_dot.png" class="w-[14px]" alt="">
+                        <span>이 가게에 대한 ‘나만의 메모' 남기기</span>
+                    </a>
+
+                    <div class="wv-mx-fit mt-[30px]" style="height: var(--wv-6);background-color: #efefef"></div>
+
+                    <div class="mt-[30px]">
+                        <p class="fs-[14/20/-0.56/600/#0D171B]">대표 메뉴</p>
+                        <div class="mt-[25px]">
+                            <?php echo $this->store->menu->render_part('menu_list','view',array('only_main'=>1));; ?>
+                        </div>
+                    </div>
+
+                    <div class="wv-mx-fit mt-[30px]" style="height: var(--wv-6);background-color: #efefef"></div>
+
+                    <div class="mt-[30px]">
+                        <p class="fs-[14/20/-0.56/600/#0D171B]">일반 메뉴</p>
+                        <div class="mt-[25px]">
+                            <?php echo $this->store->menu->render_part('menu_list','view',array('only_not_main'=>1));; ?>
+                        </div>
+                    </div>
+
+                    <div class="wv-mx-fit  " style="height: var(--wv-2);background-color: #efefef"></div>
+
+
+
+                    <div class="mt-[30px] wv-mx-fit">
+                        <?php echo wv_widget('content/copyright'); ?>
+                    </div>
                 </div>
             </form>
         </div>
@@ -140,6 +202,19 @@ global $g5;
                 //     $offcanvas.offcanvas('hide');
                 // }
             })
+            $(".copy-address",$skin).click(function (e) {
+                e.preventDefault()
+                copy_invite_code($(this).data('address'));
+            })
+            function copy_invite_code(code) {
+                wv_copy_to_clipboard(code, {
+                    success_message: '주소가 복사되었습니다!',
+                    error_message: '복사에 실패했습니다.',
+                    success_callback: function() {
+                        console.log('복사 성공!');
+                    }
+                });
+            }
         })
     </script>
 </div>

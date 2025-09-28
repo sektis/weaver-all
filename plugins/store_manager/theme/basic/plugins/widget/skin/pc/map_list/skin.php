@@ -23,7 +23,10 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                 <img src="<?php echo $wv_skin_url; ?>/arrow.png" class="w-[4px]" alt="">
             </a>
         <?php } ?>
-        <div class="hstack justify-content-end h-[48px]" style="">
+        <div class="hstack justify-content-between h-[48px]" style="">
+            <div>
+                <input type="text" class="d-none" name="q" value="<?php echo $data['q']; ?>">
+            </div>
             <div class="wv-dropdown-select">
                 <button type="button" class=" btn" data-bs-toggle="dropdown"  >
                   <span class="hstack" style="gap:var(--wv-6)">
@@ -52,7 +55,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
             <?php if(!count($data['content']['lists'])){ ?>
                 <div class="store-empty" style=" text-align: center;padding: var(--wv-40);color: #666;">
                     <i class="fa-solid fa-store-slash" style="font-size: 48px; color: #ddd; margin-bottom: 16px;"></i>
-                    <p>이 지역에 등록된 매장이 없습니다.</p>
+                    <p>등록된 매장이 없습니다.</p>
                 </div>
             <?php } ?>
 

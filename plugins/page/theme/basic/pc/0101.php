@@ -5,6 +5,7 @@ $data = array(
     'q'=>$q,
     'category_wr_id'=>$category_wr_id,
     'contractitem_wr_id'=>2,
+    'limit_km'=>50
 );
 echo wv_widget('store_list',$data);
 ?>

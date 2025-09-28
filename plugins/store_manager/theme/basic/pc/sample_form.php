@@ -41,32 +41,7 @@ global $g5;
                     <div class="wv-offcanvas-body col">
 
 
-                        <div class="vstack  " style="row-gap:var(--wv-20)">
-                            <div>
-                                <p class="fs-[16/22/-0.64/600/#0D171B]  ">대표번호</p>
-                                <div class="mt-[20px]" style="z-index: 10">
-                                    <?php echo $this->store->store->render_part('tel', 'form'); ?>
-                                </div>
-                                <div class="fs-[12/17/-0.48/500/#97989C] mt-[20px] vstack" style="row-gap:var(--wv-8)">
-                                    <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>이미지는 순서대로 고객에게 보여집니다</p></div>
-                                    <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>매장 소개 이미지는 <span class="text-[#0D171B]">매장 외부, 내부, 대표 메뉴 등</span> 내 매장을 <br>잘 나타낼 수 있는 이미지가 좋아요</p></div>
-                                    <div class="hstack align-items-start" style="gap:var(--wv-8)"><span class="fs-12em">·</span> <p>JPG / PNG 이미지만 업로드 가능합니다</p></div>
-                                </div>
-                            </div>
 
-                            <div class="wv-mx-fit" style="height: 10px;background-color: #efefef"></div>
-
-                            <div>
-                                <p class="fs-[16/22/-0.64/600/#0D171B]  ">추가번호</p>
-                                <div class="mt-[20px]" style="z-index: 10">
-                                    <?php echo $this->store->store->render_part('tel_add', 'form'); ?>
-                                </div>
-                            </div>
-
-                            <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
-                               data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"ceo/account_config","wr_id":"<?php echo $current_member_wr_id; ?>"}'
-                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" ></a>
-                        </div>
                     </div>
 
                     <div class="mt-auto col-auto pb-[50px] hstack gap-[6px]">

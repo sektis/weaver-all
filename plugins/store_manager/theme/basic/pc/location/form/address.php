@@ -28,7 +28,8 @@ $address_name = isset($row['address_name']) ? $row['address_name'] : '';
 $address_skin_data = array(
     'lat' => $lat,
     'lng' => $lng,
-    'address_name' => $address_name
+    'address_name' => $address_name,
+    'use_search_address'=>true,
 );
 
 ?>
@@ -74,7 +75,7 @@ $address_skin_data = array(
                     </div>
                 </div>
 
-                <div class="">
+                <div class="h-[300px]" style="border: 1px solid #EFEFEF;border-radius: var(--wv-8);overflow: hidden">
                 <?php
                 // Location 플러그인의 address 스킨 렌더링
 //                if (wv_plugin_exists('location')) {

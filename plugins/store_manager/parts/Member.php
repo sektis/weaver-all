@@ -14,6 +14,7 @@ class Member extends StoreSchemaBase{
         'admin_memo'=>"text not null default ''",
         'bank_name'=>"VARCHAR(255) DEFAULT NULL",
         'ban_account_number'=>"VARCHAR(255) DEFAULT NULL",
+        'invite_code'=>"VARCHAR(7) DEFAULT NULL",
         'mb_id' => "",
         'mb_password' => "",
         'mb_password_init' => "",
@@ -28,7 +29,11 @@ class Member extends StoreSchemaBase{
 
     public function get_indexes(){
         return array(
-            array()
+            array(
+                'name' => 'unique_invite_code',
+                'type' => 'UNIQUE',
+                'cols' => array('invite_code')
+            )
         );
     }
 
@@ -39,12 +44,61 @@ class Member extends StoreSchemaBase{
         $arr['active_text'] = $this->active_arr[$row['active']];
         $mb = get_member($row['mb_id']);
         $arr['is_cert'] = ($mb['mb_dupinfo']   && $mb['mb_certify']);
+
+        // invite_code가 없으면 생성
+        if(empty($row['invite_code']) && isset($row['wr_id']) && $row['wr_id'] > 0){
+            $invite_code = $this->generate_unique_invite_code();
+            if($invite_code){
+                $ext_table = $this->manager->get_ext_table_name();
+                $physical_col = $this->manager->get_physical_col('member', 'invite_code');
+                sql_query("UPDATE {$ext_table} SET {$physical_col} = '{$invite_code}' WHERE wr_id = '{$row['wr_id']}'");
+                $arr['invite_code'] = $invite_code;
+            }
+        } else {
+            $arr['invite_code'] = $row['invite_code'];
+        }
+
 //        $arr['is_cert'] = true;
         return $arr;
     }
 
 
+    public function is_new($wr_id, $data){
+        // 새 회원 생성시 invite_code 생성
+        $invite_code = $this->generate_unique_invite_code();
+        if($invite_code){
+            $ext_table = $this->manager->get_ext_table_name();
+            $physical_col = $this->manager->get_physical_col('member', 'invite_code');
+            sql_query("UPDATE {$ext_table} SET {$physical_col} = '{$invite_code}' WHERE wr_id = '{$wr_id}'");
+        }
+    }
 
+
+    /**
+     * 유니크한 초대코드 생성 (영대문자+숫자 7자리)
+     */
+    protected function generate_unique_invite_code(){
+        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $max_attempts = 100; // 무한루프 방지
+
+        $ext_table = $this->manager->get_ext_table_name();
+        $physical_col = $this->manager->get_physical_col('member', 'invite_code');
+
+        for($attempt = 0; $attempt < $max_attempts; $attempt++){
+            $code = '';
+            for($i = 0; $i < 7; $i++){
+                $code .= $chars[rand(0, strlen($chars) - 1)];
+            }
+
+            // 유니크 체크
+            $check = sql_fetch("SELECT wr_id FROM {$ext_table} WHERE {$physical_col} = '{$code}'");
+            if(!$check){
+                return $code;
+            }
+        }
+
+        return false; // 생성 실패
+    }
 
     public function before_set(&$data) {
         // 좌표 유효성 검사

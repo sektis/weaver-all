@@ -68,9 +68,9 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 var bounds = map.getBounds();
                 var center = map.getCenter();
                 var level = map.getLevel();
-                console.log('map changed')
+
                 // 기존 선택 해제
-                clearSelectedMarkers();
+
                 $skin.trigger('wv_location_map_changed', {
                     bounds: bounds,
                     center: center,
@@ -242,6 +242,8 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 // 지도 이동/줌 이벤트 (500ms 지연처리)
                 kakao.maps.event.addListener(map, 'bounds_changed', function() {
                     clearTimeout(boundsChangeTimeout);
+                    clearSelectedMarkers();
+                    $skin.trigger('wv_location_map_change_start' );
                     boundsChangeTimeout = setTimeout(function() {
                         triggerMapChangedEvent();
                     }, 500);
@@ -250,6 +252,8 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                 // 현재 위치 버튼 이벤트
                 $skin.find('.current-location-btn').click(function() {
                     getCurrentLocation();
+                    clearSelectedMarkers();
+                    $skin.trigger('wv_location_map_change_start' );
                     // 현재 위치 이동 후 즉시 이벤트 발송
                     setTimeout(function() {
                         triggerMapChangedEvent();
@@ -299,8 +303,7 @@ $map_options = isset($data) && is_array($data) ? $data : array();
                     }
 
 
-                    clearSelectedMarkers()
-
+                    
                     if (data.lists && Array.isArray(data.lists)) {
                         updateMarkers(data.lists, data);
                     }

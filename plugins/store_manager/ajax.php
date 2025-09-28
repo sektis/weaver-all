@@ -68,9 +68,24 @@ if($action == 'get_store_list'){
 
     }
 
+    if($q){
+        $q_arr = array(
+          'or'=>array(
+              'where_store'=>array(
+                  array('name'=>" like '%{$q}%'"),
+              ),
+              'where_menu'=>array(
+                  array('name'=>" like '%{$q}%'")
+              )
+          )
+        );
+      $options['where'] = array_merge_recursive($options['where'],$q_arr);
+    }
 
 
     $result = $manager->get_list($options);
+
+
 
 
     // 응답 데이터 정리

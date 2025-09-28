@@ -33,9 +33,8 @@ class Menu extends StoreSchemaBase implements StoreSchemaInterface{
         $arr = array();
 //        $cate_item = wv()->store_manager->made('store_category')->get($row['category_wr_id'])->storecategory;
 
-        if(isset($row['test'])){
-            $arr['test'] = 'dasdsa';
-        }
+        $main_image = reset($row['images']);
+        $arr['main_image'] = $main_image['path'];
 
 
 

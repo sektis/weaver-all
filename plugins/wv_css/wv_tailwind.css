@@ -48,6 +48,9 @@
   .ms-\[18px\] {
     margin-inline-start: var(--wv-18) !important;
   }
+  .me-\[4px\] {
+    margin-inline-end: var(--wv-4) !important;
+  }
   .mt-\[1em\] {
     margin-top: 1em !important;
   }
@@ -101,6 +104,9 @@
   }
   .mt-\[24px\] {
     margin-top: var(--wv-24) !important;
+  }
+  .mt-\[25px\] {
+    margin-top: var(--wv-25) !important;
   }
   .mt-\[26px\] {
     margin-top: var(--wv-26) !important;
@@ -192,6 +198,9 @@
   .h-\[43px\] {
     height: var(--wv-43) !important;
   }
+  .h-\[45px\] {
+    height: var(--wv-45) !important;
+  }
   .h-\[46px\] {
     height: var(--wv-46) !important;
   }
@@ -216,11 +225,17 @@
   .h-\[90px\] {
     height: var(--wv-90) !important;
   }
+  .h-\[112px\] {
+    height: var(--wv-112) !important;
+  }
   .h-\[150px\] {
     height: var(--wv-150) !important;
   }
   .h-\[276px\] {
     height: var(--wv-276) !important;
+  }
+  .h-\[300px\] {
+    height: var(--wv-300) !important;
   }
   .w-\[4px\] {
     width: var(--wv-4) !important;
@@ -296,6 +311,9 @@
   }
   .w-\[84px\] {
     width: var(--wv-84) !important;
+  }
+  .w-\[90px\] {
+    width: var(--wv-90) !important;
   }
   .w-\[125px\] {
     width: var(--wv-125) !important;
@@ -515,12 +533,33 @@
     font-weight: 500 !important;
     color: #97989C !important;
   }
+  .fs-\[11\/17\/-0\.44\/600\/\#575757\] {
+    font-size: var(--wv-11) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
+    color: #575757 !important;
+  }
+  .fs-\[11\/17\/-0\.44\/700\/\#97989C\] {
+    font-size: var(--wv-11) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 700 !important;
+    color: #97989C !important;
+  }
   .fs-\[12\/13\.26\/-0\.02em\/400\/\#797979\] {
     font-size: var(--wv-12) !important;
     line-height: var(--wv-13_26) !important;
     letter-spacing: -0.02em !important;
     font-weight: 400 !important;
     color: #797979 !important;
+  }
+  .fs-\[12\/17\/-0\.48\/400\/\#97989C\] {
+    font-size: var(--wv-12) !important;
+    line-height: var(--wv-17) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 400 !important;
+    color: #97989C !important;
   }
   .fs-\[12\/17\/-0\.48\/500\/\#0D171B\] {
     font-size: var(--wv-12) !important;
@@ -626,6 +665,13 @@
     letter-spacing: -0.04em !important;
     font-weight: 700 !important;
     color: #0D171B !important;
+  }
+  .fs-\[14\/20\/-0\.56\/400\/\#97989C\] {
+    font-size: var(--wv-14) !important;
+    line-height: var(--wv-20) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 400 !important;
+    color: #97989C !important;
   }
   .fs-\[14\/20\/-0\.56\/500\/\#0D171B\] {
     font-size: var(--wv-14) !important;
@@ -786,6 +832,13 @@
     line-height: var(--wv-25) !important;
     letter-spacing: -0.04em !important;
     font-weight: 700 !important;
+    color: #0D171B !important;
+  }
+  .fs-\[20\/28\/-0\.8\/600\/\#0D171B\] {
+    font-size: var(--wv-20) !important;
+    line-height: var(--wv-28) !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 600 !important;
     color: #0D171B !important;
   }
   .fs-\[20\/28\/-0\.8\/600\/\#000\] {
@@ -1063,6 +1116,9 @@
   .text-\[\#4e546f\] {
     color: #4e546f !important;
   }
+  .text-\[\#6c7df3\] {
+    color: #6c7df3 !important;
+  }
   .text-\[\#777\] {
     color: #777 !important;
   }
@@ -1086,10 +1142,6 @@
   }
   .lowercase {
     text-transform: lowercase !important;
-  }
-  .outline {
-    outline-style: var(--tw-outline-style) !important;
-    outline-width: var(--wv-1) !important;
   }
   .filter {
     filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,) !important;
@@ -1157,11 +1209,6 @@
   initial-value: skewY(0);
 }
 @property --tw-border-style {
-  syntax: "*";
-  inherits: false;
-  initial-value: solid;
-}
-@property --tw-outline-style {
   syntax: "*";
   inherits: false;
   initial-value: solid;
@@ -1264,7 +1311,6 @@
       --tw-skew-x: skewX(0);
       --tw-skew-y: skewY(0);
       --tw-border-style: solid;
-      --tw-outline-style: solid;
       --tw-blur: initial;
       --tw-brightness: initial;
       --tw-contrast: initial;

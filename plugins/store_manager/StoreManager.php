@@ -990,6 +990,7 @@ class StoreManager extends Makeable{
 //                                alert('update : id 체크 오류');
                             }
                             $i = 0;
+
                             foreach ($arr as $k => &$v) {
                                 if (is_numeric($k) and !$v['delete'] and array_filter($v)) {
                                     $v['ord'] = $i;
@@ -1040,6 +1041,14 @@ class StoreManager extends Makeable{
                                 return $hook_logical_col;
                             };
 
+                            if($parent_key<0){
+
+                                $combined = 'unset($data_pkey_logical_col' . wv_array_to_text($node, "['", "']") . ');';
+
+                                @eval("$combined;");
+                                return false;
+                            }
+
                             if ($is_new) {
 
                                 if (wv_empty_except_keys($arr, array('ord'))) {
@@ -1075,7 +1084,10 @@ class StoreManager extends Makeable{
                                     return false;
                                 } else {
                                     $this->execute_hook('is_update',$arr,$pkey,$get_hook_logical_col());
+
+
                                     if(($int_key and is_array($arr2)) or $is_old_file){
+
 //                                        echo "<pre>";
 //                                        echo $parent_key;
 //                                        print_r($arr2);
@@ -1519,9 +1531,10 @@ class StoreManager extends Makeable{
     }
 
     public function get_physical_col($part_key, $logical){
+
         if(isset($this->parts[$part_key]) && $this->is_list_part_schema($this->parts[$part_key])) {
 //            return $part_key; // 원본 그대로 반환
-            return $logical; // 원본 그대로 반환
+            return $logical?$logical:$part_key; // 원본 그대로 반환
         }
 
         return isset($this->colmap[$part_key][$logical]) ? $this->colmap[$part_key][$logical] : $this->physical_col($part_key, $logical);
@@ -2016,6 +2029,9 @@ class StoreManager extends Makeable{
         $def = array();
         if ($schema && $part_key) {
             $def = $schema->get_columns($this->bo_table);
+            if($part_key=='store'){
+//                dd($def);
+            }
         }
 
         $walk_function = function (&$arr, $arr2, $node) use(&$walk_function, $def, $part_key) {
@@ -2032,19 +2048,53 @@ class StoreManager extends Makeable{
                     $physical_col = $this->get_physical_col($part_key, $parent_key);
                     $arr = "{$physical_col} {$arr}";
                 } else {
+
                     // 일반 where일 때: parent_key를 컬럼명으로 사용
                     if($parent_key !== '' && !is_numeric($parent_key)) {
                         $arr = "{$parent_key} {$arr}";
                     }
                 }
                 return false;
+            }else  if (preg_match('/^where_([a-zA-Z0-9_]+)$/', $parent_key, $matches)) {
+
+                $target_part_key = $matches[1];
+
+                // 해당 파트가 존재하는지 확인
+                if (isset($this->parts[$target_part_key])) {
+                    $target_schema = $this->parts[$target_part_key];
+
+                    // 재귀적으로 해당 파트의 조건으로 처리
+                    $part_conditions = $this->process_where_conditions($arr, $target_part_key, $target_schema);
+
+                    if ($part_conditions !== '') {
+                        if ($this->is_list_part_schema($target_schema)) {
+                            $list_part_tbl = $this->get_list_table_name($target_part_key);
+                            $arr = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$part_conditions}))";
+                        } else {
+                            $arr = "({$part_conditions})";
+                        }
+
+                      return false;
+                    } else {
+                        $arr = '';
+                    }
+
+                } else {
+
+                    // 존재하지 않는 파트는 제거
+                    $combined = 'unset($conditions'. wv_array_to_text($node,"['","']").');';
+                    @eval("$combined;");
+                }
+
             }
+
 
             foreach ($arr as $k=>&$v){
                 wv_walk_by_ref_diff($v, $walk_function, array(), array_merge($node, (array)$k));
             }
 
             if(in_array($parent_key, array('and','or'), true)){  // strict comparison
+
                 // 🔧 and/or 그룹에서 전체를 괄호로 감싸기
                 $wrapped = array_map(function($item) {
                     return "($item)";
@@ -2059,13 +2109,14 @@ class StoreManager extends Makeable{
                 }
                 return false;
             } else {
+
                 // 숫자 키나 기타 키는 처리하지 않고 그대로 두기
                 if(is_numeric($parent_key) || $parent_key === ''){
                     // 숫자 인덱스는 첫 번째 요소만 사용
                     $arr = reset($arr);
                 } else {
-                    // 기타 키는 and 연결
-                    $arr = implode(" and ", array_filter($arr));
+                     // 기타 키는 and 연결 ;
+                    $arr = implode(" or ", array_filter($arr));
                 }
             }
             return false;
