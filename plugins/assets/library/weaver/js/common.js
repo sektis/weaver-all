@@ -32,6 +32,13 @@ function wv_rand_str(min, max) {
     return result;
 }
 
+function wv_form_to_json_simple(form_selector) {
+    var form_data = {};
+    $(form_selector).serializeArray().forEach(function(item) {
+        form_data[item.name] = item.value;
+    });
+    return form_data;
+}
 function wv_debounce(callback, limit = 100) {
     let timeout
     return function(...args) {
@@ -485,7 +492,7 @@ $(document).ready(function () {
 
             var $more_btn = $container.find('.wv-scroll-more-btn');
 
-  
+
         }
     });
 

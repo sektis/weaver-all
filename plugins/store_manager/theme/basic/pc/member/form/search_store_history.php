@@ -1,6 +1,5 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
-$this->make_array($row[$column]);
 
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> position-relative d-flex-center flex-nowrap" style="">
@@ -27,61 +26,44 @@ $this->make_array($row[$column]);
         }
     </style>
 
-    <div class="position-relative col col-lg-auto w-full md:w-full wv-vstack" style="row-gap: var(--wv-10)">
-        <div class="wv-ps-col">
-            <div class="wv-ps-list  vstack" style="row-gap: var(--wv-10)">
-                <?php foreach ($row['memo'] as $k => $v) {
-
-                    $demo_class = !$v ? 'wv-ps-demo' : '';
-
-                    ?>
-                    <div class="wv-ps-each w-full <?php echo $demo_class; ?>">
+    <div class="position-relative col col-lg-auto w-full md:w-full  wv-ps-col"  >
+        <form name="fpartsupdate" action='<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="made" value="member">
+            <input type="hidden" name="made" value="member">
+            <?php if ($is_list_item_mode) { ?>
+                <input type="hidden" name="<?php echo str_replace("[{$column}]", '', $field_name); ?>[id]" value="<?php echo $row['id']; ?>">
+            <?php } ?>
+            <?php echo $this->store->basic->render_part('wr_id', 'form');; ?>
+            <div class="hstack wv-ps-list flex-wrap" style="gap: var(--wv-8)">
+                <?php foreach ($row[$column] as $k => $v) {?>
+                    <div class="wv-flex-box wv-ps-each align-items-center" style="padding: var(--wv-4) var(--wv-6) var(--wv-4) var(--wv-10);background-color: #f9f9f9">
                         <!-- 필수 hidden -->
                         <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]"  value="<?php echo $v['id']; ?>">
                         <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][date]"  value="<?php echo $v['date']; ?>">
-                        <div class="d-flex justify-content-between  ">
-                            <?php if($v['id']){ ?>
-
-
-                                <p class="fs-[14/17/-0.56/600/#0D171B] col"><span class="pe-2">·</span> <?php echo $v['text']; ?></p>
-                                <p class="fs-[11/17/-0.44/500/#97989C] col-auto"><?php echo date('Y.m.d',strtotime($v['date'])); ?></p>
-
-                            <?php }else{ ?>
-
-
-                                <input
-                                    type="text"
-                                    class="form-control col"
-                                    id="<?php echo $field_name; ?>[<?php echo $k; ?>][text]"
-                                    name="<?php echo $field_name; ?>[<?php echo $k; ?>][text]"
-                                    maxlength="20"
-                                    placeholder="메모를 입력하세요."
-                                    value="<?php echo $v['text']; ?>">
-                                <label for="<?php echo $field_name; ?>[<?php echo $k; ?>][text]" class="visually-hidden">메모</label>
+                        <p class="fs-[12/12/-0.48/600/#0D171B]"><?php echo $v['text']; ?></p>
 
 
 
+                            <label class="lh-0  " style="cursor: pointer">
+                                <input type="checkbox" class="d-none delete-each" name="<?php echo $field_name; ?>[<?php echo $k; ?>][delete]" value="1">
+                                <img src="<?php echo $this->manager->plugin_url; ?>/img/button_close.png" class="w-[12px]" alt="">
+                            </label>
 
-
-                            <?php } ?>
-                            <div class=" wv-ps-box ms-3  col-auto ">
-                                <label class="h-100 ">
-                                    <input type="checkbox" class="d-none" name="<?php echo $field_name; ?>[<?php echo $k; ?>][delete]" value="1">
-                                    <span>  </span>
-                                </label>
-                            </div>
-                        </div>
                     </div>
                 <?php  } ?>
             </div>
-        </div>
+        </form>
     </div>
 
     <script>
         $(document).ready(function(){
+
             var $skin = $("<?php echo $skin_selector?>");
 
-
+            $(".delete-each",$skin).click(function () {
+                wv_ajax('<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php', {ajax:{reload:false}},wv_form_to_json_simple($("form",$skin)))
+            })
         });
     </script>
 </div>

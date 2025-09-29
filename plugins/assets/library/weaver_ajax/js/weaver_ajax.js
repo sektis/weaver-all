@@ -236,7 +236,7 @@ $(function(){
         } catch (e) {
 
         }
-
+console.log(settings.reload);
         if(isset(settings.reload)   ){
             reload=settings.reload;
         }
@@ -255,7 +255,7 @@ $(function(){
 
         if(reload){
 
-            location.reload()
+            // location.reload()
         }
 
 

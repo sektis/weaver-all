@@ -136,7 +136,7 @@ class Member extends StoreSchemaBase{
                alert('id가 일치하지 않습니다.');
            }
            if($data['mb_id']==$config['cf_admin']){
-               alert('최고관리자 정보 변경 금지');
+//               alert('최고관리자 정보 변경 금지');
            }
 
            if($data['mb_password_new']){

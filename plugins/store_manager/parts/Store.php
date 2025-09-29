@@ -47,6 +47,9 @@ class Store extends StoreSchemaBase implements StoreSchemaInterface{
         $arr['list_each'] =  function ($data) use($row) {
             return $this->store->store->render_part('list_each','view',array_merge($row,$data));
         };
+        $arr['cert_each'] =  function ($data) use($row) {
+            return $this->store->store->render_part('cert_each','view',array_merge($row,$data));
+        };
         $arr['list_main'] =function ($data) {
             return $this->store->store->render_part('list_main','view',$data);
         };

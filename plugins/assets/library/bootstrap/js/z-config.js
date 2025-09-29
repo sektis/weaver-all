@@ -300,6 +300,7 @@ function parseWvAjaxOptions(options,$from) {
     if (typeof options === 'string') {
         // 문자열 옵션 파싱
         var optionArray = options.split(',');
+
         for (var i = 0; i < optionArray.length; i++) {
             var option = optionArray[i].trim();
 
@@ -313,10 +314,11 @@ function parseWvAjaxOptions(options,$from) {
                 processedOptions.target = option.substring(7).trim();
             }
             else if (option.indexOf('append:') === 0) {
-                processedOptions.append = option.substring(7).trim();
+                processedOptions.append_in = option.substring(7).trim();
             }
-            else if (option.indexOf('replace:') === 0) {
-                processedOptions.replace = option.substring(8).trim();
+            else if (option.indexOf('replace_in:') === 0) {
+
+                processedOptions.replace_in = option.substring(11).trim();
             }
             else if (option.indexOf('replace_with:') === 0) {
                 processedOptions.replace_with = option.substring(13).trim();
@@ -334,7 +336,8 @@ function parseWvAjaxOptions(options,$from) {
                         ajaxOptionStr = ajaxOptionStr.replace(/([{,]\s*)(\w+):/g, '$1"$2":');
                         ajaxOptionStr = ajaxOptionStr.replace(/:(\w+)([,}])/g, ':"$1"$2');
                     }
-                    processedOptions.ajax = JSON.parse(ajaxOptionStr);
+                    processedOptions.ajax_option = JSON.parse(ajaxOptionStr);
+
                 } catch(e) {
                     console.error('ajax_option 파싱 오류:', e);
                 }
@@ -361,6 +364,7 @@ function parseWvAjaxOptions(options,$from) {
             }
         }
     }
+
     processedOptions.type = type;
 
     if(processedOptions.type && (processedOptions.target||processedOptions.append||processedOptions.replace||processedOptions.replace_with)){
@@ -495,13 +499,12 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
                 $(processedOptions.append).append(response);
                 return false;
             }
-            if (processedOptions.replace) {
+            if (processedOptions.replace_in) {
 
-                $(processedOptions.replace).html(response);
+                $(processedOptions.replace_in).html(response);
                 return false;
             }
             if (processedOptions.replace_with) {
-
                 $(processedOptions.replace_with).replaceWith(response);
                 return false;
             }
@@ -547,14 +550,15 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
 
 
     // ajax_option으로 기본값 오버라이딩
-    if (processedOptions.ajax) {
-        $.extend(defaultAjaxSettings, processedOptions.ajax);
+    if (processedOptions.ajax_option) {
+        $.extend(defaultAjaxSettings, processedOptions.ajax_option);
         // ✅ 커스텀 속성들을 settings에 직접 설정
-        if (processedOptions.ajax.reload !== undefined) {
-            defaultAjaxSettings.reload = processedOptions.ajax.reload;
+        if (processedOptions.ajax_option.reload !== undefined) {
+
+            defaultAjaxSettings.reload = processedOptions.ajax_option.reload;
         }
-        if (processedOptions.ajax.use_redirect !== undefined) {
-            defaultAjaxSettings.use_redirect = processedOptions.ajax.use_redirect;
+        if (processedOptions.ajax_option.use_redirect !== undefined) {
+            defaultAjaxSettings.use_redirect = processedOptions.ajax_option.use_redirect;
         }
 
     }

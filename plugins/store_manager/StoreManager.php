@@ -825,6 +825,9 @@ class StoreManager extends Makeable{
                 if (!isset($data['wr_subject']) || !strlen(trim($data['wr_subject']))) {
                     $data['wr_subject'] = '/';
                 }
+                if (!isset($data['wr_content']) || !strlen(trim($data['wr_content']))) {
+                    $data['wr_content'] = '/';
+                }
 
                 $wr_id = $this->create_post_stub_and_get_wr_id($data);
                 $data['wr_id'] = $wr_id;
