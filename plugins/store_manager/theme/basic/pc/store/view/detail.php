@@ -1,5 +1,7 @@
 <?php
 global $g5;
+$write_table = $this->manager->get_write_table_name();
+sql_query(" update {$write_table} set wr_hit = wr_hit + 1 where wr_id = '{$row['wr_id']}' ",1);
 ?>
 <div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white" style="overflow: hidden">
     <style>
@@ -148,7 +150,7 @@ global $g5;
                                     <img src="<?php echo $this->manager->plugin_url; ?>/img/copy.png" class="w-[14px] me-[4px]" alt="">
                                     주소복사
                                 </a>
-                                <a href="" class="col h-[42px] d-flex-center ">
+                                <a href="" class="col h-[42px] d-flex-center " onclick="window.open(open_kakaomap_with_fallback('<?php echo $this->store->store->name?>','<?php echo $this->store->location->lat?>','<?php echo $this->store->location->lng?>'))">
                                     <img src="<?php echo $this->manager->plugin_url; ?>/img/map_view.png" class="w-[14px] me-[4px]" alt="">
                                     지도보기
                                 </a>

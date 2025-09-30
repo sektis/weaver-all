@@ -23,7 +23,7 @@ $options = array(
         " location_lat  <>'' ",
         " location_lng <>'' "
     ),
-    'select_store'=>array('cert_each'),
+    'select_store'=>array('search_auto_each'),
     'order_by' => 'w.wr_datetime DESC',
     'rows' => $rows?$rows:15,
     'with_list_part'=>false
@@ -40,6 +40,7 @@ if($order and $order!='near'){
 }
 
 if($data['q']){
+    $data['q']=trim($data['q']);
     $q_arr = array(
         'or'=>array(
             'where_store'=>array(
@@ -52,7 +53,8 @@ if($data['q']){
     );
     $options['where'] = array_merge_recursive($options['where'],$q_arr);
 
-    $member_manager->set($post_data);
+
+   ;
 }
 
 
@@ -68,7 +70,7 @@ $result = $manager->get_list($options);
         <div class="vstack  " style=" ">
             <?php foreach ($result['list'] as $each){?>
                 <div style="padding: var(--wv-12) 0 var(--wv-12)">
-                    <?php echo $each['store']['cert_each'];; ?>
+                    <?php echo $each['store']['search_auto_each'];; ?>
 
                 </div>
                 <div class="wv-mx-fit" style="border-top: var(--wv-1) solid #efefef"></div>
@@ -91,6 +93,7 @@ $result = $manager->get_list($options);
     <script>
         $(document).ready(function() {
             var $skin = $("<?php echo $skin_selector?>");
+
 
         });
     </script>

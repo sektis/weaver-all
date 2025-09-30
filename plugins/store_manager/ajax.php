@@ -42,7 +42,28 @@ if($action == 'get_store_list'){
         );
 
     }
+    if($town){
+        $saved_favo_towns = wv()->location->get('favorite');
 
+        foreach ($saved_favo_towns as $k=> $v){
+            $options['where_location']['or'][]['and'] = array(
+                'region_1depth_name'=> "='".wv_trans_sido($v['region_1depth_name'],1)."'",
+                'region_2depth_name'=> "='".wv_trans_sido($v['region_2depth_name'],1)."'",
+                'region_3depth_name'=> "='".wv_trans_sido($v['region_3depth_name'],1)."'",
+            );
+        }
+        $board = get_board_db($manager->get_bo_table());;
+        if($town=='favo'){
+
+            $options['where'][] = " wr_hit >=  {$board['bo_hot']}";
+        }elseif($town=='new'){
+           $base_time =  date("Y-m-d H:i:s", G5_SERVER_TIME - ($board['bo_new'] * 3600));
+            $options['where'][] = " wr_datetime >=  '{$base_time}'";
+        }
+        $limit_km=0;
+        $options['rows']=999;
+
+    }
 
     $need_bound_check=false;
     if ($sw_lat and $sw_lng and $ne_lat and $ne_lng) {
@@ -81,6 +102,7 @@ if($action == 'get_store_list'){
         );
       $options['where'] = array_merge_recursive($options['where'],$q_arr);
     }
+
 
 
     $result = $manager->get_list($options);

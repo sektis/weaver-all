@@ -101,6 +101,7 @@
     opacity: 1;
     transition: all 1s ease-in-out 1s; /* show될 때만 딜레이 */
   }
+  .dropdown-menu{background-color: #fff}
   /*.wv-offcanvas-body{overflow-y: auto;overflow-x: hidden}*/
   /*.offcanvas-body:has(.wv-offcanvas-body){*/
   /*  overflow-y: hidden!important;*/

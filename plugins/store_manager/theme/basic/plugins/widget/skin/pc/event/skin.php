@@ -33,26 +33,29 @@ global $current_member,$member_manager,$current_member_wr_id;
             </a>
         </div>
         <div class="wv-mx-fit" style="height: 1px;background-color: #efefef"></div>
-        <div class="tab-content menu-tab-content wv-mx-fit" id="myTabContent">
+        <div class="tab-content menu-tab-content wv-mx-fit"  style="overflow-x: hidden">
             <div class="tab-pane fade show active" id="event-1" >
                 <div class="tab-pane-inner container  ">
                    <div class="wv-mx-fit">
                        <img src="<?php echo $wv_skin_url; ?>/ban1.png" class="w-100" alt="">
                    </div>
-                    <div class="mt-[20px]">
-                        <p class="fs-[14/20/-0.56/600/#0D171B]">나의 초대 코드</p>
-                        <?php echo $current_member->member->render_part('my_code','view'); ?>
-                    </div>
-                    <div class="wv-mx-fit mt-[20px]" style="height: 1px;background-color: #efefef"></div>
-                    <div class="h-[45px] hstack position-relative" style="gap:var(--wv-4)">
-                        <img src="<?php echo $member_manager->plugin_url; ?>/img/peoples.png" class="w-[18px]" alt="">
-                        <p class="fs-[12/17/-0.48/600/#0D171B]">나의 초대현황 확인하기 </p>
-                        <img src="<?php echo $member_manager->plugin_url; ?>/img/arrow_right_gray_big.png" class="w-[24px] ms-auto" alt="">
-                        <a href=""  data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
-                           data-wv-ajax-data='{ "action":"view","made":"invite","part":"invite","field":"my_invite","current_member_wr_id":"<?php echo $current_member_wr_id; ?>"}'
-                           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" class="stretched-link"></a>
-                    </div>
-                    <div class="wv-mx-fit " style="height: var(--wv-6);background-color: #efefef"></div>
+                    <?php if($current_member_wr_id){ ?>
+                        <div class="mt-[20px]">
+                            <p class="fs-[14/20/-0.56/600/#0D171B]">나의 초대 코드</p>
+                            <?php echo $current_member->member->render_part('my_code','view'); ?>
+                        </div>
+                        <div class="wv-mx-fit mt-[20px]" style="height: 1px;background-color: #efefef"></div>
+                        <div class="h-[45px] hstack position-relative" style="gap:var(--wv-4)">
+                            <img src="<?php echo $member_manager->plugin_url; ?>/img/peoples.png" class="w-[18px]" alt="">
+                            <p class="fs-[12/17/-0.48/600/#0D171B]">나의 초대현황 확인하기 </p>
+                            <img src="<?php echo $member_manager->plugin_url; ?>/img/arrow_right_gray_big.png" class="w-[24px] ms-auto" alt="">
+                            <a href=""  data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+                               data-wv-ajax-data='{ "action":"view","made":"invite","part":"invite","field":"my_invite","current_member_wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                               data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" class="stretched-link"></a>
+                        </div>
+                        <div class="wv-mx-fit " style="height: var(--wv-6);background-color: #efefef"></div>
+                    <?php } ?>
+
                     <div class="mt-[30px]">
                         <div class="hstack">
                             <div class="event-tab-title">
@@ -116,12 +119,24 @@ global $current_member,$member_manager,$current_member_wr_id;
                         </div>
 
                     </div>
-                    <div class="mt-[30px] wv-mx-fit">
-                        <?php echo wv_widget('content/cert_notice'); ?>
-                    </div>
 
-                    <div class="wv-mx-fit">
-                        <?php echo wv_widget('content/copyright'); ?>
+                    <div class="wv-mx-fit mt-[30px]" style="height: var(--wv-6);background-color: #efefef"></div>
+                        <div class="mt-[30px]">
+                            <div class="hstack">
+                                <img src="<?php echo wv()->store_manager->plugin_url; ?>/img/location.png" class="w-[16px]" alt="">
+                                <p class="fs-[14/20/-0.56/600/]"><?php echo $current_member->mb_name; ?>님 <span class="text-[#19BBC0]">주변</span> 인증 가능한 매장</p>
+                            </div>
+                            <div class="mt-[24px] cert_store_list_wrap">
+                                <?php echo wv_widget('cert_store_list'); ?>
+                            </div>
+                        </div>
+                        <div class="mt-[30px] wv-mx-fit">
+                            <?php echo wv_widget('content/cert_notice'); ?>
+                        </div>
+
+                        <div class="wv-mx-fit">
+                            <?php echo wv_widget('content/copyright'); ?>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -29,7 +29,8 @@ global $current_store_wr_id;
     <script>
         $(document).ready(function() {
             var $skin = $("<?php echo $skin_selector?>");
-            $(".all-view",$skin).click(function () {
+            $(".all-view",$skin).click(function (e) {
+                e.preventDefault()
                 var $this = $(this);
                 if($this.hasClass('active')){
                     $this.removeClass('active');

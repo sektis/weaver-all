@@ -28,7 +28,9 @@ $store = $this->manager->get($row['wr_id']);
         </div>
 
 
-
+        <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+           data-wv-ajax-data='{ "action":"view","made":"sub01_01","part":"store","field":"detail","wr_id":"<?php echo $row['wr_id']; ?>","contractitem_wr_id":"<?php echo $contractitem_wr_id?>"}'
+           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" class="stretched-link"></a>
 
 
     </div>

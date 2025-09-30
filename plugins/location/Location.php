@@ -8,7 +8,7 @@ class Location extends Plugin {
 
     use RegionApi;
     public $locations = array();
-    private $favorite_max_count = 3;
+    private $favorite_max_count = 10;
     private $ajax_url = '';
     protected $table = 'wv_location_region';
 

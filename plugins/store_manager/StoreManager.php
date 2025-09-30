@@ -90,9 +90,9 @@ class StoreManager extends Makeable{
         $this->board    = $row;
     }
 //
-//    public function get_bo_table(){
-//        return $this->bo_table;
-//    }
+    public function get_bo_table(){
+        return $this->bo_table;
+    }
 //
 //    public function get_board(){
 //        return $this->board;
@@ -941,6 +941,7 @@ class StoreManager extends Makeable{
                         $file_upload_array = wv_parse_file_array_tree($pkey, $logical_col);
 
 
+
                         if ($file_upload_array) {
                             if (!isset($data_pkey_logical_col)) {
                                 $data_pkey_logical_col = array();
@@ -949,6 +950,7 @@ class StoreManager extends Makeable{
                             $data_pkey_logical_col = wv_merge_by_key_recursive($data_pkey_logical_col, $file_upload_array);
 
                         }
+
 
 
                         $phys = $this->get_physical_col($pkey, $logical_col);

@@ -154,7 +154,8 @@ $(function(){
 
 
 
-        if(settings.use_redirect==true && url){
+
+        if((settings.use_redirect==true || settings.use_redirect=='true') && url){
             const current_url =  window.location.href.split('?')[0].replace(/\/+$/,"");
             if(url !== current_url){
                 location.href=url;
@@ -182,7 +183,7 @@ $(function(){
                 $loader.show();
             },
             500);
-        settings.use_redirect = false;
+
         var _orgAjax = settings.xhr;
         settings.xhr = function () {
             settings.wv_xhr = _orgAjax();
@@ -193,7 +194,9 @@ $(function(){
             };
             return settings.wv_xhr;
         };
+
         if(typeof settings.data == 'object'){
+
             if(settings.data.get('use_redirect')){
                 settings.use_redirect = true;
             }
@@ -202,6 +205,10 @@ $(function(){
             if(params.get("use_redirect")){
                 settings.use_redirect = true;
             }
+        }else if(  settings.use_redirect == 'true'){
+            settings.use_redirect = true;
+        }else{
+            settings.use_redirect=false;
         }
 
         // ajaxForm에서 온 요청인 경우 부모의 reload count 증가
@@ -236,7 +243,7 @@ $(function(){
         } catch (e) {
 
         }
-console.log(settings.reload);
+
         if(isset(settings.reload)   ){
             reload=settings.reload;
         }
@@ -255,14 +262,16 @@ console.log(settings.reload);
 
         if(reload){
 
-            // location.reload()
+            location.reload()
         }
 
 
 
-        if(settings.use_redirect==true && org_url!=last_url){
-            var org_url = settings.url.replace(/\/+$/,"").replace(g5_url,'')
-            var last_url = settings.wv_xhr.responseURL.replace(/\/+$/,"").replace(g5_url,'');
+        var org_url = settings.url.replace(/\/+$/,"").replace(g5_url,'')
+        var last_url = settings.wv_xhr.responseURL.replace(/\/+$/,"").replace(g5_url,'');
+
+        if((settings.use_redirect==true || settings.use_redirect=='true') && org_url!=last_url){
+
             location.replace(last_url)
         }
     });

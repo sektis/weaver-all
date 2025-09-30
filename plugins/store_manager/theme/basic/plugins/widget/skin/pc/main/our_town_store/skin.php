@@ -1,6 +1,6 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
-
+$manager = wv()->store_manager->made('sub01_01');
 $options = array(
     'where' =>    array(
         " location_lat  <>'' ",
@@ -22,10 +22,22 @@ $current = wv()->location->get('current');
 $distance_options = wv_make_distance_options($current['lat'],$current['lng'],'',0);
 
 
+    $board = get_board_db($manager->get_bo_table());;
+    if($data['town']=='favo'){
+
+        $options['where'][] = " wr_hit >=  {$board['bo_hot']}";
+    }elseif($data['town']=='new'){
+        $base_time =  date("Y-m-d H:i:s", G5_SERVER_TIME - ($board['bo_new'] * 3600));
+        $options['where'][] = " wr_datetime >=  '{$base_time}'";
+    }
+    $limit_km=0;
+    $options['rows']=999;
+
+
 
 $options = array_merge($options, $distance_options);
 
-$result = wv()->store_manager->made('sub01_01')->get_list($options);
+$result = $manager->get_list($options);
 
 $list = $result['list'];
 ?>
@@ -70,21 +82,28 @@ $list = $result['list'];
         <div class="container">
             <div class="hstack justify-content-between">
             <p class="fs-[18//-0.72/700/#0D171B]"><?php echo $data['text1']; ?></p>
-                <a class="fs-[12//-0.48/600/#97989C]">더보기 <i class="fa-solid fa-chevron-right fs-09em"></i></a>
+                <a class="fs-[12//-0.48/600/#97989C]" href="<?php echo wv_page_url('0101','view_type=list&town='.$data['town']); ?>">더보기 <i class="fa-solid fa-chevron-right fs-09em"></i></a>
             </div>
         </div>
+        <?php if(count($list)){ ?>
         <div id="<?php echo $skin_id?>-swiper" class="swiper h-100 mt-[12px]" >
             <div class="swiper-wrapper">
-                <?php if($list){ ?>
+
                     <?php for($i=0;$i<count($list);$i++){ ; ?>
                         <div class="swiper-slide position-relative w-[auto]"   >
+
                             <?php echo $list[$i]['store']['list_main']; ?>
+
                         </div>
                     <?php }?>
-                <?php }?>
+
+
             </div>
         </div>
-
+        <?php }?>
+        <?php if(count($list)==0){ ?>
+                <div class="d-flex-center h-[80px]">등록 된 매장이 없습니다.</div>
+        <?php } ?>
 
     </div>
 

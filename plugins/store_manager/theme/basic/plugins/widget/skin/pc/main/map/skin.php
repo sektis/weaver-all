@@ -1,7 +1,15 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
+
+$map_options = array(
+    'clustering' => true,
+    'initial_level' => 6,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
+    'min_level' => 4,       // 최소 줌 레벨 (최대 확대)
+    'max_level' => 9       // 최대 줌 레벨 (최대 축소)
+);
+$location_current = wv()->location->get('current');
 ?>
-<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative d-flex-center flex-nowrap "  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
+<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative d-flex-center flex-nowrap h-100"  style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>" >
     <style>
         <?php echo $skin_selector?> {}
 
@@ -17,93 +25,72 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         }
     </style>
 
-    <div class="position-relative col col-lg-auto w-full md:w-full  " style="height: 30dvh">
-        <?php
-
-
-        // Map 옵션 설정
-        $map_options = array(
-        'height_wrapper' => $skin_selector,
-        'clustering' => true,
-        'map_id' => 'store-map-main',
-        'initial_level' => 6,   // 초기 줌 레벨 (1~14, 숫자가 작을수록 확대)
-        'min_level' => 4,       // 최소 줌 레벨 (최대 확대)
-        'max_level' => 9       // 최대 줌 레벨 (최대 축소)
-        );
-        $map_options = array_merge($map_options,$data);
-
-        ?>
+    <div class="position-relative col col-lg-auto w-full md:w-full    " style="height: 30dvh">
 
 
 
-            <!-- Location 플러그인 Map 스킨 호출 -->
-            <div class="map-container" style="height:30dvh">
-                <?php echo   wv_widget('location/map');?>
-            </div>
 
-
+        <div class="h-100 stores-map  "  >
+            <?php echo   wv_widget('location/map',$map_options);?>
+        </div>
 
             <script>
                 $(document).ready(function() {
 
                     var $skin = $("<?php echo $skin_selector?>");
-                    /**
-                     * 🗺️ 지도 변경 이벤트 (통합)
-                     * 지도 이동, 줌 변경시 모두 이 이벤트로 처리
-                     */
-                    $(document).on('wv_location_map_changeed', function(event, data) {
+                    var $map_event_target = $(".stores-map>*",$skin);
+                    var $location_current = <?php echo json_encode($location_current)?>;
 
+                    // 검색 데이터 저장 (스위칭 시 재사용)
+                    var searchData = {
+                        q: '<?php echo addslashes($data['q']); ?>',
+                        category_wr_id: '<?php echo (int) $data['category_wr_id']; ?>',
+                        contractitem_wr_id: '<?php echo (int) $data['contractitem_wr_id']; ?>',
+                        limit_km: '<?php echo (int) $data['limit_km']?$data['limit_km']:0; ?>',
+                        center:$location_current
+                    };
+                    // 바운드 변경에 따른 매장 데이터 조회
+                    function fetchStoresByBounds() {
 
-                        // Ajax로 매장 데이터 조회
-                        fetchStoresByBounds(data);
-                    });
+                        var requestData = $.extend({}, searchData, {
+                            action: 'get_store_list',
 
-                    /**
-                     * 📡 Ajax로 지도 영역 내 매장 조회
-                     */
-                    function fetchStoresByBounds(data) {
-                        var ajaxUrl = '<?php echo wv()->store_manager->made('sub01_01')->plugin_url?>/ajax.php';
+                        });
 
                         $.ajax({
-                            url: ajaxUrl,
+                            url: '<?php echo wv()->store_manager->ajax_url?>',
                             type: 'POST',
                             dataType: 'json',
-                            data: {
-                                action: 'get_stores_by_bounds',
-                                sw_lat: data.bounds.sw_lat,
-                                sw_lng: data.bounds.sw_lng,
-                                ne_lat: data.bounds.ne_lat,
-                                ne_lng: data.bounds.ne_lng,
-                                curr_coords: data.center,
-                            },
+                            data: requestData,
                             success: function(response) {
-
-                                if (response.result && response.content && response.content.lists) {
-                                    // 새로운 이벤트 발생: Map 스킨에서 마커 처리
-                                    triggerStoreUpdateEvent(response);
-                                }
+                                triggerStoreUpdateEvent(response);
                             },
-                            error: function(xhr, status, error) {
-                            }
                         });
                     }
 
-                    // 0101 스킨 수정
+                    // 매장 데이터를 범용 마커 데이터로 가공하여 전송
                     function triggerStoreUpdateEvent(responseContent) {
-                        var eventData = {
-                            lists: responseContent.content.lists,
 
-                            count: responseContent.content.count,
-                            category_icon_wrap: responseContent.content.category_icon_wrap,
-                            category_icon_wrap_on: responseContent.content.category_icon_wrap_on,
 
-                            timestamp: new Date().getTime()
-                        };
-
-                        $(document).trigger('wv_location_place_updated', [eventData]);
-
+                        $map_event_target.trigger('wv_location_map_updated', [responseContent.content]);
                     }
 
+                    $(document).on('wv_location_map_changed', function(event, data) {
+
+                        searchData = $.extend({}, searchData, {
+                            sw_lat: data.bounds.getSouthWest().getLat(),
+                            sw_lng: data.bounds.getSouthWest().getLng(),
+                            ne_lat: data.bounds.getNorthEast().getLat(),
+                            ne_lng: data.bounds.getNorthEast().getLng(),
+                            center: {
+                                lat: data.center.getLat(),
+                                lng: data.center.getLng()
+                            },
+
+                        });
+
+                        fetchStoresByBounds();
+                    });
                 });
             </script>
 

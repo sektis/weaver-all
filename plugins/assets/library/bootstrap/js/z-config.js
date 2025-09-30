@@ -552,12 +552,14 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
     // ajax_option으로 기본값 오버라이딩
     if (processedOptions.ajax_option) {
         $.extend(defaultAjaxSettings, processedOptions.ajax_option);
+
         // ✅ 커스텀 속성들을 settings에 직접 설정
         if (processedOptions.ajax_option.reload !== undefined) {
 
             defaultAjaxSettings.reload = processedOptions.ajax_option.reload;
         }
         if (processedOptions.ajax_option.use_redirect !== undefined) {
+
             defaultAjaxSettings.use_redirect = processedOptions.ajax_option.use_redirect;
         }
 
@@ -568,43 +570,9 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
 
     $.ajax(defaultAjaxSettings);
 }
-// reload 처리 공통 함수
-// function wv_handle_reload(reloadValue, $clickElement) {
-//     var $target = null;
-//
-//     if (reloadValue === 'true') {
-//         // 클릭 요소 기준으로 closest offcanvas 또는 modal 찾기
-//         $target = $clickElement.closest('.offcanvas');
-//         if (!$target.length) {
-//             $target = $clickElement.closest('.modal');
-//         }
-//     } else {
-//         // 셀렉터로 타겟 찾기
-//         $target = $(reloadValue);
-//     }
-//
-//     if (!$target.length) {
-//         alert('Reload target not found:', reloadValue);
-//         return false;
-//     }
-//
-//     var targetId = $target.attr('id');
-//     if (!targetId) {
-//         alert('Target element has no ID for reload');
-//         return false;
-//     }
-//
-//     // offcanvas인지 modal인지 판단해서 적절한 reload 함수 호출
-//     if ($target.hasClass('offcanvas')) {
-//         $('#'+targetId).attr('data-need-refresh', 'true');
-//         return wv_reload_offcanvas(targetId);
-//     } else if ($target.hasClass('modal')) {
-//         return wv_reload_modal(targetId);
-//     } else {
-//         console.warn('Target is neither offcanvas nor modal:', $target);
-//         return false;
-//     }
-// }
+// ============================================================================
+// 1. wv_ajax_modal - 완전한 수정 버전
+// ============================================================================
 function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
     // 옵션 파싱
     var processedOptions = isParsed ? options : parseWvAjaxOptions(options);
@@ -647,7 +615,6 @@ function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
         modalEl.data('parent-elem',  $parent.attr('id'));
     }
 
-
     // 리로딩을 위한 정보 저장
     modalEl.attr('data-wv-reload-url', url);
     modalEl.data('wv-reload-options', processedOptions);
@@ -658,13 +625,10 @@ function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
     }
     modalEl.attr('data-wv-reload-count',0);
 
-
     $modal_target.append(modalEl);
 
     var modal = new bootstrap.Modal(modalEl[0], modal_options);
     modal.show();
-
-
 
     $(modalEl).on("hidden.bs.modal", function (e) {
         // 이벤트가 현재 요소에서 발생한 경우에만 제거
@@ -687,14 +651,29 @@ function wv_ajax_modal(url, options = {}, data = {}, isParsed = false) {
         }
     };
 
-    // ajax 옵션으로 오버라이드
-    if (processedOptions.ajax) {
-        $.extend(ajaxSettings, processedOptions.ajax);
+    // ajax_option으로 오버라이드
+    if (processedOptions.ajax_option) {
+        $.extend(ajaxSettings, processedOptions.ajax_option);
+
+        // 커스텀 속성들을 settings에 직접 설정
+        if (processedOptions.ajax_option.reload !== undefined) {
+            ajaxSettings.reload = processedOptions.ajax_option.reload;
+        }
+        if (processedOptions.ajax_option.use_redirect !== undefined) {
+            ajaxSettings.use_redirect = processedOptions.ajax_option.use_redirect;
+        }
+    }
+
+    if (processedOptions.reload_ajax) {
+        ajaxSettings.reload_ajax = processedOptions.reload_ajax;
     }
 
     $.ajax(ajaxSettings);
 }
 
+// ============================================================================
+// 2. wv_ajax_offcanvas - 완전한 수정 버전
+// ============================================================================
 function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
     // 옵션 파싱
     var processedOptions = isParsed ? options : parseWvAjaxOptions(options);
@@ -734,10 +713,9 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
     }
     offcanvasEl.attr('data-wv-reload-url', url);
     offcanvasEl.data('wv-reload-options', processedOptions);
-    offcanvasEl.data('wv-reload-data', data); // offcanvas가 아니라 offcanvasEl
+    offcanvasEl.data('wv-reload-data', data);
 
     if (processedOptions.reload_ajax === 'on_close') {
-
         offcanvasEl.attr('data-need-refresh', true);
     }
     offcanvasEl.attr('data-wv-reload-count',0);
@@ -749,9 +727,6 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
         scroll: scroll
     });
 
-    // 리로딩을 위한 정보 저장
-
-
     offcanvas.show();
 
     $(offcanvasEl).on("hidden.bs.offcanvas", function (e) {
@@ -761,21 +736,12 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
         }
     });
 
-    // if(processedOptions.reload_ajax=='current'){
-    //     var $current = processedOptions.$clickElement.closest('.wv-offcanvas');
-    //     if($current.length){
-    //         $current.attr('data-need-refresh', 'true');
-    //         $.extend(data, {'reload_ajax_target':$current.attr('id')});
-    //     }
-    // }
-
     // AJAX 요청 설정
     var ajaxSettings = {
         url: url,
         method: 'POST',
         data: data,
         success: function (html) {
-
             $(".offcanvas-body", offcanvasEl).html(html);
         },
         error: function () {
@@ -784,62 +750,30 @@ function wv_ajax_offcanvas(url, options = {}, data = {}, isParsed = false) {
         }
     };
 
-    // ajax 옵션으로 오버라이드
-    if (processedOptions.ajax) {
-        $.extend(ajaxSettings, processedOptions.ajax);
-    }
+    // ajax_option으로 오버라이드
+    if (processedOptions.ajax_option) {
 
-    $.ajax(ajaxSettings);
-}
+        $.extend(ajaxSettings, processedOptions.ajax_option);
 
-function wv_reload_offcanvas(offcanvasId) {
-    var $offcanvas = $('#' + offcanvasId);
-    if (!$offcanvas.length) return false;
-
-
-    // 리로드 카운트 증가
-    var currentCount = parseInt($offcanvas.attr('data-wv-reload-count') || '0');
-    $offcanvas.attr('data-wv-reload-count', currentCount + 1);
-
-    var url = $offcanvas.data('wv-reload-url');
-    var options = $offcanvas.data('wv-reload-options');
-    var data = $offcanvas.data('wv-reload-data');
-
-    if (!url) return false;
-
-    // 로딩 표시
-    $offcanvas.find('.offcanvas-body').html('<div class="d-flex justify-content-center p-4"><div class="spinner-border" role="status"></div></div>');
-
-    // AJAX 요청
-    var ajaxSettings = {
-        url: url,
-        method: "POST",
-        data: data,
-        success: function (html) {
-            $offcanvas.find('.offcanvas-body').html(html);
-        },
-        error: function () {
-            $offcanvas.find('.offcanvas-body').html('<div class="alert alert-danger m-3">로딩 중 오류가 발생했습니다.</div>');
+        // 커스텀 속성들을 settings에 직접 설정
+        if (processedOptions.ajax_option.reload !== undefined) {
+            ajaxSettings.reload = processedOptions.ajax_option.reload;
         }
-    };
+        if (processedOptions.ajax_option.use_redirect !== undefined) {
+            ajaxSettings.use_redirect = processedOptions.ajax_option.use_redirect;
+        }
+    }
 
-    if (options && options.ajax) {
-        $.extend(ajaxSettings, options.ajax);
+    if (processedOptions.reload_ajax) {
+        ajaxSettings.reload_ajax = processedOptions.reload_ajax;
     }
 
     $.ajax(ajaxSettings);
-
-    return true;
 }
 
-// 현재 활성화된 offcanvas 리로딩
-function wv_reload_current_offcanvas() {
-    var $activeOffcanvas = $('.offcanvas.show').last();
-    if ($activeOffcanvas.length && $activeOffcanvas.attr('id')) {
-        return wv_reload_offcanvas($activeOffcanvas.attr('id'));
-    }
-    return false;
-}
+// ============================================================================
+// 3. wv_reload_modal - 완전한 수정 버전
+// ============================================================================
 function wv_reload_modal(modalId) {
     var $modal = $('#' + modalId);
     if (!$modal.length) return false;
@@ -869,11 +803,79 @@ function wv_reload_modal(modalId) {
         }
     };
 
-    if (options && options.ajax) {
-        $.extend(ajaxSettings, options.ajax);
+    // ajax_option으로 오버라이드
+    if (options && options.ajax_option) {
+        $.extend(ajaxSettings, options.ajax_option);
+
+        // 커스텀 속성들을 settings에 직접 설정
+        if (options.ajax_option.reload !== undefined) {
+            ajaxSettings.reload = options.ajax_option.reload;
+        }
+        if (options.ajax_option.use_redirect !== undefined) {
+            ajaxSettings.use_redirect = options.ajax_option.use_redirect;
+        }
+    }
+
+    if (options && options.reload_ajax) {
+        ajaxSettings.reload_ajax = options.reload_ajax;
     }
 
     $.ajax(ajaxSettings);
+    return true;
+}
+
+// ============================================================================
+// 4. wv_reload_offcanvas - 완전한 수정 버전
+// ============================================================================
+function wv_reload_offcanvas(offcanvasId) {
+    var $offcanvas = $('#' + offcanvasId);
+    if (!$offcanvas.length) return false;
+
+    // 리로드 카운트 증가
+    var currentCount = parseInt($offcanvas.attr('data-wv-reload-count') || '0');
+    $offcanvas.attr('data-wv-reload-count', currentCount + 1);
+
+    var url = $offcanvas.data('wv-reload-url');
+    var options = $offcanvas.data('wv-reload-options');
+    var data = $offcanvas.data('wv-reload-data');
+
+    if (!url) return false;
+
+    // 로딩 표시
+    $offcanvas.find('.offcanvas-body').html('<div class="d-flex justify-content-center p-4"><div class="spinner-border" role="status"></div></div>');
+
+    // AJAX 요청
+    var ajaxSettings = {
+        url: url,
+        method: "POST",
+        data: data,
+        success: function (html) {
+            $offcanvas.find('.offcanvas-body').html(html);
+        },
+        error: function () {
+            $offcanvas.find('.offcanvas-body').html('<div class="alert alert-danger m-3">로딩 중 오류가 발생했습니다.</div>');
+        }
+    };
+
+    // ajax_option으로 오버라이드
+    if (options && options.ajax_option) {
+        $.extend(ajaxSettings, options.ajax_option);
+
+        // 커스텀 속성들을 settings에 직접 설정
+        if (options.ajax_option.reload !== undefined) {
+            ajaxSettings.reload = options.ajax_option.reload;
+        }
+        if (options.ajax_option.use_redirect !== undefined) {
+            ajaxSettings.use_redirect = options.ajax_option.use_redirect;
+        }
+    }
+
+    if (options && options.reload_ajax) {
+        ajaxSettings.reload_ajax = options.reload_ajax;
+    }
+
+    $.ajax(ajaxSettings);
+
     return true;
 }
 

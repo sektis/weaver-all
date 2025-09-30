@@ -1,6 +1,6 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
-
+$row[$column] = array_reverse($row[$column]);
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> position-relative d-flex-center flex-nowrap" style="">
     <style>
@@ -37,11 +37,11 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
             <?php echo $this->store->basic->render_part('wr_id', 'form');; ?>
             <div class="hstack wv-ps-list flex-wrap" style="gap: var(--wv-8)">
                 <?php foreach ($row[$column] as $k => $v) {?>
-                    <div class="wv-flex-box wv-ps-each align-items-center" style="padding: var(--wv-4) var(--wv-6) var(--wv-4) var(--wv-10);background-color: #f9f9f9">
+                    <div class="wv-flex-box wv-ps-each align-items-center " style="padding: var(--wv-4) var(--wv-6) var(--wv-4) var(--wv-10);background-color: #f9f9f9" data-q-value="<?php echo $v['text']; ?>">
                         <!-- 필수 hidden -->
                         <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]"  value="<?php echo $v['id']; ?>">
                         <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][date]"  value="<?php echo $v['date']; ?>">
-                        <p class="fs-[12/12/-0.48/600/#0D171B]"><?php echo $v['text']; ?></p>
+                        <p class="fs-[12/12/-0.48/600/#0D171B] cursor-pointer" data-q-value="<?php echo $v['text']; ?>"><?php echo $v['text']; ?></p>
 
 
 

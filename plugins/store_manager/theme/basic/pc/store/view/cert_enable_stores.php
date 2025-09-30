@@ -15,6 +15,9 @@ if($member['mb_id']){
 <div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
     <style>
         <?php echo $skin_selector?> {}
+        <?php echo $skin_selector?> .ajax-result-wrap{display: none}
+        <?php echo $skin_selector?> .ajax-result-wrap:has(.ajax-result.active){display: block}
+        <?php echo $skin_selector?> .wv-offcanvas-body:has(.ajax-result.active) .cert_store_list_wrap{display: none}
 
         @media (min-width: 992px) {
         }
@@ -46,6 +49,7 @@ if($member['mb_id']){
                                             <label for="q" class="visually-hidden"></label>
                                             <input type="text" name="q" id="q" class="h-[32px] form-control border-0" style="border-radius: var(--wv-4);background-color: #f9f9f9;padding:0 var(--wv-12)" placeholder="인증 가능 가게 확인하기" autocomplete="new-password">
                                             <button class="btn outline-none position-absolute top-50 translate-middle-y cursor-pointer" style="right: var(--wv-6);"><img src="<?php echo $this->manager->plugin_url; ?>/img/search_black.png" class="w-[20px]" alt=""></button>
+
                                         </div>
                                     </form>
                                 </div>
@@ -56,25 +60,38 @@ if($member['mb_id']){
 
 
 
-                    <div class="wv-offcanvas-body col">
-
-                        <div>
-                            <p class="fs-[14/20/-0.56/600/#0D171B]">최근 검색</p>
-                            <div class="mt-[12px]">
-                                <?php echo $current_member->member->render_part('search_store_history','form'); ?>
+                    <div class="wv-offcanvas-body col position-relative " style="padding: 0; ">
+                        <div class="ajax-result-wrap position-absolute wh-100 top-0 start-0" style="background-color: #fff;z-index: 10">
+                            <div class="vstack h-100  ">
+                                <div class="ajax-result    col"></div>
+                                <div class="col-auto h-[41px] hstack justify-content-end" style="border-top: var(--wv-0_5) solid #cfcfcf;background-color: #f9f9f9;padding: 0 var(--wv-16)">
+                                    <a href="#" class="fs-[15.36/1.5/-1/400/#07F]  ajax-result-close">닫기</a>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mt-[25px]">
-                            <div class="hstack">
-                                <img src="<?php echo $this->manager->plugin_url; ?>/img/location.png" class="w-[16px]" alt="">
-                                <p class="fs-[14/20/-0.56/600/]"><?php echo $current_member->mb_name; ?>님 <span class="text-[#19BBC0]">주변</span> 인증 가능한 매장</p>
+                        <div class="vstack h-100">
+                        <div class="cert_store_list_wrap wv-mx-fit " style="overflow-y: auto;overflow-x: hidden" >
+                            <?php if($current_member->member->search_store_history){ ?>
+                            <div class="mt-[16px] container">
+                                <p class="fs-[14/20/-0.56/600/#0D171B]">최근 검색</p>
+                                <div class="mt-[12px]">
+                                    <?php echo $current_member->member->render_part('search_store_history','form'); ?>
+                                </div>
                             </div>
-                            <div class="mt-[24px] cert_store_list_wrap">
-                                <?php echo wv_widget('cert_store_list'); ?>
+                            <?php } ?>
+
+                            <div class="mt-[25px] container">
+                                <div class="hstack">
+                                    <img src="<?php echo $this->manager->plugin_url; ?>/img/location.png" class="w-[16px]" alt="">
+                                    <p class="fs-[14/20/-0.56/600/]"><?php echo $current_member->mb_name; ?>님 <span class="text-[#19BBC0]">주변</span> 인증 가능한 매장</p>
+                                </div>
+                                <div class="mt-[24px] ">
+                                    <?php echo wv_widget('cert_store_list'); ?>
+                                </div>
                             </div>
                         </div>
-
+                        </div>
                     </div>
 
 
@@ -88,8 +105,33 @@ if($member['mb_id']){
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).submit(function (e) {
                 e.preventDefault();
-                wv_ajax('<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php','replace_in:.cert_store_list_wrap',{action:'widget',widget:'cert_store_list',q:$('[name=q]',$skin).val()})
+
+                wv_ajax('<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php','replace_in:#<?php echo $skin_id?> .cert_store_list_wrap',{action:'widget',widget:'cert_store_list_search',q:$('[name=q]',$skin).val()})
+                setTimeout(function () {
+                    $(".ajax-result",$skin).removeClass('active')
+                },500)
             })
+            $(".ajax-result-close",$skin).click(function (e){
+                e.preventDefault();
+                $(".ajax-result",$skin).removeClass('active')
+            })
+            $skin.on('click','[data-q-value]',function () {
+
+                $('[name=q]',$skin).val($(this).data('q-value'))
+
+                $('[name=q]',$skin).closest('form').submit();
+            })
+            $skin.on('click','[data-q-value]',function () {
+
+                $('[name=q]',$skin).val($(this).data('q-value'))
+
+                $('[name=q]',$skin).closest('form').submit();
+            })
+
+            $('[name=q]',$skin).on('keyup',wv_debounce(function () {
+                wv_ajax('<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php','replace_in:#<?php echo $skin_id?> .ajax-result',{action:'widget',widget:'cert_store_list_search_auto_complete',q:$('[name=q]',$skin).val()})
+                $(".ajax-result",$skin).addClass('active')
+                },300))
         })
     </script>
 </div>

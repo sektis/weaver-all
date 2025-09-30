@@ -6,7 +6,7 @@
     <?php
     $data = array(
     );
-//    echo wv_widget('main/map',$data);
+    echo wv_widget('main/map',$data);
     ?>
 
     <?php
@@ -21,13 +21,15 @@
     <div class="vstack" style="background-color: #efefef;padding:var(--wv-5) 0;row-gap: var(--wv-1)">
     <?php
     $data = array(
-            'text1'=>'우리동네 인기 가게'
+            'text1'=>'우리동네 인기 가게',
+        'town'=>'favo'
     );
     echo wv_widget('main/our_town_store',$data);
     ?>
     <?php
     $data = array(
-        'text1'=>'우리동네 신규 가게'
+        'text1'=>'우리동네 신규 가게',
+        'town'=>'new'
     );
     echo wv_widget('main/our_town_store',$data);
     ?>

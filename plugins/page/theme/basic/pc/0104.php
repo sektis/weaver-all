@@ -2,12 +2,5 @@
 wv_must_login();
 ?>
 
-<div class=" " style="border-top: 1px solid #efefef">
+<div class="wv-mx-fit"><?php echo $current_member->member->render_part('my_page','view'); ?></div>
 
-
-    <script>
-        $(document).ready(function() {
-
-        });
-    </script>
-</div>

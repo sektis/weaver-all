@@ -79,6 +79,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
                     category_wr_id: '<?php echo (int) $data['category_wr_id']; ?>',
                     contractitem_wr_id: '<?php echo (int) $data['contractitem_wr_id']; ?>',
                     limit_km: '<?php echo (int) $data['limit_km']?$data['limit_km']:0; ?>',
+                    town:'<?php echo $data['town']?$data['town']:''; ?>',
                     center:$location_current
                 };
 
