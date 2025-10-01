@@ -37,6 +37,7 @@ wv()->store_manager->make('invite','invite',array('invite'))->prune_columns();
 wv()->store_manager->make('visit_cert','visit_cert',array('visitcert'))->prune_columns();
 wv()->store_manager->make('contract_item','contract_item',array('contractitem'))->prune_columns();
 wv()->store_manager->make('store_category','store_category',array('storecategory'))->prune_columns();
+wv()->store_manager->make('favorite_store', 'favorite_store', array('favorite'))->prune_columns();
 //wv()->store_manager->made('sub01_01')->rsync_mapping('sub01_01');
 //wv()->store_manager->made('member')->rsync_member();
 //dd(wv()->store_manager->make('','restaurant')->bind_schema('location')->location->render_part('address_name','view'));

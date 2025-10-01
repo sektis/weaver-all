@@ -217,6 +217,28 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 //            if (isset($row[$physical])) $value = $row[$physical];
 //        }
 
+        // ===== 1. 리로드용 데이터 생성 (extract 전에!) =====
+        $reload_ajax_data = array(
+            'url' => $this->manager->plugin_url . '/ajax.php',  // ← url 포함!
+            'action' => 'render_part',
+            'made' => $this->manager->get_make_id(),
+            'part' => $this->part_key,
+            'column' => $column,
+            'type' => $type
+        );
+
+        // $vars에서 '_id'로 끝나는 키의 스칼라 값만 추가
+        if (is_array($vars) && count($vars)) {
+            foreach ($vars as $key => $value) {
+                // 스칼라 값이고, 키가 '_id'로 끝나는 경우만
+                if ((is_scalar($value) || is_null($value)) && substr($key, -3) === '_id') {
+                    $reload_ajax_data[$key] = $value;
+                }
+            }
+        }
+
+        // 템플릿 변수에 추가 (하나만!)
+        $vars['reload_ajax_data'] = $reload_ajax_data;
 
 
         if (is_array($vars) && count($vars)) {
@@ -267,7 +289,10 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         $part_key = $this->part_key;
         $bo_table = $this->bo_table;
 
+
         $ajax_data =array_intersect_key($vars, array_flip($this->ajax_data_field));
+
+
 
         $skin_id = wv_make_skin_id();
         $skin_selector = wv_make_skin_selector($skin_id);

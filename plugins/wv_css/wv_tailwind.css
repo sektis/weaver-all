@@ -153,6 +153,9 @@
   .mb-\[16px\] {
     margin-bottom: var(--wv-16) !important;
   }
+  .mb-\[20px\] {
+    margin-bottom: var(--wv-20) !important;
+  }
   .mb-\[50px\] {
     margin-bottom: var(--wv-50) !important;
   }

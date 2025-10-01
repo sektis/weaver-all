@@ -1,4 +1,48 @@
 <?php
+/**
+ * 리로드 데이터 속성 출력
+ *
+ * @param array $reload_ajax_data 리로드 데이터 (url 포함)
+ * @return string HTML 속성 문자열
+ */
+function wv_display_reload_data($reload_ajax_data = array()) {
+    if (!is_array($reload_ajax_data) || !count($reload_ajax_data)) {
+        return '';
+    }
+
+    // url 추출
+    $url = isset($reload_ajax_data['url']) ? $reload_ajax_data['url'] : '';
+    if (!$url) {
+        return '';
+    }
+
+    // url은 data-wv-reload-data에서 제외
+    $data = $reload_ajax_data;
+    unset($data['url']);
+
+    if (!count($data)) {
+        return '';
+    }
+
+    $attrs = array();
+
+    // data-wv-reload-url
+    $attrs[] = 'data-wv-reload-url="' . htmlspecialchars($url, ENT_QUOTES) . '"';
+
+    // data-wv-reload-data (url 제외)
+    $attrs[] = "data-wv-reload-data='" . htmlspecialchars(json_encode($data), ENT_QUOTES) . "'";
+
+    // data-wv-reload-options (replace_with 셀렉터 포함)
+    global $skin_selector;
+    $reload_options = array(
+        'replace_with' => $skin_selector ? $skin_selector : ''
+    );
+    $attrs[] = "data-wv-reload-options='" . htmlspecialchars(json_encode($reload_options), ENT_QUOTES) . "'";
+
+    return ' ' . implode(' ', $attrs);
+}
+
+
 function is_valid_time_data($time_data) {
     if(!is_array($time_data)) return false;
     if(!isset($time_data['period']) || !isset($time_data['hour']) || !isset($time_data['minute'])) return false;

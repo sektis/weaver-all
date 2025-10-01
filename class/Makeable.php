@@ -61,6 +61,10 @@ class Makeable extends Plugin{
         return $instance;
     }
 
+    public function get_make_id(){
+        return $this->make_id;
+    }
+
     public function made($id = ''){
 
         if($id==''){

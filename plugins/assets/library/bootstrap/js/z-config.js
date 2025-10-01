@@ -257,16 +257,17 @@ function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
             }
         }
     } else {
+        if(typeof $currentElement === "string"){
+            $currentElement=$($currentElement);
+        }
         // type이 없는 일반 ajax 요청: data-wv-reload-url 찾기
         var $parentElement = $currentElement.closest('[data-wv-reload-url]');
-
 
         if ($parentElement.length) {
             // 부모가 offcanvas인 경우
             if ($parentElement.hasClass('offcanvas') || $parentElement.hasClass('wv-offcanvas')) {
                 var parentId = $parentElement.attr('id');
                 if (parentId) {
-
                     wv_reload_offcanvas(parentId);
                     return;
                 }
@@ -279,6 +280,56 @@ function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
                     wv_reload_modal(parentId);
                     return;
                 }
+            }
+
+
+            // ===== 추가: 일반 요소인 경우 =====
+            // Offcanvas도 Modal도 아닌 일반 요소
+            var reloadUrl = $parentElement.attr('data-wv-reload-url');
+            var reloadData = $parentElement.attr('data-wv-reload-data');
+            var reloadOptions = $parentElement.attr('data-wv-reload-options');
+
+            if (reloadUrl) {
+                // 데이터 파싱
+                var ajaxData = {};
+                if (reloadData) {
+                    try {
+                        ajaxData = JSON.parse(reloadData);
+                    } catch(e) {
+                        console.error('data-wv-reload-data 파싱 오류:', e);
+                    }
+                }
+
+                // 옵션 파싱
+                var options = {};
+                if (reloadOptions) {
+                    try {
+                        options = JSON.parse(reloadOptions);
+                    } catch(e) {
+                        console.error('data-wv-reload-options 파싱 오류:', e);
+                    }
+                }
+
+                // AJAX 호출
+                $.ajax({
+                    url: reloadUrl,
+                    type: 'POST',
+                    data: ajaxData,
+                    dataType: 'html',
+                    success: function(response) {
+                        // replace_with 처리
+                        if (options.replace_with) {
+                            $(options.replace_with).replaceWith(response);
+                        } else {
+                            // replace_with가 없으면 자기 자신 교체
+                            $parentElement.replaceWith(response);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('리로드 실패:', error);
+                    }
+                });
+                return;
             }
         }
     }
@@ -325,9 +376,9 @@ function parseWvAjaxOptions(options,$from) {
             }
             else if (option.indexOf('reload_ajax:') === 0) {
                 processedOptions.reload_ajax = option.substring(12).trim();
-                if(processedOptions.reload_ajax==='true'){
-                    processedOptions.reload_ajax = true;
-                }
+                // if(processedOptions.reload_ajax==='true'){
+                //     processedOptions.reload_ajax = true;
+                // }
             }
             else if (option.indexOf('ajax_option:') === 0) {
                 try {
@@ -376,10 +427,13 @@ function parseWvAjaxOptions(options,$from) {
     }
 
     // reload_ajax 처리 추가
-    if (processedOptions.reload_ajax === true) {
+    if (processedOptions.reload_ajax) {
         if (!processedOptions.type) {
             // type이 없으면 클릭 이벤트 기준 부모 리로드
-            processedOptions.reload_ajax = 'parent';
+
+            if(processedOptions.$clickElement){
+                processedOptions.reload_ajax =processedOptions.$clickElement
+            }
         } else if (processedOptions.type === 'offcanvas' || processedOptions.type === 'modal') {
             // offcanvas나 modal인 경우 닫힐 때 리로드 설정
             processedOptions.reload_ajax = 'on_close';
@@ -500,7 +554,6 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
                 return false;
             }
             if (processedOptions.replace_in) {
-
                 $(processedOptions.replace_in).html(response);
                 return false;
             }
@@ -508,11 +561,11 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
                 $(processedOptions.replace_with).replaceWith(response);
                 return false;
             }
-            if (processedOptions.reload_ajax === 'parent') {
-                // 즉시 부모 리로드
-                wv_handle_parent_reload(processedOptions.$clickElement, false);
-                return false;
-            }
+            // if (processedOptions.reload_ajax === 'parent') {
+            //     // 즉시 부모 리로드
+            //     wv_handle_parent_reload(processedOptions.$clickElement, false);
+            //     return false;
+            // }
             if (processedOptions.reload_ajax === 'on_close') {
                 // modal/offcanvas 닫힐 때 리로드하도록 마킹 (응답 처리는 계속)
                 // 이 부분은 modal/offcanvas 생성 시점에서 처리

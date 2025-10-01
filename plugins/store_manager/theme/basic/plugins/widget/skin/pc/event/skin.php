@@ -91,9 +91,6 @@ global $current_member,$member_manager,$current_member_wr_id;
                         <?php echo wv_widget('content/invite_notice'); ?>
                     </div>
 
-                    <div class="wv-mx-fit">
-                        <?php echo wv_widget('content/copyright'); ?>
-                    </div>
                 </div>
             </div>
 
@@ -134,12 +131,9 @@ global $current_member,$member_manager,$current_member_wr_id;
                             <?php echo wv_widget('content/cert_notice'); ?>
                         </div>
 
-                        <div class="wv-mx-fit">
-                            <?php echo wv_widget('content/copyright'); ?>
-                        </div>
                     </div>
                 </div>
-            </div>
+
 
         </div>
     </div>

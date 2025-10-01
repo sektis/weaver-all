@@ -181,6 +181,18 @@ if($action=='view'){
     exit;
 }
 
+if($action=='render_part'){
+
+    if(!$made or !$part or !$column or !$type){
+        alert('필수파라메터 누락');
+    }
+
+    echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($column,$type,$_REQUEST);
+
+exit;
+
+}
+
 if($action=='update'){
     if(!$made){
         alert('필수파라메터 누락');

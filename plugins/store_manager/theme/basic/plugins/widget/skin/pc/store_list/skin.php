@@ -20,6 +20,7 @@ $initial_mode = $data['view_type'] ? $data['view_type'] : 'map';
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> wv-skin-widget position-relative h-100" style="<?php echo isset($data['margin_top'])?"margin-top::{$data['margin_top']};":''; ?>">
     <style>
         #site-wrapper{height: 100dvh!important;}
+        #footer-wrapper{display: none}
         #content-wrapper>.container{height: 100%}
 
         <?php echo $skin_selector?> {}
