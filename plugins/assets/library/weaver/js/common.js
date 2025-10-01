@@ -630,7 +630,7 @@ $(document).ready(function () {
         scheduleCheck();
     });
 
-    $("body").loaded('[data-wv-max-length]', function () {
+    $(document).loaded('[data-wv-max-length]', function () {
         var $element = $(this);
         var maxLength = parseInt($element.data('wv-max-length')) || 0;
 

@@ -50,6 +50,7 @@ class StoreManager extends Makeable{
 
     protected $member_table_as = 'mb';
 
+    protected $is_basic_rendered = false;
     /**
      * ($id, $bo_table, array $schema_parts) 시그니처
      * - Basic 파트는 항상 먼저 바인딩
@@ -3748,7 +3749,15 @@ return ;
 
     }
 
+    public function is_basic_rendered() {
+        return $this->is_basic_rendered;
+    }
 
+    // setter 추가
+    public function set_basic_rendered($value = true) {
+        $this->is_basic_rendered = $value;
+        return $this;
+    }
 }
 
 

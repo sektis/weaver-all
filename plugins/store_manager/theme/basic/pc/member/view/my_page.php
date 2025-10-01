@@ -39,7 +39,7 @@ global $g5,$current_member_wr_id;
                                 <p class="fs-[12/17/-0.48/500/#97989C] ff-montserrat">@<?php echo $row['mb_mb_id']; ?></p>
                             </div>
                             <a href=""  data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
-                               data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"ceo/account_config","wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                               data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"edit","wr_id":"<?php echo $current_member_wr_id; ?>"}'
                                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]"  class="fs-[12/17/-0.48/500/#97989C] ms-auto  col-auto  ">
                                 개인정보 수정  <i class="fa-solid fa-angle-right ms-auto"></i>
                             </a>

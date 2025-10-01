@@ -169,7 +169,23 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
      */
     public function render_part($column, $type, $vars = array()){
         // 목록 파트는 특수 처리 (menu/form.php 같은 통합 스킨)
+        // ========================================
+        // ⭐ basic 파트 자동 렌더링 (추가)
+        // ========================================
+        // 조건:
+        // 1. 아직 basic이 렌더링되지 않았고
+        // 2. 현재 렌더링하는 파트가 basic이 아니고
+        // 3. type이 'form'일 때
+        if (!$this->manager->is_basic_rendered()
+            && $this->part_key !== 'basic'
+            && $type === 'form') {
 
+            // basic 파트의 wr_id 폼 렌더링
+            echo $this->store->basic->render_part('wr_id', 'form');
+
+            // 플래그 설정 (중복 방지)
+            $this->manager->set_basic_rendered(true);
+        }
 
         if ($column === '*') {
             $column = $this->get_columns_with_ddl();
