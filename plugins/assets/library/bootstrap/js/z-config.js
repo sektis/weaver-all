@@ -202,13 +202,20 @@ $(document).loaded('.wv-dropdown-select', function(i, e) {
     if(!$label.length){
         $label=$wv_dropdown;
     }
-    var $selected = $("a.selected",$dropdown_menu);
+    var $selected = $(".selected",$dropdown_menu);
+
+    if(!$selected.length){
+        $selected = $("[selected]",$dropdown_menu);
+    }
+
     if(!$selected.length){
         $selected = $("a",$dropdown_menu).first()
     }
+
     if($selected.length){
         $label.html($selected.html());
     }
+
     $($dropdown_menu).on('click','a',function (e) {
         e.preventDefault();
         var $a = $(this);
@@ -221,6 +228,7 @@ $(document).loaded('.wv-dropdown-select', function(i, e) {
 
 
     })
+
 
 });
 // 부모 리로드 처리 함수
@@ -257,6 +265,9 @@ function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
             }
         }
     } else {
+        if($currentElement=='on_close'){
+            return;
+        }
         if(typeof $currentElement === "string"){
             $currentElement=$($currentElement);
         }
@@ -317,13 +328,7 @@ function wv_handle_parent_reload($currentElement, isFromCloseEvent = false) {
                     data: ajaxData,
                     dataType: 'html',
                     success: function(response) {
-                        // replace_with 처리
-                        if (options.replace_with) {
-                            $(options.replace_with).replaceWith(response);
-                        } else {
-                            // replace_with가 없으면 자기 자신 교체
-                            $parentElement.replaceWith(response);
-                        }
+                        $parentElement.replaceWith(response);
                     },
                     error: function(xhr, status, error) {
                         console.error('리로드 실패:', error);
@@ -418,9 +423,9 @@ function parseWvAjaxOptions(options,$from) {
 
     processedOptions.type = type;
 
-    if(processedOptions.type && (processedOptions.target||processedOptions.append||processedOptions.replace||processedOptions.replace_with)){
-        alert(processedOptions.type+'에서는 dom 변경 불가');
-    }
+    // if(processedOptions.type && (processedOptions.target||processedOptions.append||processedOptions.replace||processedOptions.replace_with)){
+    //     alert(processedOptions.type+'에서는 dom 변경 불가');
+    // }
 
     if(processedOptions.reload_ajax===true && !processedOptions.$clickElement){
         alert('reload element not found');

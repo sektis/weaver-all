@@ -241,6 +241,7 @@ class StorePartProxy{
         // ✅ ensuring_rows 중이면 지연 평가 클로저 반환
         $pkey = $this->get_part_key();
 
+
         if ($this->is_list_part()) {
             $row = $this->ensure_rows();
             $row[$pkey] = $this->ensure_list_rows();

@@ -202,6 +202,22 @@ if($action=='update'){
     exit;
 }
 
+if($action=='update_render'){
+    if(!$made or !$part){
+        alert('필수파라메터 누락');
+    }
+
+    $data = wv()->store_manager->made($made)->set($_POST);
+    $wr_id = $data['wr_id'];
+    $vars = reset($data[$part]);
+    $vars["{$part}_id"] = $vars['id'];
+    unset($vars['id']);
+
+
+    echo wv()->store_manager->made($made)->get($data['wr_id'])->{$part}->render_part('status','view',$vars);
+    exit;
+}
+
 if($action=='delete'){
     $wr_id = wv()->store_manager->made($made)->delete(array('wr_id'=>$wr_id));
     exit;

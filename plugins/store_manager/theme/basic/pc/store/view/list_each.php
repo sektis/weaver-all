@@ -3,7 +3,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 global $member;
 
 ?>
-<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> position-relative d-flex-center flex-nowrap" <?php echo wv_display_reload_data($reload_ajax_data);; ?> style="">
+<div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> position-relative d-flex-center flex-nowrap"  style="">
     <style>
         <?php echo $skin_selector?> {}
 
@@ -38,29 +38,13 @@ global $member;
 
                             <div class="ms-auto align-self-start">
                                 <?php
-                                // 현재 로그인한 회원의 찜 여부 조회
+                                // 현재 로그인한 회원의 찜 여부 조회 (간단하게!)
                                 $favorite_manager = wv()->store_manager->made('favorite_store');
-
-                                $my_favorite = array();
-                                if ($member['mb_id']) {
-                                    $favorite_list = $favorite_manager->get_list(array(
-                                        'where_favorite' => "mb_id = '{$member['mb_id']}' AND store_wr_id = {$row['wr_id']}",
-                                        //                  ↑ 목록 파트 전용 WHERE (favorite. 접두사 불필요)
-                                        'limit' => 1,
-                                        'with_list_part' => 'favorite' // 목록 파트 데이터 포함
-                                    ));
-
-                                    if ($favorite_list['total'] > 0) {
-                                        // 목록 파트 데이터는 각 행의 'favorite' 키에 배열로 들어감
-                                        $first_row = $favorite_list['list'][0];
-                                        $my_favorite = isset($first_row['favorite']) ? $first_row['favorite'] : array();
-                                    }
-                                }
+                                $wr_ids = $favorite_manager->get_simple_list($member['mb_id'], array('favorite' => array('store_wr_id' => $row['wr_id'])));
 
                                 // 찜하기 버튼 렌더링
-                                echo $favorite_manager->favorite->render_part('status', 'view', array(
-                                    'row' => array('favorite' => $my_favorite),
-                                    'mb_id' => $member['mb_id'],
+                                echo $favorite_manager->get($wr_ids['wr_id'])->favorite->render_part('status','view',array(
+                                    'favorite_id' => $wr_ids['favorite_id'],
                                     'store_wr_id' => $row['wr_id']
                                 ));
                                 ?>

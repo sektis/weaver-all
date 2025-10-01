@@ -44,6 +44,14 @@ wv()->store_manager->make('favorite_store', 'favorite_store', array('favorite'))
 
 wv('menu')->make('fixed_bottom')->setMenu($wv_main_menu_array);
 
+
+$member_manager = wv()->store_manager->made('member');
+$res = $member_manager->get_simple_list($member['mb_id']);
+$current_member_wr_id = $res['wr_id'];
+$current_member = $member_manager->get($current_member_wr_id);
+
+
+
 //wv()->store_manager->make('made')->prune_columns();
 //wv()->store_manager->make('made')->prune_indexes();
 //wv()->store_manager->make('made')->apply_indexes();

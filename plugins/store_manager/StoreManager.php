@@ -1123,9 +1123,10 @@ class StoreManager extends Makeable{
 
                     if ($is_list_part) {
 
-                        foreach ($data_pkey_logical_col as $row) {
+                        foreach ($data_pkey_logical_col as &$row) {
                             if ($row['id'] and $row['delete']) {
                                 wv_execute_query_safe("DELETE FROM `{$t}` WHERE wr_id='" . intval($wr) . "' AND id='" . intval($row['id']) . "'");
+                                unset($row['id']);
                                 continue;
                             }
 
@@ -1155,7 +1156,10 @@ class StoreManager extends Makeable{
                                 }
                             } elseif (array_filter($row)) {
                                 $sets['wr_id'] = $wr;
+
                                 wv_execute_query_safe("INSERT INTO `{$t}` SET " . wv_array_to_sql_set($sets));
+                                $row['id']=sql_insert_id();
+
                             }
 
                         }
@@ -1208,6 +1212,7 @@ class StoreManager extends Makeable{
 
             // === 확장테이블 업서트(허용 컬럼만) ===
             $filtered = array('wr_id' => $wr_id);
+
 
 
 // ✅ 수정: $data에 실제로 있는 필드만 필터링
@@ -1265,7 +1270,7 @@ class StoreManager extends Makeable{
             $this->clear_cache($wr_id);
             wv_execute_query_safe("COMMIT", "transaction_commit");
 
-            return $wr_id;
+            return $data;
         } catch (\Exception $e) {
             wv_execute_query_safe("ROLLBACK", "transaction_rollback");
             alert($e->getMessage());
@@ -1612,7 +1617,8 @@ class StoreManager extends Makeable{
             'join'       => array(),
             'join_member'  =>  array(
                 'table'  => $g5['member_table'],
-                'on'     => 'mb_id',
+                'on_from'     => 'mb_id',
+                'on_to'     => 'mb_id',
                 'select' => '*',
                 'type'   => 'LEFT',
             ),
@@ -1732,7 +1738,7 @@ class StoreManager extends Makeable{
                 }
             }
         }
-        $joins = array_merge(array($opts['join_member']), $user_joins);
+        $joins = array_merge(array('join_member'=>$opts['join_member']), $opts['join']);
 
         $join_sql = '';
         $join_selects = array();
@@ -1754,18 +1760,57 @@ class StoreManager extends Makeable{
 
             // on 처리
             $j_on = '';
-            if (isset($j['on']) && trim($j['on']) !== '') {
-                $on_val = trim($j['on']);
-                if (strpos($on_val, '=') !== false) {
-                    $j_on = $on_val;
-                } else {
-                    $j_on = 'w.'.$on_val.' = '.$j_as.'.'.$on_val;
-                }
-            } else if (isset($j['on_col']) && trim($j['on_col']) !== '') {
-                $col  = trim($j['on_col']);
-                $j_on = 'w.'.$col.' = '.$j_as.'.'.$col;
+        if ((isset($j['on_from']) && trim($j['on_from']) !== '') and isset($j['on_to']) && trim($j['on_to']) !== '') {
+                $on_from_val = trim($j['on_from']);
+                $on_to_val = trim($j['on_to']);
+                $j_on = 'w.'.$on_from_val.' = '.$j_as.'.'.$on_to_val;
             }
             if ($j_on === '') continue;
+
+            // ========================================
+            // ⭐ 추가: JOIN where 처리
+            // ========================================
+            if (isset($j['where']) && !empty($j['where'])) {
+                $j_where = $j['where'];
+
+                if (is_array($j_where)) {
+                    // 배열 형태
+                    foreach ($j_where as $w) {
+                        if (is_array($w)) {
+                            // 중첩 배열: array('col' => 'condition')
+                            foreach ($w as $col => $cond) {
+                                $col = trim($col);
+                                $cond = trim($cond);
+                                if ($col !== '' && $cond !== '') {
+                                    $join_where_all[] = "({$j_as}.{$col} {$cond})";
+                                }
+                            }
+                        } else {
+                            // 문자열
+                            $w = trim($w);
+                            if ($w !== '') {
+                                // 컬럼명이 포함되어 있으면 그대로, 아니면 $j_as 추가
+                                if (strpos($w, '.') === false) {
+                                    $join_where_all[] = "({$j_as}.{$w})";
+                                } else {
+                                    $join_where_all[] = "({$w})";
+                                }
+                            }
+                        }
+                    }
+                } else if (is_string($j_where) && trim($j_where) !== '') {
+                    // 문자열 형태
+                    $j_where = trim($j_where);
+                    if (strpos($j_where, '.') === false) {
+                        $join_where_all[] = "({$j_as}.{$j_where})";
+                    } else {
+                        $join_where_all[] = "({$j_where})";
+                    }
+                }
+            }
+            // ========================================
+            // ⭐ JOIN where 처리 끝
+            // ========================================
 
             // select 처리
             if (isset($j['select']) && trim($j['select']) !== '') {
@@ -1820,6 +1865,7 @@ class StoreManager extends Makeable{
 
             $join_sql .= " {$j_type} JOIN {$j_table} {$j_as} ON ({$j_on}) ";
         }
+
         // --- JOIN 처리 끝 ---
 
         // 전체 카운트 (JOIN 반영)
@@ -2021,6 +2067,124 @@ class StoreManager extends Makeable{
             'paging'       => $opts['list_url']?wv_get_paging($opts['write_pages'], $page, $total_page, $opts['list_url']):''
         );
     }
+
+
+    /**
+     * 간단하고 빠른 목록 조회 (get_list의 복잡한 로직 우회)
+     *
+     * @param string $mb_id 회원 ID
+     * @param array $part_conditions 파트별 조건
+     *   - 값이 배열: 목록 파트로 간주
+     *   - 값이 스칼라: 일반 파트로 간주
+     * @param bool $just_one true면 첫번째 결과만 반환 (기본값: true)
+     * @param bool $need_object true면 연관배열 형태로 반환 (기본값: false)
+     *
+     * @return mixed
+     *   - $just_one=true, $need_object=false: 10 - 첫번째 wr_id (기본)
+     *   - $just_one=false, $need_object=false: array(10, 8, 5) - wr_id 배열
+     *   - $just_one=true, $need_object=true: array('wr_id' => 10, 'favorite_id' => 5)
+     *   - $just_one=false, $need_object=true: array(
+     *       array('wr_id' => 10, 'favorite_id' => 5),
+     *       array('wr_id' => 8, 'favorite_id' => 3)
+     *     )
+     */
+    public function get_simple_list($mb_id='', $part_conditions = array(), $just_one = true){
+        $mb_id = sql_real_escape_string($mb_id);
+
+        $write_table = $this->get_write_table_name();
+        $ext_table = $this->get_ext_table_name();
+
+        // SELECT, JOIN, WHERE 구성
+        $select_parts = array('w.wr_id');
+        $join_parts = array();
+        $where_parts = array();
+
+        if($mb_id){
+            $where_parts[] = "w.mb_id = '{$mb_id}'";
+        }
+
+        $where_parts[] = "w.wr_is_comment = 0";
+
+        // 일반 파트 존재 여부
+        $has_normal_part = false;
+        $list_part_keys = array();
+
+        foreach($part_conditions as $part_key => $conditions){
+            if(!isset($this->parts[$part_key])) continue;
+
+            $schema = $this->parts[$part_key];
+            $is_list_part = $this->is_list_part_schema($schema);
+
+            if($is_list_part){
+
+                // 목록 파트
+                $list_table = $this->get_list_table_name($part_key);
+                $list_part_keys[] = $part_key;
+
+                // JOIN (목록파트명을 별칭으로)
+                $join_parts[] = "LEFT JOIN `{$list_table}` {$part_key} ON {$part_key}.wr_id = w.wr_id";
+
+                // WHERE 조건
+                foreach($conditions as $logical_col => $value){
+                    $physical_col = $this->get_physical_col($part_key, $logical_col);
+                    $value_escaped = sql_real_escape_string($value);
+                    $where_parts[] = "{$part_key}.{$physical_col} = '{$value_escaped}'";
+                }
+
+                // SELECT에 목록파트 id 추가 (항상)
+                $select_parts[] = "{$part_key}.id AS {$part_key}_id";
+
+            }else{
+                // 일반 파트
+                $has_normal_part = true;
+
+                foreach($conditions as $logical_col => $value){
+                    $physical_col = $this->get_physical_col($part_key, $logical_col);
+                    $value_escaped = sql_real_escape_string($value);
+                    $where_parts[] = "s.{$physical_col} = '{$value_escaped}'";
+                }
+            }
+        }
+
+        // 일반 파트가 있을 때만 확장 테이블 JOIN
+        if($has_normal_part){
+            array_unshift($join_parts, "LEFT JOIN `{$ext_table}` s ON s.wr_id = w.wr_id");
+        }
+
+        $select_sql = implode(', ', $select_parts);
+        $join_sql = count($join_parts) > 0 ? implode(' ', $join_parts) : '';
+        $where_sql = implode(' AND ', $where_parts);
+        $limit_sql = $just_one ? ' LIMIT 1' : '';
+
+        $sql = "
+    SELECT {$select_sql}
+    FROM `{$write_table}` w
+    {$join_sql}
+    WHERE {$where_sql}
+    ORDER BY w.wr_id DESC
+    {$limit_sql}
+";
+
+        $result = sql_query($sql);
+
+        // 결과 처리 - 항상 객체 형태로 반환
+        $objects = array();
+        while($row = sql_fetch_array($result)){
+            $obj = array('wr_id' => (int)$row['wr_id']);
+
+            foreach($list_part_keys as $part_key){
+                $obj[$part_key . '_id'] = isset($row[$part_key . '_id']) ? (int)$row[$part_key . '_id'] : 0;
+            }
+
+            $objects[] = $obj;
+        }
+
+        return $just_one ? (count($objects) > 0 ? $objects[0] : array('wr_id' => 0)) : $objects;
+    }
+
+
+
+
 
     /**
      * where 조건의 중첩 구조를 처리하는 메서드

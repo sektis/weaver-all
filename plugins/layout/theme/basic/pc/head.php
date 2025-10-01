@@ -25,7 +25,9 @@
 
                     <div class="hstack" style="gap:var(--wv-12)">
                         <a href=""><img src="<?php echo WV_URL.'/img/icon_alarm.png'; ?>" class="w-[28px]" alt=""></a>
-                        <a href=""><img src="<?php echo WV_URL.'/img/icon_heart.png'; ?>" class="w-[28px]" alt=""></a>
+                        <a href="#"  data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                           data-wv-ajax-data='{ "action":"view","made":"favorite_store","part":"favorite","field":"list","wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" ><img src="<?php echo WV_URL.'/img/icon_heart.png'; ?>" class="w-[28px]" alt=""></a>
                     </div>
 
                 </div>

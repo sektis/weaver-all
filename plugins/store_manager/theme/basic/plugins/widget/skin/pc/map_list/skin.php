@@ -81,7 +81,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
                 var order_value = $("a.selected",$(this)).data('order-value');
 
                 var listData = $.extend({}, searchData, {order: order_value});
-                wv_ajax('<?php echo wv()->store_manager->ajax_url?>','offcanvas,end,backdrop,class: w-[360px],replace_width:<?php echo $skin_selector?>',listData)
+                wv_ajax('<?php echo wv()->store_manager->ajax_url?>','offcanvas,end,backdrop,class: w-[360px],replace_with:<?php echo $skin_selector?>',listData)
             })
         });
     </script>

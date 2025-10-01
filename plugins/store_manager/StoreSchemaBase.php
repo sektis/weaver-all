@@ -176,6 +176,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         }
 
 
+
         if (is_array($column)) {
             $html = '';
             foreach ($column as $col) {

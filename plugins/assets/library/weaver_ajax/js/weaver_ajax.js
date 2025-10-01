@@ -248,7 +248,7 @@ $(function(){
             reload=settings.reload;
         }
 
-        if(isset(settings.reload_ajax && settings.reload_ajax)){
+        if(isset(settings.reload_ajax) && settings.reload_ajax){
 
 
             var $formElement = settings.reload_ajax;
