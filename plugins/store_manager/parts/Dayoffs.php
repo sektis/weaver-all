@@ -32,12 +32,12 @@ class Dayoffs extends StoreSchemaBase implements StoreSchemaInterface{
         return $arr;
     }
 
-    public function is_new(&$data, $pkey, $col) {
+    public function is_new(&$data) {
         $this->calculate_and_set_filter_fields($data);
     }
 
 // ✅ 기존 항목 수정시 필터 필드 재계산
-    public function is_update(&$data, $pkey, $col) {
+    public function is_update(&$data) {
         $this->calculate_and_set_filter_fields($data);
     }
 

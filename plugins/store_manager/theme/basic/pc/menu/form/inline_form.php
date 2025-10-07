@@ -31,12 +31,10 @@ uasort($row['menu'], function($a, $b) {
 
             <?php $n = 1; foreach ($row['menu'] as $k => $v) {
 
-
                 ?>
-                <div class="wv-ps-each <?php echo $demo_class; ?>">
+                <div class="wv-ps-each  ">
                     <!-- 필수 hidden -->
-
-                    <input type="hidden" name="menu[<?php echo $v['id']; ?>][id]" value="<?php echo $v['id']; ?>">
+                    <?php echo $this->store->menu->render_part('id','form',array('menu_id'=>$v['id'])); ?>
 
                     <div class="vstack border p-[16px]" style="row-gap: var(--wv-15)">
 

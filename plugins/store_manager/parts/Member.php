@@ -12,10 +12,12 @@ class Member extends StoreSchemaBase{
         'is_manager'=>"TINYINT(1) NOT NULL DEFAULT 0",
         'is_ceo'=>"TINYINT(1) NOT NULL DEFAULT 0",
         'admin_memo'=>"text not null default ''",
-        'bank_name'=>"VARCHAR(255) DEFAULT NULL",
-        'ban_account_number'=>"VARCHAR(255) DEFAULT NULL",
+        'bank_number'=>"VARCHAR(255) DEFAULT NULL",
+        'bank_account_number'=>"VARCHAR(255) DEFAULT NULL",
+        'bank_datetime'=>"DATETIME NOT NULL ",
         'invite_code'=>"VARCHAR(7) DEFAULT NULL",
         'search_store_history'=>"text not null default ''",
+        'profile_image'=>"text not null default ''",
         'mb_id' => "",
         'mb_password' => "",
         'mb_password_init' => "",
@@ -26,6 +28,29 @@ class Member extends StoreSchemaBase{
         'member_form'=>'',
         'ceo_form'=>'',
         'manager_form'=>'',
+    );
+
+    protected $bank_array = array(
+        1=>'KB국민은행',
+        2=>'신한은행',
+        3=>'우리은행',
+        4=>'하나은행',
+        5=>'IBK기업은행',
+        6=>'NH농협은행',
+        7=>'SC제일은행',
+        8=>'IM뱅크(대구)',
+        9=>'부산은행',
+        10=>'경남은행',
+        11=>'전북은행',
+        12=>'광주은행',
+        13=>'수협은행',
+        14=>'우체국',
+        15=>'케이뱅크',
+        16=>'카카오뱅크',
+        17=>'토스뱅크',
+        18=>'새마을금고',
+        19=>'신협',
+        20=>'저축은행',
     );
 
     public function get_indexes(){
@@ -39,13 +64,24 @@ class Member extends StoreSchemaBase{
     }
 
 
-    public function column_extend($row,$all_row=array()){
+    public function column_extend($row){
+        global $g5;
         $arr = array();
         $arr['bank_info'] = $row['bank_name'].' | '.$row['bank_account_number'];
+        $arr['is_bank_register'] = (  $row['bank_account_number'] and $row['bank_number']);
+        $arr['bank_name'] = $this->bank_array[$row['bank_number']];
+        $arr['bank_image'] = wv_store_manager_img_url().'/bank/'.$row['bank_number'].'.png';
         $arr['active_text'] = $this->active_arr[$row['active']];
         $mb = get_member($row['mb_id']);
         $arr['is_cert'] = ($mb['mb_dupinfo']   && $mb['mb_certify']);
+        $arr['pf_img'] = $row['profile_image']['path']?$row['profile_image']['path']:wv()->store_manager->plugin_url . '/img/default_profile.svg';;
+        $arr['cert_date'] =  function () use($row) {
+            global $g5;
 
+            $res = sql_fetch("select * from g5_member_cert_history where mb_id='{$row['mb_mb_id']}' order by ch_datetime desc limit 1");
+
+            return $res['ch_datetime']?date('Y.m.d',strtotime($res['ch_datetime'])):'인증내역없음';
+        };
         // invite_code가 없으면 생성
         if(empty($row['invite_code']) && isset($row['wr_id']) && $row['wr_id'] > 0){
             $invite_code = $this->generate_unique_invite_code();
@@ -64,15 +100,16 @@ class Member extends StoreSchemaBase{
     }
 
 
-    public function is_new($wr_id, $data){
-        // 새 회원 생성시 invite_code 생성
-        $invite_code = $this->generate_unique_invite_code();
-        if($invite_code){
-            $data['invite_code'] = $invite_code;
-            $data['new_member'] = 1;
+    public function is_new_or_update(&$data,$col,&$p_data){
+
+        if($col=='bank_number' or $col=='bank_account_number'){
+
+            $p_data['bank_datetime']=G5_TIME_YMDHIS;
+
         }
     }
-    public function after_set($wr_id, $data){
+
+    public function after_set($data){
         if($data['new_member']){
             $ext_table = $this->manager->get_ext_table_name();;
             $check = sql_fetch("SELECT wr_id FROM {$ext_table} WHERE invite_code = '{$data['invite_code']}'");
@@ -90,37 +127,22 @@ class Member extends StoreSchemaBase{
     }
 
 
-    /**
-     * 유니크한 초대코드 생성 (영대문자+숫자 7자리)
-     */
-    protected function generate_unique_invite_code(){
-        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        $max_attempts = 100; // 무한루프 방지
 
-        $ext_table = $this->manager->get_ext_table_name();
-        $physical_col = $this->manager->get_physical_col('member', 'invite_code');
-
-        for($attempt = 0; $attempt < $max_attempts; $attempt++){
-            $code = '';
-            for($i = 0; $i < 7; $i++){
-                $code .= $chars[rand(0, strlen($chars) - 1)];
-            }
-
-            // 유니크 체크
-            $check = sql_fetch("SELECT wr_id FROM {$ext_table} WHERE {$physical_col} = '{$code}'");
-            if(!$check){
-                return $code;
-            }
-        }
-
-        return false; // 생성 실패
-    }
 
     public function before_set(&$data) {
         // 좌표 유효성 검사
         global $config,$is_admin,$member;
 
+        if(!data['wr_id']){
+            $invite_code = $this->generate_unique_invite_code();
+            if($invite_code){
+                $data['invite_code'] = $invite_code;
+                $data['new_member'] = 1;
+            }
+        }
 
+
+        include_once(G5_LIB_PATH.'/register.lib.php');
         $can_changer_member_password=false;
         if($is_admin){
             $can_changer_member_password=true;
@@ -186,6 +208,13 @@ class Member extends StoreSchemaBase{
         }
 
 
+        if($data['mb_hp']){
+            $msg = valid_mb_hp($data['mb_hp']);
+            if($msg){
+                alert($msg);
+            }
+
+        }
 
 
 
@@ -203,5 +232,31 @@ class Member extends StoreSchemaBase{
 
     public function before_delete(&$data) {
         member_delete($data['mb_id']);
+    }
+
+    /**
+     * 유니크한 초대코드 생성 (영대문자+숫자 7자리)
+     */
+    protected function generate_unique_invite_code(){
+        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $max_attempts = 100; // 무한루프 방지
+
+        $ext_table = $this->manager->get_ext_table_name();
+        $physical_col = $this->manager->get_physical_col('member', 'invite_code');
+
+        for($attempt = 0; $attempt < $max_attempts; $attempt++){
+            $code = '';
+            for($i = 0; $i < 7; $i++){
+                $code .= $chars[rand(0, strlen($chars) - 1)];
+            }
+
+            // 유니크 체크
+            $check = sql_fetch("SELECT wr_id FROM {$ext_table} WHERE {$physical_col} = '{$code}'");
+            if(!$check){
+                return $code;
+            }
+        }
+
+        return false; // 생성 실패
     }
 }

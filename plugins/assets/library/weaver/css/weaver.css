@@ -59,6 +59,17 @@
     .wv-submit-btn.active{background-color:#000;color:#fff;}
     .wv-submit-btn:hover{background-color:#000;color:#fff;}
     .wv-submit-btn:not(.active){pointer-events: none;user-select: none}
+    .wv-input-reset-wrapper { position: relative; display: inline-block; width: 100%; }
+    .wv-input-reset-wrapper .wv-input-reset-icon { position: absolute; right: var(--wv-12); top: 50%; transform: translateY(-50%); cursor: pointer; color: #D0D0D0; font-size: var(--wv-16); transition: color 0.2s; z-index: 10; display: none; }
+    .wv-input-reset-wrapper .wv-input-reset-icon:hover { color: #888888; }
+
+    /* form-floating 환경 */
+    .wv-input-reset-wrapper-floating { position: relative; }
+    .wv-input-reset-wrapper-floating .wv-input-reset-icon { position: absolute; right: var(--wv-12); top: 50%; transform: translateY(-50%); cursor: pointer; color: #D0D0D0; font-size: var(--wv-16); transition: color 0.2s; z-index: 10; display: none; }
+    .wv-input-reset-wrapper-floating .wv-input-reset-icon:hover { color: #888888; }
+
+    /* input에 padding-right 추가 (아이콘 공간 확보) */
+    .wv-input-text-reset { padding-right: var(--wv-40) !important; }
 
     .lh-0{line-height: 0!important;}
     .fs-05em{font-size:.5em!important;}

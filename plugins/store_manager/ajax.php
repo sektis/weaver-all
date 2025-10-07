@@ -169,6 +169,7 @@ if($action=='form'){
     if(!$made or !$part or !$field){
         alert('필수파라메터 누락');
     }
+
     echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($field,'form',$_REQUEST);
     exit;
 }
@@ -177,6 +178,7 @@ if($action=='view'){
     if(!$made or !$part or !$field){
         alert('필수파라메터 누락');
     }
+
     echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($field,'view',$_REQUEST);
     exit;
 }
@@ -208,18 +210,35 @@ if($action=='update_render'){
     }
 
     $data = wv()->store_manager->made($made)->set($_POST);
+
     $wr_id = $data['wr_id'];
-    $vars = reset($data[$part]);
-    $vars["{$part}_id"] = $vars['id'];
-    unset($vars['id']);
+    $vars = $data[$part];
 
 
-    echo wv()->store_manager->made($made)->get($data['wr_id'])->{$part}->render_part('status','view',$vars);
+    if(isset($vars['id'])){
+        $vars["{$part}_id"] = $vars['id'];
+        unset($vars['id']);
+    }
+
+
+
+    echo wv()->store_manager->made($made)->get($wr_id)->{$part}->render_part($column,'view',$vars);
+    exit;
+}
+if($action=='delete_render'){
+    if(!$made or !$part or !$wr_id){
+        alert('필수파라메터 누락');
+    }
+
+    wv()->store_manager->made($made)->delete(array('wr_id'=>$wr_id));
+    $vars = $_POST[$part];
+    echo wv()->store_manager->made($made)->get()->{$part}->render_part($column,'view',$vars);
     exit;
 }
 
 if($action=='delete'){
-    $wr_id = wv()->store_manager->made($made)->delete(array('wr_id'=>$wr_id));
+    $result = wv()->store_manager->made($made)->delete(array('wr_id'=>$wr_id));
+    wv_json_exit($result);
     exit;
 }
 

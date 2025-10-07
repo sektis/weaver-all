@@ -23,12 +23,13 @@ global $member;
                 </div>
                 <div class="col">
                     <div class="vstack  h-100" style="padding: var(--wv-3) 0">
-                        <div class="hstack">
+                        <div class="hstack" style="gap:var(--wv-10)">
                             <div>
                                 <div class="hstack">
-                                    <p class="fs-[14//-0.56/700/#0D171B]"><?php echo $row['name']; ?></p>
+
+                                    <p class="fs-[14//-0.56/700/#0D171B] col text-truncate"><?php echo $row['name']; ?></p>
                                     <?php if($row['distance_km']){ ?>
-                                         (<p class="fs-[12//-0.48/500/#0D171B] mt-[2px]"><?php echo number_format($row['distance_km'],2); ?>km</p>)
+                                        <p class="fs-[12//-0.48/500/#0D171B]  col-auto">(<?php echo number_format($row['distance_km'],2); ?>km)</p>
                                     <?php } ?>
                                 </div>
 
@@ -40,11 +41,10 @@ global $member;
                                 <?php
                                 // 현재 로그인한 회원의 찜 여부 조회 (간단하게!)
                                 $favorite_manager = wv()->store_manager->made('favorite_store');
-                                $wr_ids = $favorite_manager->get_simple_list($member['mb_id'], array('favorite' => array('store_wr_id' => $row['wr_id'])));
+                                $wr_ids = $favorite_manager->get_wr_id_of_member($member['mb_id'], array('favorite' => array('store_wr_id' => $row['wr_id'])));
 
                                 // 찜하기 버튼 렌더링
-                                echo $favorite_manager->get($wr_ids['wr_id'])->favorite->render_part('status','view',array(
-                                    'favorite_id' => $wr_ids['favorite_id'],
+                                echo $favorite_manager->get($wr_ids['wr_id'])->favorite->render_part('favorite','view',array(
                                     'store_wr_id' => $row['wr_id']
                                 ));
                                 ?>

@@ -1,5 +1,6 @@
 <?php
 global $g5;
+global $current_member_wr_id;
 ?>
 <div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
     <style>
@@ -29,7 +30,7 @@ global $g5;
                                     <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $this->manager->plugin_url; ?>/img/arrow_left.png" class="w-[28px]" alt=""></div>
                                 </div>
                                 <div class="col-auto text-center">
-                                    <p class="fs-[14/20/-0.56/600/#0D171B]">타이틀</p>
+                                    <p class="fs-[14/20/-0.56/600/#0D171B]">개인정보 수정</p>
                                 </div>
                                 <div class="col text-end">
 
@@ -40,15 +41,56 @@ global $g5;
 
                     <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
 
-                    <div class="wv-offcanvas-body col">
+                    <div class="wv-offcanvas-body col py-0">
 
-                        <?php echo $this->store->member->render_part('bank_name','form'); ?>
+                        <?php echo $this->store->member->render_part('profile_image','form'); ?>
 
+                        <div class="fs-[14/20/-0.56/600/#97989C]">
+                        <!-- 닉네임 -->
+                        <div class="wv-mx-fit" style="height: var(--wv-1);background-color: #efefef"></div>
+                            <div class="position-relative" style="padding: var(--wv-16) var(--wv-20);">
+                                <div class="hstack" style="gap:var(--wv-8)">
+                                    <p class="fs-[16/22/-0.64/600/#0D171B]">닉네임</p>
+                                    <p class="ms-auto"><?php echo get_text($this->store->member->mb_mb_nick); ?></p>
+                                    <i class="fa-solid fa-chevron-right lh-0 fs-07em"></i>
+                                </div>
+                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+                                   data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"edit_mb_nick","wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  class="stretched-link" data-wv-offcanvas="member_nick_edit"> </a>
+                            </div>
+                            <div class="wv-mx-fit" style="height: var(--wv-1);background-color: #efefef"></div>
+                            <div class="position-relative" style="padding: var(--wv-16) var(--wv-20);">
+                                <div class="hstack" style="gap:var(--wv-8)">
+                                    <p class="fs-[16/22/-0.64/600/#0D171B]">이름</p>
+                                    <p class="ms-auto"><?php echo get_text($this->store->member->mb_mb_name); ?></p>
+                                    <i class="fa-solid fa-chevron-right lh-0 fs-07em"></i>
+                                </div>
+                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+                                   data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"edit_mb_name","wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  class="stretched-link" data-wv-offcanvas="member_nick_edit"> </a>
+                            </div>
+                            <div class="wv-mx-fit" style="height: var(--wv-1);background-color: #efefef"></div>
+                            <div class="position-relative" style="padding: var(--wv-16) var(--wv-20);">
+                                <div class="hstack" style="gap:var(--wv-8)">
+                                    <p class="fs-[16/22/-0.64/600/#0D171B]">휴대폰 번호 변경</p>
+                                     <i class="fa-solid fa-chevron-right lh-0 fs-07em ms-auto"></i>
+                                </div>
+                                <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+                                   data-wv-ajax-data='{ "action":"form","made":"member","part":"member","field":"edit_mb_hp","wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                                   data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  class="stretched-link" data-wv-offcanvas="member_nick_edit"> </a>
+                            </div>
+                            <div class="wv-mx-fit" style="height: var(--wv-1);background-color: #efefef"></div>
+                        </div>
 
                     </div>
+                    <div class="wv-mx-fit">
+                        <?php echo wv_widget('content/privacy_notice'); ?>
+                    </div>
 
-                    <div class="mt-auto col-auto pb-[50px] hstack gap-[6px]">
-                        <button type="submit" class="w-full h-[54px] fs-[16/22/-0.64/700/#FFF] wv-submit-btn transition " style="border:0;border-radius: var(--wv-4)">완료</button>
+                    <div class="wv-mx-fit" style="background-color: #f9f9f9"><div class="container"><div  style="height: 2px;background-color: #efefef"></div></div></div>
+
+                    <div class="wv-mx-fit">
+                        <?php echo wv_widget('content/copyright'); ?>
                     </div>
                 </div>
             </form>

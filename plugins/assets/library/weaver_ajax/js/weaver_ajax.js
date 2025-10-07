@@ -9,6 +9,7 @@ $(function(){
             var originalBeforeSubmit = options.beforeSubmit;
             options.beforeSubmit = function(formData, jqForm, opts) {
 
+
                 if(isset(opts.reload_ajax)){
                     opts.reload_ajax = jqForm;
                 }else{
@@ -253,6 +254,7 @@ $(function(){
 
             var $formElement = settings.reload_ajax;
             // 폼 기준으로 부모 offcanvas/modal 찾아서 리로드
+
             wv_handle_parent_reload($formElement);
            reload=false;
 

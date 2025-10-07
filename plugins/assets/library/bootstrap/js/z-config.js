@@ -507,13 +507,26 @@ $(document).on('click', '[data-wv-ajax-url]', function (e) {
         processedOptions.target = (processedOptions.type === 'modal' || processedOptions.type === 'offcanvas') ? '#site-wrapper' : '';
     }
 
-    // modal이나 offcanvas인 경우 중복 방지 처리
+// ==========================================
+// Offcanvas/Modal ID 중복 방지 개선 버전
+// ==========================================
+
+// modal이나 offcanvas인 경우 중복 방지 처리
     if (processedOptions.type === 'modal' || processedOptions.type === 'offcanvas') {
         // ID 생성 (트리거 고유 기준)
         if (!processedOptions.id) {
+            // 트리거 요소에 고유 ID가 없으면 생성
+            if (!$this.attr('data-wv-trigger-id')) {
+                var triggerUniqueId = 'trigger-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
+                $this.attr('data-wv-trigger-id', triggerUniqueId);
+            }
+
             var triggerKey = url;
+            var triggerId = $this.attr('data-wv-trigger-id');
+
             processedOptions.id = (processedOptions.type === 'modal' ? 'wv-modal-' : 'wv-offcanvas-') +
-                btoa(triggerKey).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12) + $this.index();
+                btoa(triggerKey).replace(/[^a-zA-Z0-9]/g, '').slice(0, 8) +
+                '-' + triggerId;
         }
 
         // 해당 트리거에서 이전에 띄운 인스턴스가 있다면 제거
@@ -523,7 +536,25 @@ $(document).on('click', '[data-wv-ajax-url]', function (e) {
         }
 
         // 새로운 인스턴스 ID 저장
-        $this.data('wv-ajax-instance', processedOptions.id);
+        $this.attr('data-wv-ajax-instance', processedOptions.id);
+
+        // 닫힐 때 인스턴스 ID 초기화
+        $(document).off('hidden.bs.offcanvas.wvajax hidden.bs.modal.wvajax')
+            .on('hidden.bs.offcanvas.wvajax hidden.bs.modal.wvajax', function(e) {
+                var $target = $(e.target);
+
+                // wv-ajax로 생성된 것만 제거 (data-wv-ajax-created 속성이 있는 경우만)
+                if ($target.data('wv-ajax-created') === true) {
+                    // 닫힌 offcanvas/modal의 ID
+                    var closedId = $target.attr('id');
+
+                    // 해당 ID를 가진 트리거 요소들의 data-wv-ajax-instance 초기화
+                    $('[data-wv-ajax-instance="' + closedId + '"]').removeAttr('data-wv-ajax-instance');
+
+                    // DOM에서 제거
+                    $target.remove();
+                }
+            });
     }
 
 
@@ -543,10 +574,56 @@ $(document).on('click', '[data-wv-ajax-url]', function (e) {
 function wv_ajax(url, options = {}, data = {}, isParsed = false){
     var processedOptions = isParsed ? options : parseWvAjaxOptions(options);
 
+    // ✅ 파일 전송 여부 확인
+    var has_file = false;
+    var form_data = data;
+
+    // ✅ 중첩 객체에서 File 찾기
+    function check_has_file(obj) {
+        if (obj instanceof File || obj instanceof FileList) return true;
+        if (typeof obj === 'object' && obj !== null && !(obj instanceof Blob)) {
+            for (var key in obj) {
+                if (check_has_file(obj[key])) return true;
+            }
+        }
+        return false;
+    }
+
+    // ✅ 재귀적으로 FormData에 추가
+    function append_to_form_data(form_data, obj, parent_key) {
+        for (var key in obj) {
+            var value = obj[key];
+            var form_key = parent_key ? parent_key + '[' + key + ']' : key;
+
+            if (value instanceof File) {
+                form_data.append(form_key, value);
+            } else if (value instanceof FileList) {
+                for (var i = 0; i < value.length; i++) {
+                    form_data.append(form_key + '[]', value[i]);
+                }
+            } else if (typeof value === 'object' && value !== null && !(value instanceof Blob)) {
+                append_to_form_data(form_data, value, form_key);
+            } else if (value !== null && value !== undefined) {
+                form_data.append(form_key, value);
+            }
+        }
+    }
+    if (data instanceof FormData) {
+        has_file = true;
+        form_data = data;
+    } else if (typeof data === 'object') {
+        has_file = check_has_file(data);
+
+        if (has_file) {
+            form_data = new FormData();
+            append_to_form_data(form_data, data, '');
+        }
+    }
+
     // 일반 AJAX 요청
     var defaultAjaxSettings = {
         url: url,
-        data: data,
+        data: form_data,
         method: 'POST',
         success : function(response) {
             // target이 있으면 해당 엘리먼트에 결과 삽입 (원래 코드 로직)
@@ -578,6 +655,13 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
         }
 
     };
+
+    // ✅ 파일 전송시 필수 옵션
+    if (has_file) {
+        defaultAjaxSettings.processData = false;
+        defaultAjaxSettings.contentType = false;
+    }
+
     // if(processedOptions.prepend || processedOptions.append || processedOptions.replace || processedOptions.replace_with || processedOptions.reload){
     //     defaultAjaxSettings.success = function(response) {
     //         // target이 있으면 해당 엘리먼트에 결과 삽입 (원래 코드 로직)
@@ -610,6 +694,11 @@ function wv_ajax(url, options = {}, data = {}, isParsed = false){
     // ajax_option으로 기본값 오버라이딩
     if (processedOptions.ajax_option) {
         $.extend(defaultAjaxSettings, processedOptions.ajax_option);
+
+        if (has_file) {
+            defaultAjaxSettings.processData = false;
+            defaultAjaxSettings.contentType = false;
+        }
 
         // ✅ 커스텀 속성들을 settings에 직접 설정
         if (processedOptions.ajax_option.reload !== undefined) {

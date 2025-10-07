@@ -1,0 +1,1 @@
+<input type="hidden"   name="<?php echo $field_name; ?>" value="<?php echo $row[$column]; ?>" >

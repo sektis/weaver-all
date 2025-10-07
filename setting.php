@@ -31,7 +31,7 @@ $wv_main_menu_array = array(
 );
 
 
-wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs','contract'))->prune_columns();
+wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs','contract','timesearch'))->prune_columns();
 wv()->store_manager->make('member','member',array('member'))->prune_columns();
 wv()->store_manager->make('invite','invite',array('invite'))->prune_columns();
 wv()->store_manager->make('visit_cert','visit_cert',array('visitcert'))->prune_columns();
@@ -46,7 +46,8 @@ wv('menu')->make('fixed_bottom')->setMenu($wv_main_menu_array);
 
 
 $member_manager = wv()->store_manager->made('member');
-$res = $member_manager->get_simple_list($member['mb_id']);
+$res = $member_manager->get_wr_id_of_member($member['mb_id']);
+
 $current_member_wr_id = $res['wr_id'];
 $current_member = $member_manager->get($current_member_wr_id);
 

@@ -28,6 +28,7 @@
 .wv-ps-each.wv-ps-demo{
     display: none;
 }
+.wv-ps-each:has(> input[name$="[id]"][value="skeleton"]) { display: none; }
 .wv-ps-subtitle{
     margin-bottom: var(--wv-6);
     font-weight: 600;

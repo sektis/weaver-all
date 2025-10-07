@@ -1,7 +1,6 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
-$this->make_array($row['service_time']);
-$open_time = $row['service_time'];
+$time_array = $row[$column];
 $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','sat'=>'토','sun'=>'일');
 
 ?>
@@ -23,6 +22,11 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
         <?php echo $skin_selector?> .day-times.show{display:block;margin-top: var(--wv-16)}
         <?php echo $skin_selector?> select{height: var(--wv-48);padding: var(--wv-13) var(--wv-12) !important;background-color: #f9f9f9;border: 0!important;font-size: var(--wv-16);font-weight: 500}
 
+        <?php if($must_daily_week_view){?>
+        <?php echo $skin_selector?> .tab-pane#daily .form-switch, <?php echo $skin_selector?> .tab-pane#week .form-switch{
+                                        display: none;
+                                    }
+        <?php }?>
         @media (min-width: 992px) {}
         @media (max-width: 991.98px) {
         <?php echo $skin_selector?> .time-row{flex-wrap:wrap;}
@@ -30,7 +34,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
     </style>
 
     <div class="position-relative col col-lg-auto w-full md:w-full wv-vstack" style="row-gap: var(--wv-10)">
-        <p class="wv-ps-subtitle">영업시간</p>
+
         <div class="w-[500px] mw-100">
 
             <ul class="nav nav-pills mb-3 text-center mb-[16px]" style="gap:var(--wv-6)">
@@ -45,18 +49,18 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                         <div class="day-header hstack justify-content-between">
                             <h6>매일</h6>
                             <?php
-                            $daily_en = isset($open_time['daily']['enabled']) ? (int)$open_time['daily']['enabled'] : 0;
+                            $daily_en = isset($time_array['daily']['enabled']) ? (int)$time_array['daily']['enabled'] : 0;
                             ?>
                             <div class="form-check form-switch <?php echo $daily_en?'':'disabled'; ?>" data-on-value="설정 함" data-off-value="설정 안함">
                                 <input class="form-check-input" type="checkbox" role="switch" name="<?php echo $field_name; ?>[daily][enabled]" id="<?php echo $field_name; ?>[daily][enabled]" value="1" <?php echo $daily_en?'checked':''; ?> data-day="daily">
                                 <label class="form-check-label" for="<?php echo $field_name; ?>[daily][enabled]"><?php echo $daily_en?'설정 함':'설정 안함'; ?></label>
                             </div>
                         </div>
-                        <div class="day-times <?php echo $daily_en?'show':''; ?>" data-times="daily">
+                        <div class="day-times <?php echo ($daily_en or $must_daily_week_view)?'show':''; ?>" data-times="daily">
                             <div class="time-row">
                                 <span class="time-label">시작</span>
                                 <?php
-                                $ds = isset($open_time['daily']['start']) ? $open_time['daily']['start'] : array();
+                                $ds = isset($time_array['daily']['start']) ? $time_array['daily']['start'] : array();
                                 echo wv_store_manager_time_select($field_name.'[daily][start][period]', $ds, 'period');
                                 echo wv_store_manager_time_select($field_name.'[daily][start][hour]', $ds, 'hour');
                                 echo '<span>:</span>';
@@ -66,7 +70,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             <div class="time-row">
                                 <span class="time-label">종료</span>
                                 <?php
-                                $de = isset($open_time['daily']['end']) ? $open_time['daily']['end'] : array();
+                                $de = isset($time_array['daily']['end']) ? $time_array['daily']['end'] : array();
                                 echo wv_store_manager_time_select($field_name.'[daily][end][period]', $de, 'period');
                                 echo wv_store_manager_time_select($field_name.'[daily][end][hour]', $de, 'hour');
                                 echo '<span>:</span>';
@@ -83,18 +87,18 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                         <div class="day-header hstack justify-content-between">
                             <h6>평일</h6>
                             <?php
-                            $weekday_en = isset($open_time['weekday']['enabled']) ? (int)$open_time['weekday']['enabled'] : 0;
+                            $weekday_en = isset($time_array['weekday']['enabled']) ? (int)$time_array['weekday']['enabled'] : 0;
                             ?>
                             <div class="form-check form-switch <?php echo $weekday_en?'':'disabled'; ?>" data-on-value="설정 함" data-off-value="설정 안함">
                                 <input class="form-check-input" type="checkbox" role="switch" name="<?php echo $field_name; ?>[weekday][enabled]" id="<?php echo $field_name; ?>[weekday][enabled]" value="1" <?php echo $weekday_en?'checked':''; ?> data-day="weekday">
                                 <label class="form-check-label" for="<?php echo $field_name; ?>[weekday][enabled]"><?php echo $weekday_en?'설정 함':'설정 안함'; ?></label>
                             </div>
                         </div>
-                        <div class="day-times <?php echo $weekday_en?'show':''; ?>" data-times="weekday">
+                        <div class="day-times <?php echo ($weekday_en or $must_daily_week_view)?'show':''; ?>" data-times="weekday">
                             <div class="time-row">
                                 <span class="time-label">시작</span>
                                 <?php
-                                $ws = isset($open_time['weekday']['start']) ? $open_time['weekday']['start'] : array();
+                                $ws = isset($time_array['weekday']['start']) ? $time_array['weekday']['start'] : array();
                                 echo wv_store_manager_time_select($field_name.'[weekday][start][period]', $ws, 'period');
                                 echo wv_store_manager_time_select($field_name.'[weekday][start][hour]', $ws, 'hour');
                                 echo '<span>:</span>';
@@ -104,7 +108,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             <div class="time-row">
                                 <span class="time-label">종료</span>
                                 <?php
-                                $we = isset($open_time['weekday']['end']) ? $open_time['weekday']['end'] : array();
+                                $we = isset($time_array['weekday']['end']) ? $time_array['weekday']['end'] : array();
                                 echo wv_store_manager_time_select($field_name.'[weekday][end][period]', $we, 'period');
                                 echo wv_store_manager_time_select($field_name.'[weekday][end][hour]', $we, 'hour');
                                 echo '<span>:</span>';
@@ -121,18 +125,18 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                         <div class="day-header hstack justify-content-between">
                             <h6>주말</h6>
                             <?php
-                            $weekend_en = isset($open_time['weekend']['enabled']) ? (int)$open_time['weekend']['enabled'] : 0;
+                            $weekend_en = isset($time_array['weekend']['enabled']) ? (int)$time_array['weekend']['enabled'] : 0;
                             ?>
                             <div class="form-check form-switch <?php echo $weekend_en?'':'disabled'; ?>" data-on-value="설정 함" data-off-value="설정 안함">
                                 <input class="form-check-input" type="checkbox" role="switch" name="<?php echo $field_name; ?>[weekend][enabled]" id="<?php echo $field_name; ?>[weekend][enabled]" value="1" <?php echo $weekend_en?'checked':''; ?> data-day="weekend">
                                 <label class="form-check-label" for="<?php echo $field_name; ?>[weekend][enabled]"><?php echo $weekend_en?'설정 함':'설정 안함'; ?></label>
                             </div>
                         </div>
-                        <div class="day-times <?php echo $weekend_en?'show':''; ?>" data-times="weekend">
+                        <div class="day-times <?php echo ($weekend_en or $must_daily_week_view)?'show':''; ?>" data-times="weekend">
                             <div class="time-row">
                                 <span class="time-label">시작</span>
                                 <?php
-                                $wes = isset($open_time['weekend']['start']) ? $open_time['weekend']['start'] : array();
+                                $wes = isset($time_array['weekend']['start']) ? $time_array['weekend']['start'] : array();
                                 echo wv_store_manager_time_select($field_name.'[weekend][start][period]', $wes, 'period');
                                 echo wv_store_manager_time_select($field_name.'[weekend][start][hour]', $wes, 'hour');
                                 echo '<span>:</span>';
@@ -142,7 +146,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                             <div class="time-row">
                                 <span class="time-label">종료</span>
                                 <?php
-                                $wee = isset($open_time['weekend']['end']) ? $open_time['weekend']['end'] : array();
+                                $wee = isset($time_array['weekend']['end']) ? $time_array['weekend']['end'] : array();
                                 echo wv_store_manager_time_select($field_name.'[weekend][end][period]', $wee, 'period');
                                 echo wv_store_manager_time_select($field_name.'[weekend][end][hour]', $wee, 'hour');
                                 echo '<span>:</span>';
@@ -155,7 +159,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
 
                 <div class="tab-pane" id="days">
                     <?php foreach($days as $k=>$v):
-                        $d = isset($open_time[$k]) ? $open_time[$k] : array();
+                        $d = isset($time_array[$k]) ? $time_array[$k] : array();
                         $en = isset($d['enabled']) ? (int)$d['enabled'] : 0;
                         ?>
                         <div class="day-item">
@@ -165,7 +169,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                                 <div class="form-check form-switch <?php echo $en?'':'disabled'; ?>" data-on-value="설정 함" data-off-value="설정 안함">
                                     <input class="form-check-input" type="checkbox" role="switch" name="<?php echo $field_name; ?>[<?php echo $k; ?>][enabled]" id="<?php echo $field_name; ?>[<?php echo $k; ?>][enabled]" value="1" <?php echo $en?'checked':''; ?> data-day="<?php echo $k; ?>">
                                     <label class="form-check-label" for="<?php echo $field_name; ?>[<?php echo $k; ?>][enabled]"><?php echo $en?'설정 함':'설정 안함'; ?></label>
-                                </div> 
+                                </div>
                             </div>
                             <div class="day-times <?php echo $en?'show':''; ?>" data-times="<?php echo $k; ?>">
                                 <div class="time-row">
@@ -216,9 +220,7 @@ $days = array('mon'=>'월','tue'=>'화','wed'=>'수','thu'=>'목','fri'=>'금','
                 var day = $(this).data('day');
                 var checked = $(this).is(':checked');
                 var $switch = $(this).closest('.form-switch');
-                var $label = $switch.find('label');
                 $switch.toggleClass('disabled', !checked);
-                // $label.text(checked ? '설정 함' : '설정 안함');
                 $skin.find('[data-times="'+day+'"]').toggleClass('show', checked);
             });
         });

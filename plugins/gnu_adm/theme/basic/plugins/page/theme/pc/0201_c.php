@@ -113,8 +113,40 @@ $store = wv()->store_manager->made('sub01_01')->get($wr_id);
                         <div class="info-title">영업정보</div>
                         <div class="wv-vstack" style="--wv-vstack-row-gap: var(--wv-8)">
 
+                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
+                                <p class="wv-ps-subtitle">오픈시간</p>
+                                <div class="mt-[10px]">
+                                    <?php echo $store->biz->render_part('open_time','form'); ?>
+                                </div>
+                            </div>
 
-                            <?php echo $store->biz->render_part('*','form'); ?>
+
+                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
+                                <p class="wv-ps-subtitle">브레이크타임</p>
+                                <div class="mt-[10px]">
+
+                                    <?php echo $store->biz->render_part('break_time','form'); ?>
+                                </div>
+                            </div>
+
+
+                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
+
+                                <div>
+                                    <?php echo $store->biz->render_part('is_holiday_off','form'); ?>
+                                </div>
+                            </div>
+
+
+                            <div class="position-relative col col-lg-auto w-full md:w-full " style="">
+                                <p class="wv-ps-subtitle">주차</p>
+                                <div class="mt-[10px]">
+                                    <?php echo $store->biz->render_part('parking','form'); ?>
+                                </div>
+                            </div>
+
+
+
                         </div>
                     </div>
                     <div class="info-wrap ">

@@ -9,7 +9,7 @@ if($w==''){
     if(!$pre_cert_no or get_session('wv_cert_no')!=$pre_cert_no){
         alert('본인 인증 후 가입가능합니다.');
     }
-    $member['mb_certify']=$pre_cert_type;
+    $member['mb_certify']=get_session("wv_cert_type");
      $member['mb_hp']=get_session("wv_cert_mb_hp");
     $member['mb_id'] = preg_replace('/[^\d]/', '', $member['mb_hp']);
     $member['mb_name']=get_session("wv_cert_mb_name");

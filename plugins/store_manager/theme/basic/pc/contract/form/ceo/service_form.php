@@ -26,9 +26,9 @@ if(!$row['id']){
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="made" value="<?php echo $made; ?>">
                 <input type="hidden" name="<?php echo str_replace("[{$column}]",'',$field_name); ?>[contractitem_wr_id]" value="<?php echo $cont_item['wr_id']; ?>">
-                <?php if($is_list_item_mode){ ?>
-                    <input type="hidden" name="<?php echo str_replace("[{$column}]",'',$field_name); ?>[id]" value="<?php echo $row['id']; ?>">
-                <?php } ?>
+
+                    <input type="hidden" name="<?php echo $field_name; ?>[id]" value="<?php echo $row['id']; ?>">
+
                 <?php echo $this->store->basic->render_part('wr_id','form');; ?>
                 <div class="vstack h-100 " style="padding-top:var(--wv-10)">
                     <div class="wv-offcanvas-header col-auto">
@@ -80,7 +80,6 @@ if(!$row['id']){
                                     <p class="fs-[16/22/-0.64/600/#0D171B]">방문 가능한 요일 및 시간</p>
                                     <div class="hstack mt-[8.5px]" style="gap:var(--wv-2)">
                                         <img src="<?php echo $this->manager->plugin_url; ?>/img/vec1.png" class="w-[14px]" alt="">
-                                        <p class="fs-[12/17/-0.48/500/#97989C]">한정된 조건으로 제공하는 특별한 서비스</p>
                                     </div>
                                 </div>
                                 <div class=" ">

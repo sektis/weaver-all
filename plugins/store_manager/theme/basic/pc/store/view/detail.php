@@ -3,7 +3,7 @@ global $g5;
 $write_table = $this->manager->get_write_table_name();
 sql_query(" update {$write_table} set wr_hit = wr_hit + 1 where wr_id = '{$row['wr_id']}' ",1);
 ?>
-<div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white" style="overflow: hidden">
+<div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white overflow-x-hidden"  >
     <style>
         <?php echo $skin_selector?> {}
         <?php echo $skin_selector?> [data-bs-toggle]{position: relative}
@@ -29,21 +29,22 @@ sql_query(" update {$write_table} set wr_hit = wr_hit + 1 where wr_id = '{$row['
                 <?php } ?>
                 <?php echo $this->store->basic->render_part('wr_id', 'form');; ?>
                 <div class="h-100" style="">
-                    <div class="   position-absolute   start-0 w-100" style="top:var(--wv-60);z-index: 10">
-                        <div class="container">
-                            <div class="row align-items-center g-0">
-                                <div class="col">
-                                    <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $this->manager->plugin_url; ?>/img/arrow_left_white.png" class="w-[28px]" alt=""></div>
+                    <div class="position-relative">
+                        <div class="   position-absolute   start-0 w-100" style="top:var(--wv-60);z-index: 10">
+                            <div class="container">
+                                <div class="row align-items-center g-0">
+                                    <div class="col">
+                                        <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $this->manager->plugin_url; ?>/img/arrow_left_white.png" class="w-[28px]" alt=""></div>
+                                    </div>
+                                    <div class="col-auto"></div>
                                 </div>
-                                <div class="col-auto"></div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="h-[276px] wv-mx-fit">
-                        <?php echo $this->store->store->render_part('image','view'); ?>
+                        <div class="h-[276px] wv-mx-fit">
+                            <?php echo $this->store->store->render_part('image','view'); ?>
+                        </div>
                     </div>
-
                     <div class="mt-[20px] pb-[16px]">
                         <p class="fs-[20/28/-0.8/600/#000]"><?php echo $row['name']; ?></p>
                         <div class="hstack mt-[2px] fs-[12/17/-0.48/500/]" style="gap:var(--wv-4)">
@@ -185,7 +186,7 @@ sql_query(" update {$write_table} set wr_hit = wr_hit + 1 where wr_id = '{$row['
 
 
 
-                    <div class="mt-[30px] wv-mx-fit">
+                    <div class="wv-mx-fit">
                         <?php echo wv_widget('content/copyright'); ?>
                     </div>
                 </div>

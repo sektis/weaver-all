@@ -27,7 +27,7 @@ global $g5,$current_member_wr_id;
 
                             <div class="col-auto ratio ratio-1x1 wv-ratio-circle w-[60px] overflow-hidden">
                                 <div>
-                                    <img src="https://picsum.photos/1920/700" class="wh-100 object-fit-cover" alt="">
+                                    <img src="<?php echo $row['pf_img']; ?>" class="wh-100 object-fit-cover" alt="">
                                 </div>
 
                             </div>
@@ -54,17 +54,19 @@ global $g5,$current_member_wr_id;
 
                     <div class="mt-[17px] hstack" style="gap:var(--wv-6)">
                         <p class="fs-[14/20/-0.56/600/#0D171B]">MY 적립금</p>
-                        <a href=""><img src="<?php echo $this->manager->plugin_url; ?>/img/u_exclamation-circle.png" class="w-[12px]" alt=""></a>
+                        <a href="javascript:;"><img src="<?php echo $this->manager->plugin_url; ?>/img/u_exclamation-circle.png" class="w-[12px]" alt=""></a>
                     </div>
 
                     <div class="mt-[10px] hstack justify-content-between" style="gap:var(--wv-6)">
                         <p class="fs-[14/20/-0.56/600/#0D171B]"><?php echo $this->store->member->saving_price; ?></p>
-                        <a href="" class="wv-flex-box h-[28px]" style="background-color: #f9f9f9;padding: 0 var(--wv-14)">출금신청</a>
+                        <a href="" class="wv-flex-box h-[28px] fs-[12/17/-0.48/600/#97989C]" style="background-color: #f9f9f9;padding: 0 var(--wv-14)">출금신청</a>
                     </div>
 
-                    <div class="wv-mx-fit" style="height: var(--wv-1);background-color: #efefef"></div>
+                    <div class="wv-mx-fit mt-[13px]" style="height: var(--wv-1);background-color: #efefef"></div>
                     <div class="hstack fs-[12/17/-0.48/600/#0D171B] wv-mx-fit ">
-                        <a href="" class="col hstack justify-content-center" style="gap:var(--wv-4);padding: var(--wv-13)">
+                        <a href="" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
+                           data-wv-ajax-data='{ "action":"view","made":"member","part":"member","field":"view_bank_info","wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                           data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px]"  class="col hstack justify-content-center" style="gap:var(--wv-4);padding: var(--wv-13)">
                             <img src="<?php echo $this->manager->plugin_url; ?>/img/bank-card-2-fill.png" class="w-[14px]" alt="">
                             출금 계좌 설정
                         </a>
@@ -87,7 +89,9 @@ global $g5,$current_member_wr_id;
                                     <p class="fs-[16/22/-0.64/600/#0D171B] mt-[4px]">찜한 <br>가게</p>
                                     <img src="<?php echo $this->manager->plugin_url; ?>/img/my_pgae_service_1.png" class="w-[44px] align-self-end" alt="">
 
-                                    <a href="#" class="stretched-link"></a>
+                                    <a href="#"  data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url?>/ajax.php'
+                                       data-wv-ajax-data='{ "action":"view","made":"favorite_store","part":"favorite","field":"list","wr_id":"<?php echo $current_member_wr_id; ?>"}'
+                                       data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true" class="stretched-link"></a>
                                 </div>
                             </div>
                             <div class="col-4">

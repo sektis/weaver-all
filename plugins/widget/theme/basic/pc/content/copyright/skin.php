@@ -15,9 +15,9 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         }
     </style>
 
-    <div class="position-relative col col-lg-auto w-full md:w-full " style="background-color: #f9f9f9;padding: 0 0 var(--wv-20)">
+    <div class="position-relative col col-lg-auto w-full md:w-full " style="background-color: #f9f9f9;padding: var(--wv-20) 0">
         <div class="container">
-            <div class="mb-[20px]" style="height: 2px;background-color: #efefef"></div>
+
 
             <p class="fs-[11/17/-0.44/600/#575757]">덤이요 고객센터 : 032 - 326 -1018</p>
             <div class="vstack mt-[10px] fs-[11/17/-0.44/500/#97989C]" style="row-gap: var(--wv-2)">

@@ -46,6 +46,7 @@ class StorePartProxy{
         $this->write_row = is_array($write_row) ? $write_row : array();
         $this->ext_row = is_array($ext_row) ? $ext_row : array();
         $this->part_key = (string)$part_key;
+
     }
 
     /** 내부용: 파트키 안전 획득 */
@@ -244,6 +245,7 @@ class StorePartProxy{
 
         if ($this->is_list_part()) {
             $row = $this->ensure_rows();
+
             $row[$pkey] = $this->ensure_list_rows();
 
             if (method_exists($this->part, 'make_array')) {

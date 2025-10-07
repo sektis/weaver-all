@@ -20,6 +20,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
 
     );
     protected $checkbox_fields = array('enabled');
+    private static $is_syncing_service = false;
 
     protected $status_text_array = array(
         '1'=>'진행 중',
@@ -115,7 +116,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         return $arr;
     }
 
-    public function is_new(&$data,$pkey,$col) {
+    public function is_new(&$data,$col) {
         if($col=='memo'){
             $data['date']=date('Y-m-d h:i:s');
         }
@@ -123,5 +124,98 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
             $data['start']=date('Y-m-d h:i:s');
         }
 
+    }
+
+
+
+    public function after_set(&$data) {
+        if (self::$is_syncing_service) return;
+        if (!isset($data['contract'])) return;
+
+        $manager = $this->get_manager();
+
+        foreach ($data['contract'] as $contract_id => $contract_item) {
+            if (!isset($contract_item['id'])) {
+                continue;
+            }
+
+            $service_time = null;
+
+            if (isset($contract_item['service_time'])) {
+                if (is_string($contract_item['service_time'])) {
+                    $service_time = wv_base64_decode_unserialize($contract_item['service_time']);
+                } elseif (is_array($contract_item['service_time'])) {
+                    $service_time = $contract_item['service_time'];
+                }
+            }
+
+            if (!$service_time || !is_array($service_time)) {
+                continue;
+            }
+
+            self::$is_syncing_service = true;
+
+            try {
+                $wr_id = $data['wr_id'];
+                $relation_wr_id = $contract_item['id'];
+
+                $existing_list = $manager->get($wr_id)->timesearch->list;
+                $updated_list = array();
+
+                foreach ($existing_list as $item) {
+                    if ($item['type'] !== 'service' ||
+                        (int)$item['relation_wr_id'] !== (int)$relation_wr_id) {
+                        $updated_list[] = $item;
+                    }
+                }
+
+                $service_data = $manager->timesearch->convert_time_array_to_data(
+                    $service_time,
+                    'service',
+                    true
+                );
+
+                foreach ($service_data as &$item) {
+                    $item['relation_wr_id'] = $relation_wr_id;
+                }
+
+                $this->merge_timesearch_service_data(
+                    $updated_list,
+                    $existing_list,
+                    $service_data,
+                    $relation_wr_id
+                );
+
+                $post_data = array(
+                    'wr_id' => $wr_id,
+                    'timesearch' => $updated_list
+                );
+
+                $manager->set($post_data);
+
+            } finally {
+                self::$is_syncing_service = false;
+            }
+        }
+    }
+
+    private function merge_timesearch_service_data(&$updated_list, $existing_list, $new_data, $relation_wr_id) {
+        foreach ($new_data as $new_item) {
+            $matched = false;
+
+            foreach ($existing_list as $existing_item) {
+                if ($existing_item['type'] === 'service' &&
+                    (int)$existing_item['relation_wr_id'] === (int)$relation_wr_id &&
+                    $existing_item['day_of_week'] === $new_item['day_of_week']) {
+                    $updated_list[] = array_merge($existing_item, $new_item);
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                $updated_list[] = $new_item;
+            }
+        }
     }
 }

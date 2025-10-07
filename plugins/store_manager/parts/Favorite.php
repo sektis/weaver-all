@@ -10,7 +10,6 @@ use weaver\store_manager\StoreSchemaInterface;
  */
 class Favorite extends StoreSchemaBase implements StoreSchemaInterface {
 
-    public $list_part = true; // 목록 파트
 
     /**
      * 컬럼 정의 - 속성으로 정의

@@ -26,7 +26,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         $(document).ready(function (){
 
             var $skin = $("<?php echo $skin_selector?>");
-            wv_ajax('<?php echo wv()->store_manager->ajax_url()?>',"replace:.store-name",{"action":"get_current_store"});
+            wv_ajax('<?php echo wv()->store_manager->ajax_url()?>',"replace_in:.store-name",{"action":"get_current_store"});
             //$.post('<?php //echo wv()->store_manager->ajax_url()?>//',{'action':'selected_store' },function (data) {
             //    $(".location-name",$skin).text(data)
             //},'html')

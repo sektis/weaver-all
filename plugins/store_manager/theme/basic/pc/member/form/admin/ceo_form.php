@@ -45,7 +45,7 @@ global $g5;
                         <?php echo $this->store->member->render_part('mb_id','form'); ?>
                         <?php echo $this->store->member->render_part('mb_password','form'); ?>
                         <?php echo $this->store->member->render_part('mb_name','form'); ?>
-                        <?php echo $this->store->member->render_part('mb_hp','form'); ?>
+                        <?php echo $this->store->member->render_part('admin/mb_hp','form'); ?>
                         <?php echo $this->store->member->render_part('mb_email','form'); ?>
                     </div>
 

@@ -506,7 +506,81 @@ $(document).ready(function () {
         }
         return false;
     })
+// ========================================
+// Input Text Reset (X 버튼으로 입력 초기화)
+// ========================================
+    $(document).loaded('.wv-input-text-reset', function() {
+        const $input = $(this);
 
+        // 이미 초기화된 경우 스킵
+        if ($input.hasClass('wv-input-text-reset-initialized')) {
+            return;
+        }
+
+        // 초기화 마크
+        $input.addClass('wv-input-text-reset-initialized');
+
+        // form-floating 환경 체크
+        const $formFloating = $input.closest('.form-floating');
+        const isFormFloating = $formFloating.length > 0;
+
+        let $resetIcon;
+
+        if (isFormFloating) {
+            // form-floating 환경에서는 wrapper 없이 직접 form-floating에 추가
+            $formFloating.addClass('wv-input-reset-wrapper-floating');
+            $resetIcon = $('<i class="wv-input-reset-icon fa-solid fa-circle-xmark"></i>');
+            $formFloating.append($resetIcon);
+        } else {
+            // 일반 환경에서는 wrapper 사용
+            const $wrapper = $('<div class="wv-input-reset-wrapper"></div>');
+            $input.wrap($wrapper);
+            $resetIcon = $('<i class="wv-input-reset-icon fa-solid fa-circle-xmark"></i>');
+            $input.after($resetIcon);
+        }
+
+        // 초기 상태 설정 (값이 있으면 아이콘 표시)
+        const updateIconVisibility = function() {
+            const $targetInput = isFormFloating
+                ? $resetIcon.parent().find('input.wv-input-text-reset')
+                : $resetIcon.siblings('input.wv-input-text-reset');
+
+            if ($targetInput.val().length > 0) {
+                $resetIcon.show();
+            } else {
+                $resetIcon.hide();
+            }
+        };
+
+        // 초기 체크
+        updateIconVisibility();
+
+        // input 이벤트 (입력할 때마다 체크)
+        $input.on('input keyup change', function() {
+            updateIconVisibility();
+        });
+
+        // 리셋 아이콘 클릭 이벤트
+        $resetIcon.click(function() {
+            const $icon = $(this);
+
+            // form-floating 환경에서는 형제가 아닌 부모 안에서 찾기
+            const $targetInput = isFormFloating
+                ? $icon.parent().find('input.wv-input-text-reset')
+                : $icon.siblings('input.wv-input-text-reset');
+
+            if ($targetInput.length === 0) return;
+
+            // 입력값 초기화
+            $targetInput.val('').trigger('input').trigger('change');
+
+            // 아이콘 숨김
+            $icon.hide();
+
+            // 포커스
+            $targetInput.focus();
+        });
+    });
     /**
      * wv-password-toggle 클래스 기반 비밀번호 토글 기능
      * loaded() 함수 사용, form-floating 환경 완벽 지원
@@ -577,7 +651,7 @@ $(document).ready(function () {
 
         function getFields() {
             return {
-                $btn: $("[type=submit]", $skin),
+                $btn: $("[type=submit],[type=button]", $skin),
                 $requiredFields: $("input[required], textarea[required], select[required]", $skin),
                 $allCheckboxes: $("input[type=checkbox]", $skin)
             };
@@ -600,7 +674,9 @@ $(document).ready(function () {
             isCheckingScheduled = true;
             requestAnimationFrame(function() {
                 var fields = getFields(); // ✅ 매번 새로 조회
+
                 var allValid = Array.prototype.every.call(fields.$requiredFields, isFieldValid);
+
                 fields.$btn.toggleClass("active", allValid);
                 isCheckingScheduled = false;
             });

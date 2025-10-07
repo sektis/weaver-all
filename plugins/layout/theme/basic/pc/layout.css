@@ -104,7 +104,8 @@ input::placeholder {color: #cfcfcf;font-size: inherit;font-style: normal;font-we
     letter-spacing: calc(var(--wv-0_56) * -1);
 }
 .wv-offcanvas-header{padding: var(--wv-27) 0 var(--wv-7)}
-/*.wv-offcanvas-body{padding: var(--wv-30) 0}*/
+.wv-offcanvas-body{padding: var(--wv-30) 0}
+.wv-empty-list{display: flex;height: var(--wv-100);justify-content: center;align-items: center}
 @media (max-width: 1919.98px) {
 
 }

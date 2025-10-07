@@ -1,4 +1,7 @@
 <?php
+function wv_store_manager_img_url(){
+    return wv()->store_manager->plugin_url.'/img';
+}
 /**
  * 리로드 데이터 속성 출력
  *
@@ -143,14 +146,16 @@ function generate_time_grouped($time_data, $enable_check = false){
     }
 
     // 평일 처리
+    $weekday_grouped = null; // 평일 그룹 정보 저장
     if(!empty($weekday_times)){
         $unique_weekday_times = array_unique($weekday_times);
         if(count($unique_weekday_times) === 1 && count($weekday_times) > 1){
             // 평일이 2개 이상 있고 모두 시간이 같음 - "평일"로 묶기
-            $result[] = array(
+            $weekday_grouped = array(
                 'name' => '평일',
                 'time' => array_values($unique_weekday_times)[0]
             );
+            $result[] = $weekday_grouped;
         } else {
             // 평일이 1개뿐이거나 시간이 다름 - 개별 표시
             foreach($weekday_times as $day => $time){
@@ -171,14 +176,16 @@ function generate_time_grouped($time_data, $enable_check = false){
     }
 
     // 주말 처리
+    $weekend_grouped = null; // 주말 그룹 정보 저장
     if(!empty($weekend_times)){
         $unique_weekend_times = array_unique($weekend_times);
         if(count($unique_weekend_times) === 1 && count($weekend_times) > 1){
             // 주말이 2개 모두 있고 시간이 같음 - "주말"로 묶기
-            $result[] = array(
+            $weekend_grouped = array(
                 'name' => '주말',
                 'time' => array_values($unique_weekend_times)[0]
             );
+            $result[] = $weekend_grouped;
         } else {
             // 주말이 1개뿐이거나 시간이 다름 - 개별 표시
             foreach($weekend_times as $day => $time){
@@ -190,83 +197,108 @@ function generate_time_grouped($time_data, $enable_check = false){
         }
     }
 
-    return $result;
-}
+    // ✅ 평일과 주말이 모두 그룹핑되었고 시간이 같으면 "매일"로 통합
+    if($weekday_grouped && $weekend_grouped && $weekday_grouped['time'] === $weekend_grouped['time']){
+        // 평일, 주말 항목 제거
+        $result = array_filter($result, function($item) {
+            return $item['name'] !== '평일' && $item['name'] !== '주말';
+        });
 
-function generate_time_list($time_data, $enable_check = false){
-    if(!is_array($time_data)) {
-        return '';
+        // "매일"로 통합
+        array_unshift($result, array(
+            'name' => '매일',
+            'time' => $weekday_grouped['time']
+        ));
     }
 
-    $summary = array();
+    return $result;
+}
+function generate_time_list($time_data, $enable_check = false){
+    if(!is_array($time_data)) {
+        return array();
+    }
+
     $days_kr = array(
         'mon' => '월요일', 'tue' => '화요일', 'wed' => '수요일',
         'thu' => '목요일', 'fri' => '금요일', 'sat' => '토요일', 'sun' => '일요일'
     );
 
-    // 1. 매일 설정
-    $default_start = isset($time_data['daily']['start']) ? $time_data['daily']['start'] : null;
-    $default_end = isset($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
+    $weekdays = array('mon', 'tue', 'wed', 'thu', 'fri');
+    $weekends = array('sat', 'sun');
+    $all_days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 
-    if($enable_check){
-        // enabled 체크하는 경우
-        if(isset($time_data['daily']['enabled']) && $time_data['daily']['enabled'] && $default_start && $default_end){
-            $daily_time = wv_store_manager_format_time($default_start) . ' ~ ' . wv_store_manager_format_time($default_end);
-            $summary[] = array('name'=>'매일','time'=>$daily_time);
+    $summary = array();
+
+    // 각 요일별로 시간 계산
+    foreach($all_days as $day_key){
+        $start = null;
+        $end = null;
+
+        // 1. 개별 요일 설정 확인
+        if(isset($time_data[$day_key]['enabled']) && ($time_data[$day_key]['enabled'] === true || $time_data[$day_key]['enabled'] == 1)){
+            $start = isset($time_data[$day_key]['start']) && is_valid_time_data($time_data[$day_key]['start']) ? $time_data[$day_key]['start'] : null;
+            $end = isset($time_data[$day_key]['end']) && is_valid_time_data($time_data[$day_key]['end']) ? $time_data[$day_key]['end'] : null;
         }
-    } else {
-        // 기존 방식
-        if($default_start && $default_end){
-            $daily_time = wv_store_manager_format_time($default_start) . ' ~ ' . wv_store_manager_format_time($default_end);
-            $summary[] = array('name'=>'매일','time'=>$daily_time);
-        }
-    }
 
-    // 2. 평일/주말 설정
-    $weekday_start = isset($time_data['weekday']['start']) ? $time_data['weekday']['start'] : null;
-    $weekday_end = isset($time_data['weekday']['end']) ? $time_data['weekday']['end'] : null;
-
-    if($enable_check){
-        // enabled 체크하는 경우
-        if(isset($time_data['weekday']['enabled']) && $time_data['weekday']['enabled'] && $weekday_start && $weekday_end){
-            $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
-            $summary[] = array('name'=>'평일','time'=>$weekday_time);
-        }
-    } else {
-        // 기존 방식
-        if($weekday_start && $weekday_end){
-            $weekday_time = wv_store_manager_format_time($weekday_start) . ' ~ ' . wv_store_manager_format_time($weekday_end);
-            $summary[] = array('name'=>'평일','time'=>$weekday_time);
-        }
-    }
-
-    $weekend_start = isset($time_data['weekend']['start']) ? $time_data['weekend']['start'] : $default_start;
-    $weekend_end = isset($time_data['weekend']['end']) ? $time_data['weekend']['end'] : $default_end;
-
-    if($enable_check){
-        // enabled 체크하는 경우
-        if(isset($time_data['weekend']['enabled']) && $time_data['weekend']['enabled'] && $weekend_start && $weekend_end){
-            $weekend_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
-            $summary[] = array('name'=>'주말','time'=>$weekend_time);
-        }
-    } else {
-        // 기존 방식
-        if($weekend_start && $weekend_end){
-            $weekend_time = wv_store_manager_format_time($weekend_start) . ' ~ ' . wv_store_manager_format_time($weekend_end);
-            $summary[] = array('name'=>'주말','time'=>$weekend_time);
-        }
-    }
-
-    // 3. 요일별 설정 (enabled는 항상 체크)
-    foreach($days_kr as $day_key => $day_name){
-        if(isset($time_data[$day_key]['enabled']) && $time_data[$day_key]['enabled']){
-            $day_start = isset($time_data[$day_key]['start']) ? $time_data[$day_key]['start'] : null;
-            $day_end = isset($time_data[$day_key]['end']) ? $time_data[$day_key]['end'] : null;
-
-            if($day_start && $day_end){
-                $day_time = wv_store_manager_format_time($day_start) . ' ~ ' . wv_store_manager_format_time($day_end);
-                $summary[] = array('name'=>$day_name,'time'=>$day_time);
+        // 2. 개별 설정이 없으면 그룹 설정 확인
+        if(!$start || !$end){
+            if(in_array($day_key, $weekdays)){
+                // 평일인 경우
+                if($enable_check){
+                    if(isset($time_data['weekday']['enabled']) && ($time_data['weekday']['enabled'] === true || $time_data['weekday']['enabled'] == 1)){
+                        $start = isset($time_data['weekday']['start']) && is_valid_time_data($time_data['weekday']['start']) ? $time_data['weekday']['start'] : null;
+                        $end = isset($time_data['weekday']['end']) && is_valid_time_data($time_data['weekday']['end']) ? $time_data['weekday']['end'] : null;
+                    } else if(isset($time_data['daily']['enabled']) && ($time_data['daily']['enabled'] === true || $time_data['daily']['enabled'] == 1)){
+                        $start = isset($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['start']) ? $time_data['daily']['start'] : null;
+                        $end = isset($time_data['daily']['end']) && is_valid_time_data($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
+                    }
+                } else {
+                    if(isset($time_data['weekday']['start']) && isset($time_data['weekday']['end']) &&
+                        is_valid_time_data($time_data['weekday']['start']) && is_valid_time_data($time_data['weekday']['end'])){
+                        $start = $time_data['weekday']['start'];
+                        $end = $time_data['weekday']['end'];
+                    } else if(isset($time_data['daily']['start']) && isset($time_data['daily']['end']) &&
+                        is_valid_time_data($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['end'])){
+                        $start = $time_data['daily']['start'];
+                        $end = $time_data['daily']['end'];
+                    }
+                }
+            } else if(in_array($day_key, $weekends)){
+                // 주말인 경우
+                if($enable_check){
+                    if(isset($time_data['weekend']['enabled']) && ($time_data['weekend']['enabled'] === true || $time_data['weekend']['enabled'] == 1)){
+                        $start = isset($time_data['weekend']['start']) && is_valid_time_data($time_data['weekend']['start']) ? $time_data['weekend']['start'] : null;
+                        $end = isset($time_data['weekend']['end']) && is_valid_time_data($time_data['weekend']['end']) ? $time_data['weekend']['end'] : null;
+                    } else if(isset($time_data['daily']['enabled']) && ($time_data['daily']['enabled'] === true || $time_data['daily']['enabled'] == 1)){
+                        $start = isset($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['start']) ? $time_data['daily']['start'] : null;
+                        $end = isset($time_data['daily']['end']) && is_valid_time_data($time_data['daily']['end']) ? $time_data['daily']['end'] : null;
+                    }
+                } else {
+                    if(isset($time_data['weekend']['start']) && isset($time_data['weekend']['end']) &&
+                        is_valid_time_data($time_data['weekend']['start']) && is_valid_time_data($time_data['weekend']['end'])){
+                        $start = $time_data['weekend']['start'];
+                        $end = $time_data['weekend']['end'];
+                    } else if(isset($time_data['daily']['start']) && isset($time_data['daily']['end']) &&
+                        is_valid_time_data($time_data['daily']['start']) && is_valid_time_data($time_data['daily']['end'])){
+                        $start = $time_data['daily']['start'];
+                        $end = $time_data['daily']['end'];
+                    }
+                }
             }
+        }
+
+        // 요일별 시간 추가
+        if($start && $end){
+            $summary[] = array(
+                'name' => $days_kr[$day_key],
+                'time' => wv_store_manager_format_time($start) . ' ~ ' . wv_store_manager_format_time($end)
+            );
+        } else {
+            // 시간이 없으면 "휴무" 표시
+            $summary[] = array(
+                'name' => $days_kr[$day_key],
+                'time' => ''
+            );
         }
     }
 
@@ -288,7 +320,7 @@ function wv_store_manager_format_time($time_array){
 function wv_store_manager_time_select($name, $data, $type) {
     // 종료시간 기본값: 오후 10시
     if($type=='period') $default = 'am';
-    elseif($type=='hour') $default = strpos($name, 'end') !== false ? '10' : '09';
+    elseif($type=='hour') $default = strpos($name, '[end]') !== false ? '10' : '09';
     else $default = '00';
 
     $val = isset($data[$type]) ? $data[$type] : $default;
@@ -296,25 +328,28 @@ function wv_store_manager_time_select($name, $data, $type) {
 
     if($type=='period') {
         // 종료시간이면 오후를 기본값으로
-        if(strpos($name, 'end') !== false && !isset($data[$type])) $val = 'pm';
-        foreach(array('am'=>'오전','pm'=>'오후') as $k=>$v)
-            $opts.="<option value='$k'".($val==$k?' selected':'').">$v</option>";
+        if(strpos($name, '[end]') !== false && !isset($data[$type])) $val = 'pm';
+        foreach(array('am'=>'오전','pm'=>'오후') as $k=>$v) {
+            $is_default = ($k == ($val == 'pm' && strpos($name, 'end') !== false ? 'pm' : 'am')) ? ' data-default' : '';
+            $opts.="<option value='$k'".($val==$k?' selected':'')."$is_default>$v</option>";
+        }
     }
     elseif($type=='hour') {
         for($i=1;$i<=12;$i++) {
             $h=sprintf('%02d',$i);
-            $opts.="<option value='$h'".($val==$h?' selected':'').">$h</option>";
+            $is_default = ($h == $default) ? ' data-default' : '';
+            $opts.="<option value='$h'".($val==$h?' selected':'')."$is_default>$h</option>";
         }
     }
     else {
         for($i=0;$i<=59;$i++) {
             $m=sprintf('%02d',$i);
-            $opts.="<option value='$m'".($val==$m?' selected':'').">$m</option>";
+            $is_default = ($m == '00') ? ' data-default' : '';
+            $opts.="<option value='$m'".($val==$m?' selected':'')."$is_default>$m</option>";
         }
     }
-    return "<select name='$name' class='form-select'>$opts</select>";
+    return "<select name='$name' class='form-select'  >$opts</select>";
 }
-
 
 function generate_dayoffs_grouped($dayoffs_data) {
     if(!is_array($dayoffs_data) || empty($dayoffs_data)) {

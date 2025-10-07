@@ -36,15 +36,15 @@ foreach($ranking_data as $row) {
     $invite_count = $row['invite_count'];
 
     if($member_wr_id > 0 && $invite_count > 0) {
-        $member = $member_manager->get($member_wr_id);
+        $member_get = $member_manager->get($member_wr_id);
 
-        if($member && $member->mb_id ) {
+        if($member_get && $member_get->mb_id ) {
             $ranking_list[] = array(
                 'wr_id' => $member_wr_id,
-                'mb_id' => $member->mb_id,
-                'mb_name' => $member->member->mb_mb_name,
-                'mb_nick' => $member->member->mb_mb_nick,
-                'mb_hp' => $member->member->mb_mb_hp,
+                'mb_id' => $member_get->mb_id,
+                'mb_name' => $member_get->member->mb_mb_name,
+                'mb_nick' => $member_get->member->mb_mb_nick,
+                'mb_hp' => $member_get->member->mb_mb_hp,
                 'invite_count' => $invite_count
             );
         }

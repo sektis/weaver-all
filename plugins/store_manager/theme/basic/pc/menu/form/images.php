@@ -1,6 +1,5 @@
 <?php
 $this->make_array($row['images']);
-
 ?>
 <div id="<?php echo $skin_id; ?>" class="container">
     <style>
@@ -26,11 +25,11 @@ $this->make_array($row['images']);
             foreach ($row['images'] as $k => $v) {
                 $demo_class = !$v ? 'wv-ps-demo' : '';
                 ?>
-                <div class="wv-ps-each col <?php echo $demo_class; ?>">
+                <div class="wv-ps-each col  ">
 
                     <img src="<?php echo htmlspecialchars($v['path'], ENT_QUOTES); ?>" alt="" class="wh-100 object-fit-contain">
 
-                    <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]" value="<?php echo htmlspecialchars($v['id'], ENT_QUOTES); ?>">
+                    <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]" value="<?php echo $v['id']; ?>">
                     <p class="position-absolute wv-ps-num"></p>
                     <label class="position-absolute wv-ps-delete-label">
                         <input type="checkbox" name="<?php echo $field_name; ?>[<?php echo $k; ?>][delete]" value="1" class="d-none">

@@ -13,7 +13,7 @@ $result = wv()->store_manager->made('contract_item')->get_list(array(
 $cont_items = $result['list'];
 
 ?>
-<div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
+<div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 flex-nowrap bg-white overflow-x-hidden" style="<?php echo isset($data['margin_top']) ? "margin-top::{$data['margin_top']};" : ''; ?>">
     <style>
         <?php echo $skin_selector?> {}
         <?php echo $skin_selector?> [data-bs-toggle]{position: relative}
@@ -85,13 +85,14 @@ $cont_items = $result['list'];
                                         'select_store'=>array('list_each'=>array('contractitem_wr_id'=>$cont_item['wr_id']),'service'),
                                         'join'  =>  array(
                                             array(
-                                                'table'  => wv()->store_manager->made('favorite_store')->get_list_table_name('favorite'),
+                                                'table'  => wv()->store_manager->made('favorite_store')->get_ext_table_name(),
                                                 'on_from'     => 'wr_id',
-                                                'on_to'     => 'store_wr_id',
+                                                'on_to'     => 'favorite_store_wr_id',
                                                 'select' => '*',
                                                 'type'   => 'right',
                                                 'where'=>array(
-                                                        array('store_wr_id'=>' is not null')
+                                                        array('store_wr_id'=>' is not null'),
+                                                        array('mb_id'=>"='{$member['mb_id']}'"),
 
                                                 )
                                             )
@@ -117,6 +118,9 @@ $cont_items = $result['list'];
                                                 </div>
                                                 <div class="wv-mx-fit" style="border-top: 6px solid #efefef"></div>
                                             <?php }?>
+                                            <?php if(count($store_list)==0){ ?>
+                                                <div class="wv-empty-list">찜한 가게가 없습니다.</div>
+                                            <?php } ?>
                                         </div>
                                     </div>
                                     <?php $i++;}?>

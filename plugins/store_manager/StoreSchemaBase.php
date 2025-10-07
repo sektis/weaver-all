@@ -41,7 +41,7 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
     protected $checkbox_patterns = array('is_', 'use_');
 
-    protected $ajax_data_field = array('action','made','part','field','wr_id','size');
+    protected $ajax_data_field = array('action','made','part','field','wr_id');
 
     public function set_context($manager, $bo_table, $part_key, $plugin_theme_path = ''){
         $this->manager           = $manager;
@@ -168,24 +168,8 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
      * @return string
      */
     public function render_part($column, $type, $vars = array()){
-        // 목록 파트는 특수 처리 (menu/form.php 같은 통합 스킨)
-        // ========================================
-        // ⭐ basic 파트 자동 렌더링 (추가)
-        // ========================================
-        // 조건:
-        // 1. 아직 basic이 렌더링되지 않았고
-        // 2. 현재 렌더링하는 파트가 basic이 아니고
-        // 3. type이 'form'일 때
-        if (!$this->manager->is_basic_rendered()
-            && $this->part_key !== 'basic'
-            && $type === 'form') {
 
-            // basic 파트의 wr_id 폼 렌더링
-            echo $this->store->basic->render_part('wr_id', 'form');
-
-            // 플래그 설정 (중복 방지)
-            $this->manager->set_basic_rendered(true);
-        }
+        global $member;
 
         if ($column === '*') {
             $column = $this->get_columns_with_ddl();
@@ -264,14 +248,15 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
             }
         }
 
-
         if ($this->is_list_part()) {
             // {part_key}_id 변수 체크 (예: menu_id, store_id)
             $id_key = $this->part_key . '_id';
-            if (isset($vars[$id_key])){
+
+            if (key_exists($id_key,$vars)){
                 $is_list_item_mode = true;
             }
-            if (isset($vars[$id_key]) && $vars[$id_key] !== '') {
+            if (key_exists($id_key,$vars) && $vars[$id_key] !== '') {
+
                 $item_id = $vars[$id_key];
 
 
@@ -288,16 +273,37 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
                     }
                 }
             }
+
+            if($item_id=='skeleton'){
+                $row['id']='skeleton';
+            }
         }
 
         if ($this->is_list_part()) {
 
-            if($item_id === null){
+            $item_key = $item_id;
 
-                $item_id =-5;//임시번호
+
+
+//            if($is_list_item_mode and $item_id===null){
+//                $item_key=-1;
+//            }
+//            if(!$is_list_item_mode or  $item_id==='skeleton'){
+//                $item_key =-1;//임시번호
+//            }
+            if(!$item_id or $item_id==='skeleton'){
+                $item_key =-1;//임시번호
             }
+
             // 목록 파트 아이템 모드: part_key[item_id][column]
-            $field_name = $this->part_key . '[' . $item_id . '][' . $column . ']';
+            $field_name = $this->part_key . '[' . $item_key . '][' . $column . ']';
+
+            if(!in_array($column,$this->get_allowed_columns())){
+
+                $field_name = str_replace("[{$column}]",'',$field_name);
+
+            }
+
         } else {
             // 기본 모드: part_key[column]
             $field_name = $this->part_key . '[' . $column . ']';
@@ -308,6 +314,32 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
 
         $ajax_data =array_intersect_key($vars, array_flip($this->ajax_data_field));
+        $ajax_data_base = array(
+            'action' => $type,
+            'made' => $this->manager->get_make_id(),
+            'part' => $this->part_key,
+            'column' => $column,
+            'type' => $type,
+            'wr_id'=>$row['wr_id'],
+            'mb_id'=>$member['mb_id']
+        );
+
+
+        if ($this->is_list_part()) {
+            $temp_row_id = $row['id']?$row['id']:0;
+            $ajax_data_base[$this->part_key][$temp_row_id]['id'] = $row['id'];
+            $ajax_data_base[$this->part_key][$temp_row_id][$column] = $row[$column]?$row[$column]:$vars[$column];
+        } else {
+            if(isset($row[$column]) and is_array($row[$column]) and $row[$column]['id']){
+                $ajax_data_base[$this->part_key][$column]['id'] = $row[$column]['id'];
+            }
+
+        }
+        $ajax_data = array_merge($ajax_data_base, $ajax_data);
+
+//        if($column=='profile_image'){
+//            dd($ajax_data_base);
+//        }
 
 
 
@@ -346,6 +378,6 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 
     public function make_array(&$arr){
         $arr =  array_filter((array)$arr);
-        $arr['-1']='';
+        $arr['-1']=array('id'=>'skeleton');
     }
 }

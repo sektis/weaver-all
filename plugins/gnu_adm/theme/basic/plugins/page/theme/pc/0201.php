@@ -9,6 +9,9 @@ $sfl_options = array(
 );
 $sfl_whitelist = array_keys($sfl_options);
 
+$now = new DateTime();
+$current_day = strtolower($now->format('D')); // mon, tue, wed...
+$current_time = $now->format('H:i:s'); // 14:30:00
 
 
 $get_list_where = array();
@@ -28,14 +31,45 @@ $get_list_option = array(
                 array('lng'=>"<>''"),
         )
     ),
-
+//    'where_timesearch' => array(
+//            'exists'=>array(
+//
+//         array(   'type' => "= 'open'",
+//             'day_of_week' => "= '{$current_day}'",
+//             'start_time' => "<= '{$current_time}'",
+//             'end_time' => ">= '{$current_time}'")
+//
+//
+//            ),
+//            'exists_not'=> array(
+//                array(
+//                    'type' => "= 'break'",
+//                    'day_of_week' => "= '{$current_day}'",
+//                    'start_time' => "<='{$current_time}'",
+//                    'end_time' => ">= '{$current_time}'"
+//
+//                )
+//            ),
+//        ),
+//    'where_not_timesearch' => array(
+//        array(
+//            'type' => "= 'break'",
+//            'day_of_week' => "= '{$current_day}'",
+//
+//            'start_time' => "<='{$current_time}'",
+//            'end_time' => ">= '{$current_time}'"
+//
+//        ),
+//
+//    ),
     'page'=>$page,
     'rows'=>20,
     'list_url'=>wv_page_url($wv_page_id, $qstr)
 );
+
 $result = wv()->store_manager->made('sub01_01')->get_list($get_list_option);
 $list = $result['list'];
-
+//dd($result['sql']);
 ?>
 <div class="wv-vstack">
 

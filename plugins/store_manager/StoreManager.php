@@ -835,14 +835,13 @@ class StoreManager extends Makeable{
                 $existing_wr_id = $wr_id;
             } else {
                 $data['w'] = 'u';
-
-
                 $this->create_post_stub_and_get_wr_id($data);
             }
 
             $wr_id = $existing_wr_id;
 
             $prev_ext_row = $existing_wr_id > 0 ? $this->fetch_store_row($existing_wr_id) : array();
+
 
 
             // === 일반 파트: 배열/파일 필드 공통 처리 ===
@@ -929,6 +928,8 @@ class StoreManager extends Makeable{
 
                     foreach ($allowed as $logical_col) {
 
+
+
                         if (!isset($data[$pkey]) || !is_array($data[$pkey])) $data[$pkey] = array();
 
                         if ($logical_col == $pkey) {
@@ -950,7 +951,9 @@ class StoreManager extends Makeable{
 
                             $data_pkey_logical_col = wv_merge_by_key_recursive($data_pkey_logical_col, $file_upload_array);
 
+
                         }
+
 
 
 
@@ -960,22 +963,69 @@ class StoreManager extends Makeable{
                         $prev_serialized = isset($prev_ext_row[$phys]) ? $prev_ext_row[$phys] : '';
 
                         $prev_decoded = wv_base64_decode_unserialize($prev_serialized);
+ 
 
-                        $walk_function = function (&$arr, $arr2, $node) use ($is_list_part, &$data_pkey_logical_col, &$walk_function, $data, $prev_decoded,$pkey,$logical_col) {
+                        $walk_function = function (&$arr, $arr2, $node) use ($is_list_part, &$data_pkey_logical_col, &$walk_function, &$data, $prev_decoded,$pkey,$logical_col) {
 
+                            $get_hook_logical_col = function() use ($is_list_part, $logical_col, $pkey, $node) {
+                                // 기본값
+                                $hook_logical_col = $logical_col;
 
-                            if (!is_array($arr)) {
-                                if (is_array($arr2)) {
-                                    $arr = $arr2;
+                                // 목록파트이고 logical_col이 빈값일 때만 처리
+                                if ($is_list_part && empty($logical_col) && is_array($node) && count($node) > 0) {
+                                    if (isset($this->parts[$pkey])) {
+                                        $schema = $this->parts[$pkey];
+                                        if (method_exists($schema, 'get_allowed_columns')) {
+                                            $allowed_columns = $schema->get_allowed_columns();
+
+                                            foreach ($node as $node_item) {
+                                                if (is_string($node_item) && in_array($node_item, $allowed_columns)) {
+                                                    $hook_logical_col = $node_item;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                                return false;
-                            }
+
+                                return $hook_logical_col;
+                            };
+
+
 
                             $parent_key = wv_array_last($node);
                             $is_old_file = wv_array_has_all_keys($this->file_meta_column, $arr2);
                             $is_new_file = wv_array_has_all_keys($this->file_arr_key, $arr);
                             $int_key = is_numeric($parent_key);
                             $is_new = ($int_key or $is_new_file);
+
+                            if (!is_array($arr)) {
+
+                                // 단일값 훅
+                                if($arr){
+                                    if($arr2==''){
+                                        $this->execute_hook('is_new',$arr,$pkey,$get_hook_logical_col(),$data[$pkey]);
+                                        $this->execute_hook('is_new_or_update',$arr,$pkey,$get_hook_logical_col(),$data[$pkey]);
+                                    }elseif($arr!=$arr2){
+
+
+                                        $this->execute_hook('is_update',$arr,$pkey,$get_hook_logical_col(),$data[$pkey]);
+                                        $this->execute_hook('is_new_or_update',$arr,$pkey,$get_hook_logical_col(),$data[$pkey]);
+
+                                    }
+                                }elseif($arr2){
+                                    $this->execute_hook('is_delete',$arr,$pkey,$get_hook_logical_col(),$data[$pkey]);
+                                }
+
+
+                                if (is_array($arr2)) {
+                                    $arr = $arr2;
+                                }
+                                return false;
+                            }
+
+
+
                             if (isset($arr['id']) and $arr['id']) {
                                 $is_new = false;
                             }
@@ -1023,34 +1073,17 @@ class StoreManager extends Makeable{
 
                             }
 
-                            $get_hook_logical_col = function() use ($is_list_part, $logical_col, $pkey, $node) {
-                                // 기본값
-                                $hook_logical_col = $logical_col;
+//
+//                            if($parent_key<0 ){
+//
+//                                $combined = 'unset($data_pkey_logical_col' . wv_array_to_text($node, "['", "']") . ');';
+//
+//                                @eval("$combined;");
+//                                return false;
+//                            }
 
-                                // 목록파트이고 logical_col이 빈값일 때만 처리
-                                if ($is_list_part && empty($logical_col) && is_array($node) && count($node) > 0) {
-                                    if (isset($this->parts[$pkey])) {
-                                        $schema = $this->parts[$pkey];
-                                        if (method_exists($schema, 'get_allowed_columns')) {
-                                            $allowed_columns = $schema->get_allowed_columns();
-
-                                            foreach ($node as $node_item) {
-                                                if (is_string($node_item) && in_array($node_item, $allowed_columns)) {
-                                                    $hook_logical_col = $node_item;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                return $hook_logical_col;
-                            };
-
-                            if($parent_key<0){
-
+                            if($arr['id']=='skeleton' ){
                                 $combined = 'unset($data_pkey_logical_col' . wv_array_to_text($node, "['", "']") . ');';
-
                                 @eval("$combined;");
                                 return false;
                             }
@@ -1070,6 +1103,7 @@ class StoreManager extends Makeable{
 
                                 }
                                 $this->execute_hook('is_new',$arr,$pkey,$get_hook_logical_col());
+                                $this->execute_hook('is_new_or_update',$arr,$pkey,$get_hook_logical_col());
                             } else {
 
 
@@ -1089,7 +1123,9 @@ class StoreManager extends Makeable{
 
                                     return false;
                                 } else {
+
                                     $this->execute_hook('is_update',$arr,$pkey,$get_hook_logical_col());
+                                    $this->execute_hook('is_new_or_update',$arr,$pkey,$get_hook_logical_col());
 
 
                                     if(($int_key and is_array($arr2)) or $is_old_file){
@@ -1172,6 +1208,27 @@ class StoreManager extends Makeable{
             // === 평면화: 일반 파트만 물리 컬럼으로 펼치고 part 키 제거(목록 파트 제외) ===
             $this->normalize_part_data($data);
             $this->normalize_part_data($org_data, true);
+            foreach ($data as $k => $v) {
+                // $org_data에 없는 필드만 확인
+                if (!array_key_exists($k, $org_data)) {
+                    // 파일인지 확인: file_meta_column 키가 있으면 파일
+                    $is_file = false;
+                    if (is_array($v)) {
+                        // source, path, type, created_at 중 하나라도 있으면 파일
+                        foreach ($this->file_meta_column as $meta) {
+                            if (array_key_exists($meta, $v)) {
+                                $is_file = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // 파일 필드만 $org_data에 추가
+                    if ($is_file) {
+                        $org_data[$k] = null;
+                    }
+                }
+            }
 
             // === 확장테이블 업서트(허용 컬럼만) ===
 //            $filtered = array('wr_id' => $wr_id);
@@ -1262,16 +1319,18 @@ class StoreManager extends Makeable{
                     // INSERT (신규 생성)
                     if (count($filtered) > 1) {
                         $sql = "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")";
+
                         wv_execute_query_safe($sql, "ext_table_insert");
                     }
                 }
             }
-            $this->execute_hook('after_set',$data);
+
+            $this->execute_hook('after_set',$this->denormalize_part_data($data));
             // === 목록 파트 저장 ===
             $this->clear_cache($wr_id);
             wv_execute_query_safe("COMMIT", "transaction_commit");
 
-            return $data;
+            return $this->denormalize_part_data($data);
         } catch (\Exception $e) {
             wv_execute_query_safe("ROLLBACK", "transaction_rollback");
             alert($e->getMessage());
@@ -1346,11 +1405,11 @@ class StoreManager extends Makeable{
               where bo_table = '{$this->bo_table}' ";
         sql_query($sql,1);
 
-        wv_json_exit(array('msg'=>'삭제완료','reload'=>1));
+        return array('msg'=>'삭제완료','reload'=>1);
 
     }
 
-    protected function execute_hook($hook_name, &$data, $pkey = '', $col = '') {
+    protected function execute_hook($hook_name, &$data, $pkey = '', $col = '',&$parent_data=array()) {
         if (!is_array($this->parts) || !count($this->parts)) {
             return;
         }
@@ -1373,7 +1432,7 @@ class StoreManager extends Makeable{
 
             try {
                 // 훅 메서드 호출 - 파라미터 개수에 따라 다르게 호출
-                $schema->{$hook_name}($data, $pkey, $col);
+                $schema->{$hook_name}($data, $col,$parent_data);
 
                 // 로그 (선택사항)
                 if (function_exists('write_log')) {
@@ -1676,15 +1735,41 @@ class StoreManager extends Makeable{
                 $conds = $opts[$where_key];
 
                 if($conds){
-                    // 🔧 새로운 공통 메서드 사용
                     $processed_conds = $this->process_where_conditions($conds, $pkey, $schema);
 
                     if($processed_conds !== ''){
                         if($this->is_list_part_schema($schema)){
-                            $list_part_tbl = $this->get_list_table_name($pkey);
-                            $where_all[] = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$processed_conds}))";
+                            // ✅ EXISTS 중복 체크
+                            $trimmed = trim($processed_conds);
+                            while (substr($trimmed, 0, 1) === '(') {
+                                $trimmed = trim(substr($trimmed, 1));
+                            }
+
+                            if (preg_match('/^(NOT\s+)?EXISTS\s*\(/i', $trimmed)) {
+                                // ✅ 전체를 괄호로 감싸기
+                                $where_all[] = "({$processed_conds})";
+                            } else {
+                                $list_part_tbl = $this->get_list_table_name($pkey);
+                                $where_all[] = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$processed_conds}))";
+                            }
                         }else{
                             $where_all[] = '(' . $processed_conds . ')';
+                        }
+                    }
+                }
+                // 추가: where_not_{part}
+                $where_not_key = 'where_not_'.strtolower($pkey);
+                $not_conds = isset($opts[$where_not_key]) ? $opts[$where_not_key] : null;
+
+                if ($not_conds) {
+                    $processed_not_conds = $this->process_where_conditions($not_conds, $pkey, $schema);
+
+                    if ($processed_not_conds !== '') {
+                        if ($this->is_list_part_schema($schema)) {
+                            $list_part_tbl = $this->get_list_table_name($pkey);
+                            $where_all[] = "(NOT EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$processed_not_conds}))";
+                        } else {
+                            $where_all[] = "(NOT ({$processed_not_conds}))";
                         }
                     }
                 }
@@ -1692,29 +1777,6 @@ class StoreManager extends Makeable{
                 $select_key = 'select_'.strtolower($pkey);
                 $conds_select = $opts[$select_key];
                 if($conds_select){
-
-//                    $walk_function = function (&$arr,$arr2,$node) use(&$conds_select,&$walk_function,$def,$pkey) {
-//
-//                        $parent_key = wv_array_last($node);
-//
-//                        if(!is_array($arr)){
-//                            if(!array_key_exists($parent_key,$def) or $def[$parent_key]){
-//                                $combined = 'unset($conds'. wv_array_to_text($node,"['","']").');';
-//
-//                                @eval("$combined;");
-//                                return false;
-//                            }
-//                            return false;
-//                        }
-//
-//                        foreach ($arr as $k=>&$v){
-//                            wv_walk_by_ref_diff($v,$walk_function,array(),array_merge($node,(array)$k));
-//                        }
-//                        return false;
-//
-//                    };
-//
-//                    wv_walk_by_ref_diff($conds_select,$walk_function,array());
 
                     $ext_columns[$pkey]=$conds_select;
 
@@ -1761,7 +1823,7 @@ class StoreManager extends Makeable{
 
             // on 처리
             $j_on = '';
-        if ((isset($j['on_from']) && trim($j['on_from']) !== '') and isset($j['on_to']) && trim($j['on_to']) !== '') {
+            if ((isset($j['on_from']) && trim($j['on_from']) !== '') and isset($j['on_to']) && trim($j['on_to']) !== '') {
                 $on_from_val = trim($j['on_from']);
                 $on_to_val = trim($j['on_to']);
                 $j_on = 'w.'.$on_from_val.' = '.$j_as.'.'.$on_to_val;
@@ -2089,7 +2151,7 @@ class StoreManager extends Makeable{
      *       array('wr_id' => 8, 'favorite_id' => 3)
      *     )
      */
-    public function get_simple_list($mb_id='', $part_conditions = array(), $just_one = true){
+    public function get_wr_id_of_member($mb_id='', $part_conditions = array(), $just_one = true){
         $mb_id = sql_real_escape_string($mb_id);
 
         $write_table = $this->get_write_table_name();
@@ -2203,14 +2265,12 @@ class StoreManager extends Makeable{
         $def = array();
         if ($schema && $part_key) {
             $def = $schema->get_columns($this->bo_table);
-            if($part_key=='store'){
-//                dd($def);
-            }
         }
 
-        $walk_function = function (&$arr, $arr2, $node) use(&$walk_function, $def, $part_key) {
+        $walk_function = function (&$arr, $arr2, $node) use(&$walk_function, $def, $part_key,$schema) {
             $parent_key = wv_array_last($node);
 
+            // 🔧 1단계: 단일 값 처리
             if(!is_array($arr)){
                 if($part_key) {
                     // 파트키가 있을 때: 스키마 검증 + 물리컬럼 변환
@@ -2222,77 +2282,119 @@ class StoreManager extends Makeable{
                     $physical_col = $this->get_physical_col($part_key, $parent_key);
                     $arr = "{$physical_col} {$arr}";
                 } else {
-
                     // 일반 where일 때: parent_key를 컬럼명으로 사용
                     if($parent_key !== '' && !is_numeric($parent_key)) {
                         $arr = "{$parent_key} {$arr}";
                     }
                 }
                 return false;
-            }else  if (preg_match('/^where_([a-zA-Z0-9_]+)$/', $parent_key, $matches)) {
+            }
 
+            // 🔧 2단계: where_{part} 체크 (최우선!)
+            if (preg_match('/^where_([a-zA-Z0-9_]+)$/', $parent_key, $matches)) {
                 $target_part_key = $matches[1];
 
-                // 해당 파트가 존재하는지 확인
                 if (isset($this->parts[$target_part_key])) {
                     $target_schema = $this->parts[$target_part_key];
-
-                    // 재귀적으로 해당 파트의 조건으로 처리
                     $part_conditions = $this->process_where_conditions($arr, $target_part_key, $target_schema);
 
                     if ($part_conditions !== '') {
                         if ($this->is_list_part_schema($target_schema)) {
-                            $list_part_tbl = $this->get_list_table_name($target_part_key);
-                            $arr = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$part_conditions}))";
+                            // EXISTS로 시작하는지 체크 (괄호 제거 후)
+                            $trimmed = trim($part_conditions);
+                            while (substr($trimmed, 0, 1) === '(') {
+                                $trimmed = trim(substr($trimmed, 1));
+                            }
+
+                            // EXISTS나 NOT EXISTS로 시작하면 이미 완성된 조건
+                            if (preg_match('/^(NOT\s+)?EXISTS\s*\(/i', $trimmed)) {
+                                $arr = $part_conditions;
+                            } else {
+                                $list_part_tbl = $this->get_list_table_name($target_part_key);
+                                $arr = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$part_conditions}))";
+                            }
                         } else {
                             $arr = "({$part_conditions})";
                         }
-
-                      return false;
-                    } else {
-                        $arr = '';
+                        return false;
                     }
-
-                } else {
-
-                    // 존재하지 않는 파트는 제거
-                    $combined = 'unset($conditions'. wv_array_to_text($node,"['","']").');';
-                    @eval("$combined;");
                 }
-
             }
 
-
+            // 🔧 3단계: 배열 순회
             foreach ($arr as $k=>&$v){
                 wv_walk_by_ref_diff($v, $walk_function, array(), array_merge($node, (array)$k));
             }
 
-            if(in_array($parent_key, array('and','or'), true)){  // strict comparison
+            // 🔧 4단계: exists 계열 처리
+            if (in_array($parent_key, array('exists', 'exists_or', 'exists_not', 'exists_not_or'), true)) {
+                if ($schema && $this->is_list_part_schema($schema) && $part_key) {
+                    $list_part_tbl = $this->get_list_table_name($part_key);
+                    $exists_parts = array();
 
-                // 🔧 and/or 그룹에서 전체를 괄호로 감싸기
+                    foreach ($arr as $condition) {
+                        if ($condition) {
+                            if (is_array($condition)) {
+                                $condition = implode(" and ", array_filter($condition));
+                            }
+
+                            if (is_string($condition) && $condition !== '') {
+                                if ($parent_key === 'exists_not' || $parent_key === 'exists_not_or') {
+                                    $exists_parts[] = "(NOT EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$condition}))";
+                                } else {
+                                    $exists_parts[] = "(EXISTS (SELECT 1 FROM `{$list_part_tbl}` t WHERE t.wr_id = w.wr_id AND {$condition}))";
+                                }
+                            }
+                        }
+                    }
+
+                    $connector = ($parent_key === 'exists_or' || $parent_key === 'exists_not_or') ? ' OR ' : ' AND ';
+
+                    if (count($exists_parts) > 1) {
+                        $arr = "(" . implode($connector, $exists_parts) . ")";
+                    } elseif (count($exists_parts) === 1) {
+                        $arr = $exists_parts[0];
+                    } else {
+                        $arr = '';
+                    }
+                }
+                return false;
+            }
+
+            // 🔧 5단계: and/or 처리
+            if(in_array($parent_key, array('and','or'), true)){
                 $wrapped = array_map(function($item) {
                     return "($item)";
                 }, $arr);
                 $joined = implode(" {$parent_key} ", $wrapped);
 
-                // 🔧 여러 조건이 있을 때 전체를 괄호로 한 번 더 감싸기
                 if(count($arr) > 1) {
                     $arr = "({$joined})";
                 } else {
                     $arr = $joined;
                 }
                 return false;
-            } else {
+            }
 
-                // 숫자 키나 기타 키는 처리하지 않고 그대로 두기
-                if(is_numeric($parent_key) || $parent_key === ''){
-                    // 숫자 인덱스는 첫 번째 요소만 사용
-                    $arr = reset($arr);
-                } else {
-                     // 기타 키는 and 연결 ;
-                    $arr = implode(" or ", array_filter($arr));
+            // 🔧 6단계: 숫자/기타 키 처리
+            if(is_numeric($parent_key) || $parent_key === ''){
+                // 숫자 키나 빈 키는 AND
+                if (is_array($arr)) {
+                    $arr = implode(" and ", array_filter($arr));
+                }
+            } else if(in_array($parent_key, array('exists', 'exists_or', 'exists_not', 'exists_not_or'), true)) {
+                // ✅ exists 계열 키들은 이미 4단계에서 처리됨, 여기 도달하면 안됨
+                // 혹시를 대비해 AND 연결
+                if (is_array($arr)) {
+                    $arr = implode(" and ", array_filter($arr));
+                }
+            } else {
+                // ✅ 나머지는 AND로 변경 (기본값을 AND로)
+                if (is_array($arr)) {
+                    $arr = implode(" and ", array_filter($arr));
                 }
             }
+
             return false;
         };
 
@@ -3651,6 +3753,62 @@ return ;
         }
     }
 
+    /**
+     * 물리키 데이터를 파트별 논리키로 역변환
+     * after_set 훅 등에서 사용
+     *
+     * @param array $data 물리키로 평면화된 데이터
+     * @param string $part_key 특정 파트만 변환 (빈값이면 전체)
+     * @return array 논리키로 복원된 데이터
+     */
+    public function denormalize_part_data($data, $part_key = '') {
+        if (!is_array($data)) return array();
+
+        $result = array();
+
+        if ($part_key !== '') {
+            if (!isset($this->parts[$part_key])) return array();
+
+            $schema = $this->parts[$part_key];
+            if ($this->is_list_part_schema($schema)) {
+                return isset($data[$part_key]) ? $data[$part_key] : array();
+            }
+
+            $allowed = method_exists($schema, 'get_allowed_columns') ? $schema->get_allowed_columns() : array();
+
+            foreach ($allowed as $logical_col) {
+                $physical_col = $this->get_physical_col($part_key, $logical_col);
+                if (isset($data[$physical_col])) {
+                    $result[$logical_col] = $data[$physical_col];
+                }
+            }
+
+            return $result;
+        }
+
+        foreach ($this->parts as $pkey => $schema) {
+            if ($this->is_list_part_schema($schema)) {
+                if (isset($data[$pkey])) {
+                    $result[$pkey] = $data[$pkey];
+                }
+                continue;
+            }
+
+            $allowed = method_exists($schema, 'get_allowed_columns') ? $schema->get_allowed_columns() : array();
+
+            $result[$pkey] = array();
+            foreach ($allowed as $logical_col) {
+                $physical_col = $this->get_physical_col($pkey, $logical_col);
+                if (isset($data[$physical_col])) {
+                    $result[$pkey][$logical_col] = $data[$physical_col];
+                }
+            }
+        }
+        $result['wr_id']=$data['wr_id'];
+
+        return $result;
+    }
+
     protected function get_table_columns_cached($table_name) {
         if (!isset(self::$table_columns_cache[$table_name])) {
             $cols = array();
@@ -3699,7 +3857,7 @@ return ;
         );
 
         $this->current_store = $arr;
-        set_cookie("wv_store_manager_current_store",wv_base64_encode_serialize($arr),60 * 60 * 24 * 365);
+        set_session("wv_store_manager_current_store",$arr);
 
 
     }
@@ -3708,13 +3866,14 @@ return ;
 
     public function get_current_store(){
         global $member;
+
         $arr = $this->current_store;
         if(count($arr)){
             return $arr;
         }
 
 
-        $arr = wv_base64_decode_unserialize(get_cookie('wv_store_manager_current_store'));
+        $arr = get_session('wv_store_manager_current_store');
 
         if(array_filter($arr)){
             $this->current_store = $arr;
@@ -3741,7 +3900,7 @@ return ;
                 'name'=>$row['store']['name']
             );
             $this->current_store = $arr;
-            set_cookie("wv_store_manager_current_store",wv_base64_encode_serialize($arr),60 * 60 * 24 * 365);
+            set_session("wv_store_manager_current_store",$arr);
             return $arr;
         }
 
@@ -3749,15 +3908,6 @@ return ;
 
     }
 
-    public function is_basic_rendered() {
-        return $this->is_basic_rendered;
-    }
-
-    // setter 추가
-    public function set_basic_rendered($value = true) {
-        $this->is_basic_rendered = $value;
-        return $this;
-    }
 }
 
 

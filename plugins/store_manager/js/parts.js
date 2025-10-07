@@ -12,9 +12,6 @@ $(document).on('click','.wv-data-list-delete-btn',function (e) {
 })
 $(document).ready(function () {
 
-
-
-
     $("body").loaded('.wv-ps-file', function (i, e) {
         var $ps_file = $(e);
 
@@ -160,11 +157,18 @@ $(document).ready(function () {
         updateFileState($wrapper);
     }
 
-    $("body").loaded('.wv-ps-col',function (i,e) {
+    $(document).loaded('.wv-ps-col',function (i,e) {
 
         var $ps_col = $(e);
-
+        $ps_col.find('.wv-ps-each').each(function(){
+            var $row = $(this);
+            var $id = $row.find('input[name$="[id]"]').first();
+            if ($id.length && $id.val() === 'skeleton') {
+                $row.addClass('wv-ps-demo');
+            }
+        });
         renumberPsList($(">.wv-ps-list",$ps_col));
+        updateMultiCounter($(">.wv-ps-list",$ps_col));
 
 
 
@@ -189,15 +193,14 @@ $(document).ready(function () {
             }
         });
 
-        $($ps_col).on('change',"input[multiple]", function () {
-
+        $($ps_col).on('change', "> .wv-ps-list input[multiple]", function (e) {
+            e.stopPropagation(); // ✅ 추가: 상위로 이벤트 전파 차단
             var $multi   = $(this);
             var file_list_arr=[];
             var files = this.files || [];
             if (!files.length) return;
             var $ps_list = $multi.closest('.wv-ps-list');
             var $ps_each = $multi.closest('.wv-ps-each');
-
 
 
 
@@ -226,8 +229,13 @@ $(document).ready(function () {
             var baseStr = info.root + tokens.map(function(t){ return '[' + t + ']'; }).join(''); // 'store[image]'
 
             // 3) 마지막 "실제 행"(id 필드 보유)을 베이스로 사용
+            // var $base = $ps_list.children('.wv-ps-each').filter(function(){
+            //     return $(this).find('input[name$="[id]"]').val() === 'skeleton';
+            // }).first();
             var $base = $ps_list.children('.wv-ps-demo');
+
             if (!$base.length) return;
+
 
             // 4) 파일별로 새 행 생성
             for (var i = 0; i < files.length; i++) {

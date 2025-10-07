@@ -1,7 +1,7 @@
 <?php
 global $g5;
 ?>
-<div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100 d-flex-center flex-nowrap bg-white" style="">
+<div id="<?php echo $skin_id ?>" class="<?php echo $skin_class; ?> wv-part-skin position-relative h-100   bg-white overflow-x-hidden" <?php echo wv_display_reload_data($reload_ajax_data);?> style="">
     <style>
         <?php echo $skin_selector?> {}
 
@@ -17,10 +17,9 @@ global $g5;
             <form name="fpartsupdate" action='<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="made" value="<?php echo $made; ?>">
-                <?php if ($is_list_item_mode) { ?>
-                    <input type="hidden" name="<?php echo str_replace("[{$column}]", '', $field_name); ?>[id]" value="<?php echo $row['id']; ?>">
-                <?php } ?>
-                <?php echo $this->store->basic->render_part('wr_id', 'form');; ?>
+                <input type="hidden" name="<?php echo $field_name; ?>[id]" value="<?php echo $row['id']; ?>">
+
+                <?php echo $this->store->basic->render_part('wr_id', 'form'); ?>
                 <div class="vstack h-100 pt-[10px]" style="">
                     <div class="wv-offcanvas-header col-auto">
                         <div class=" ">
@@ -29,10 +28,10 @@ global $g5;
                                     <div data-bs-dismiss="offcanvas" class="cursor-pointer"><img src="<?php echo $this->manager->plugin_url; ?>/img/arrow_left.png" class="w-[28px]" alt=""></div>
                                 </div>
                                 <div class="col-auto text-center">
-                                    <p class="fs-[14/20/-0.56/600/#0D171B]">타이틀</p>
+                                    <p class="fs-[14/20/-0.56/600/#0D171B]">출금 계좌 설정</p>
                                 </div>
                                 <div class="col text-end">
-                                    <button type="button" class="btn" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+<!--                                    <button type="button" class="btn" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>-->
                                 </div>
                             </div>
                         </div>
@@ -42,12 +41,17 @@ global $g5;
 
                     <div class="wv-offcanvas-body col">
 
-
+                        <!-- 내용들어갈곳-->
+                        <div class="wv-mx-fit" style="height: var(--wv-1);background-color: #efefef"></div>
 
                     </div>
 
                     <div class="mt-auto col-auto pb-[50px] hstack gap-[6px]">
                         <button type="submit" class="w-full h-[54px] fs-[16/22/-0.64/700/#FFF] wv-submit-btn transition " style="border:0;border-radius: var(--wv-4)">완료</button>
+                    </div>
+                    <div class="wv-mx-fit" style="background-color: #f9f9f9"><div class="container"><div  style="height: 2px;background-color: #efefef"></div></div></div>
+                    <div class="wv-mx-fit">
+                        <?php echo wv_widget('content/copyright'); ?>
                     </div>
                 </div>
             </form>
@@ -58,8 +62,8 @@ global $g5;
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
-                // reload: false,
-                // reload_ajax:true,
+                // reload: false, 
+                // reload_ajax:true, 자기자신 리로드
                 // success: function () {
                 //     var $offcanvas = $skin.closest('.wv-offcanvas');
                 //     $offcanvas.offcanvas('hide');
