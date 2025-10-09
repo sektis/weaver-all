@@ -34,25 +34,14 @@ uasort($row['menu'], function($a, $b) {
                 ?>
                 <div class="wv-ps-each  ">
                     <!-- 필수 hidden -->
-                    <?php echo $this->store->menu->render_part('id','form',array('menu_id'=>$v['id'])); ?>
+                    <input type="hidden" name="menu[<?php echo $k; ?>][id]" value="<?php echo $v['id']; ?>">
 
                     <div class="vstack border p-[16px]" style="row-gap: var(--wv-15)">
-
-
-
-                            <?php echo $this->store->menu->render_part('is_main','form',array('menu_id'=>$v['id'])); ?>
-                            <?php echo $this->store->menu->render_part('name','form',array('menu_id'=>$v['id'])); ?>
-                            <?php echo $this->store->menu->render_part('desc','form',array('menu_id'=>$v['id'])); ?>
-                            <?php echo $this->store->menu->render_part('prices','form',array('menu_id'=>$v['id'])); ?>
-                            <?php echo $this->store->menu->render_part('images','form',array('menu_id'=>$v['id'])); ?>
-
-
-
-
-                        <!-- 가격 옵션 -->
-
-
-
+                        <?php echo $this->store->menu->render_part('is_main','form',array('menu_id'=>$v['id'])); ?>
+                        <?php echo $this->store->menu->render_part('name','form',array('menu_id'=>$v['id'])); ?>
+                        <?php echo $this->store->menu->render_part('desc','form',array('menu_id'=>$v['id'])); ?>
+                        <?php echo $this->store->menu->render_part('prices','form',array('menu_id'=>$v['id'])); ?>
+                        <?php echo $this->store->menu->render_part('images','form',array('menu_id'=>$v['id'])); ?>
 
                         <div class=" wv-ps-box ">
                             <label class=" ">

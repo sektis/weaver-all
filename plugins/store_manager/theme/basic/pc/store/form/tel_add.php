@@ -6,10 +6,9 @@ $this->make_array($row['tel_add']);
     <div class="wv-ps-list  vstack" style="row-gap: var(--wv-10)">
         <?php foreach ($row['tel_add'] as $k => $v) {
 
-            $demo_class = !$v ? 'wv-ps-demo' : '';
 
             ?>
-            <div class="wv-ps-each w-full <?php echo $demo_class; ?>">
+            <div class="wv-ps-each w-full  ">
                 <!-- 필수 hidden -->
                 <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]"  value="<?php echo $v['id']; ?>">
                 <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][date]"  value="<?php echo $v['date']; ?>">

@@ -6,15 +6,14 @@ $this->make_array($row['memo']);
     <div class="wv-ps-list  vstack" style="row-gap: var(--wv-10)">
         <?php foreach ($row['memo'] as $k => $v) {
 
-            $demo_class = !$v ? 'wv-ps-demo' : '';
 
             ?>
-            <div class="wv-ps-each w-full <?php echo $demo_class; ?>">
+            <div class="wv-ps-each w-full">
                 <!-- 필수 hidden -->
                 <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]"  value="<?php echo $v['id']; ?>">
                 <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][date]"  value="<?php echo $v['date']; ?>">
                 <div class="d-flex justify-content-between  ">
-                <?php if($v['id']){ ?>
+                <?php if($k>0){ ?>
 
 
                         <p class="fs-[14/17/-0.56/600/#0D171B] col"><span class="pe-2">·</span> <?php echo $v['text']; ?></p>

@@ -19,7 +19,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         'service_time'=>'TEXT DEFAULT NULL',
 
     );
-    protected $checkbox_fields = array('enabled');
+
     private static $is_syncing_service = false;
 
     protected $status_text_array = array(
@@ -102,7 +102,7 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         $arr['memo_list'] =  implode('<br>',array_column($row['memo'],'text'));
 
         if(isset($row['service_time']) && !empty($row['service_time'])){
-            $arr['service_time_list'] = generate_time_list($row['service_time']);
+            $arr['service_time_list'] = generate_time_list($row['service_time'],1);
             $arr['service_time_group'] = generate_time_grouped($row['service_time'],1);
         } else {
             $arr['service_time_list'] = array();
@@ -116,106 +116,98 @@ class Contract extends StoreSchemaBase implements StoreSchemaInterface{
         return $arr;
     }
 
-    public function is_new(&$data,$col) {
-        if($col=='memo'){
-            $data['date']=date('Y-m-d h:i:s');
+    public function is_new($col,&$curr,$prev,&$data,$node) {
+        if($col=='contract/memo/n'){
+            $curr['date']=date('Y-m-d h:i:s');
         }
-        if(!$data['start']){
-            $data['start']=date('Y-m-d h:i:s');
+        if($col=='contract/n'  ){
+
+            $curr['start']=date('Y-m-d h:i:s');
         }
 
     }
 
 
 
-    public function after_set(&$data) {
-        if (self::$is_syncing_service) return;
-        if (!isset($data['contract'])) return;
-
-        $manager = $this->get_manager();
-
-        foreach ($data['contract'] as $contract_id => $contract_item) {
-            if (!isset($contract_item['id'])) {
-                continue;
-            }
-
-            $service_time = null;
-
-            if (isset($contract_item['service_time'])) {
-                if (is_string($contract_item['service_time'])) {
-                    $service_time = wv_base64_decode_unserialize($contract_item['service_time']);
-                } elseif (is_array($contract_item['service_time'])) {
-                    $service_time = $contract_item['service_time'];
-                }
-            }
-
-            if (!$service_time || !is_array($service_time)) {
-                continue;
-            }
-
-            self::$is_syncing_service = true;
-
-            try {
-                $wr_id = $data['wr_id'];
-                $relation_wr_id = $contract_item['id'];
-
-                $existing_list = $manager->get($wr_id)->timesearch->list;
-                $updated_list = array();
-
-                foreach ($existing_list as $item) {
-                    if ($item['type'] !== 'service' ||
-                        (int)$item['relation_wr_id'] !== (int)$relation_wr_id) {
-                        $updated_list[] = $item;
-                    }
-                }
-
-                $service_data = $manager->timesearch->convert_time_array_to_data(
-                    $service_time,
-                    'service',
-                    true
-                );
-
-                foreach ($service_data as &$item) {
-                    $item['relation_wr_id'] = $relation_wr_id;
-                }
-
-                $this->merge_timesearch_service_data(
-                    $updated_list,
-                    $existing_list,
-                    $service_data,
-                    $relation_wr_id
-                );
-
-                $post_data = array(
-                    'wr_id' => $wr_id,
-                    'timesearch' => $updated_list
-                );
-
-                $manager->set($post_data);
-
-            } finally {
-                self::$is_syncing_service = false;
-            }
+    public function after_set(&$all_data) {
+        // service_time이 수정된 contract가 있는지 확인
+        if (!isset($all_data['contract']) || !is_array($all_data['contract'])) {
+            return;
         }
-    }
 
-    private function merge_timesearch_service_data(&$updated_list, $existing_list, $new_data, $relation_wr_id) {
-        foreach ($new_data as $new_item) {
-            $matched = false;
+        $wr_id = $all_data['wr_id'];
+        $manager = $this->manager;
 
-            foreach ($existing_list as $existing_item) {
-                if ($existing_item['type'] === 'service' &&
-                    (int)$existing_item['relation_wr_id'] === (int)$relation_wr_id &&
-                    $existing_item['day_of_week'] === $new_item['day_of_week']) {
-                    $updated_list[] = array_merge($existing_item, $new_item);
-                    $matched = true;
+        // ✅ 1. DB에서 기존 timesearch의 service 데이터 조회
+        $table = $manager->get_list_table_name('timesearch');
+        $result = sql_query("SELECT * FROM `{$table}` WHERE wr_id = '{$wr_id}' AND type = 'service'");
+
+        $existing_by_id = array();
+        $existing_by_key = array();
+        while ($row = sql_fetch_array($result)) {
+            $id = $row['id'];
+            $relation_wr_id = $row['relation_wr_id'];
+            $day_of_week = $row['day_of_week'];
+            $key = 'service_' . $relation_wr_id . '_' . $day_of_week;
+
+            $existing_by_id[$id] = $row;
+            $existing_by_key[$key] = $id;
+        }
+
+        // ✅ 2. 저장된 데이터를 다시 조회해서 확장 컬럼 가져오기
+        $store = $manager->get($wr_id);
+
+        $new_timesearch = array();
+
+        // ✅ 3. 각 contract 항목 처리
+        foreach ($all_data['contract'] as $contract_data) {
+            if (!isset($contract_data['id']) || !isset($contract_data['service_time'])) {
+                continue;
+            }
+
+            $contract_id = $contract_data['id'];
+
+            // 해당 contract의 확장 컬럼 가져오기
+            $contract_row = null;
+            foreach ($store->contract->list as $item) {
+                if ($item['id'] == $contract_id) {
+                    $contract_row = $item;
                     break;
                 }
             }
 
-            if (!$matched) {
-                $updated_list[] = $new_item;
+            if (!$contract_row || empty($contract_row['service_time_list'])) {
+                continue;
+            }
+
+            // service_time_list를 timesearch 형식으로 변환
+            $service_time_list = $contract_row['service_time_list'];
+            $service_data = wv_convert_time_list_to_timesearch($service_time_list, 'service');
+
+            // relation_wr_id 추가 및 기존 id 매핑
+            foreach ($service_data as $item) {
+                $item['relation_wr_id'] = $contract_id;
+                $key = 'service_' . $contract_id . '_' . $item['day_of_week'];
+
+                // 기존 데이터 있으면 id 유지
+                if (isset($existing_by_key[$key])) {
+                    $id = $existing_by_key[$key];
+                    $item['id'] = $id;
+                    $new_timesearch[$id] = $item;
+                } else {
+                    // 신규 데이터
+                    $new_timesearch[] = $item;
+                }
             }
         }
+
+        // ✅ 4. timesearch 저장
+        if (count($new_timesearch)) {
+            $manager->set(array(
+                'wr_id' => $wr_id,
+                'timesearch' => $new_timesearch
+            ));
+        }
     }
-}
+
+ }

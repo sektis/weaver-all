@@ -11,10 +11,12 @@
 3. [Store Manager 만들기](#store-manager-만들기)
 4. [데이터 조회](#데이터-조회)
 5. [데이터 저장](#데이터-저장)
-6. [파트 스킨 렌더링](#파트-스킨-렌더링)
-7. [AJAX 처리](#ajax-처리)
-8. [실전 예제](#실전-예제)
-9. [문제 해결](#문제-해결)
+6. [훅 시스템](#훅-시스템)
+7. [파트 스킨 렌더링](#파트-스킨-렌더링)
+8. [AJAX 처리](#ajax-처리)
+9. [체크박스 처리](#체크박스-처리)
+10. [실전 예제](#실전-예제)
+11. [문제 해결](#문제-해결)
 
 ---
 
@@ -370,6 +372,566 @@ $data = wv()->store_manager->made('sub01_01')->set($_POST);
 
 ---
 
+## 훅 시스템
+
+### 1. 훅이란?
+
+훅(Hook)은 데이터 저장 시 **각 컬럼의 값이 변경될 때** 자동으로 실행되는 콜백 함수입니다.
+
+**훅을 사용하는 이유:**
+- ✅ 특정 컬럼 값 변경 시 자동 처리
+- ✅ 크로스 파트 업데이트 (`&$all_data` 사용)
+- ✅ 삭제 전후 처리 (파일 삭제, 연관 데이터 정리 등)
+- ✅ 유효성 검사 및 자동 계산
+
+### 2. 훅 종류
+
+| 훅 종류 | 실행 시점 | 사용 예시 |
+|---------|----------|----------|
+| **is_new** | 신규 데이터 저장 시 | 생성일시 자동 기록 |
+| **is_edit** | 기존 데이터 수정 시 | 수정일시 자동 업데이트 |
+| **is_delete** | 데이터 삭제 시 | 파일 삭제, 연관 데이터 정리 |
+| **is_change** | 값이 변경될 때 (new/edit 모두) | 연관 데이터 업데이트 |
+| **list_row_delete** | **목록 파트 행 삭제 시** | 목록 항목 삭제에만 동작 |
+
+**⚠️ 중요: `list_row_delete` vs `is_delete`**
+
+```php
+// ❌ is_delete: 목록 파트에서는 행 삭제 시 실행 안 됨!
+public function is_delete($col, &$current_value, $prev_value, &$all_data) {
+    // 목록 파트에서 행 삭제 시 호출되지 않음
+}
+
+// ✅ list_row_delete: 목록 파트 행 삭제 시에만 실행
+public function list_row_delete($col, &$current_value, $prev_value, &$all_data) {
+    // 목록 파트의 행이 삭제될 때만 호출됨
+    // 예: menu 파트의 특정 메뉴 항목 삭제 시
+}
+```
+
+### 3. 훅 파라미터
+
+```php
+public function is_new($col, &$current_value, $prev_value, &$all_data, $node)
+```
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `$col` | string | **경로 형식 컬럼명** (예: `store/name`, `menu/n/price`) |
+| `&$current_value` | mixed | **참조**: 현재 값 (수정 가능) |
+| `$prev_value` | mixed | 이전 값 (is_edit, is_change에서만 유의미) |
+| `&$all_data` | array | **참조**: 전체 데이터 (크로스 파트 업데이트 가능) |
+| `$node` | array | 데이터 경로 배열 (예: `array('menu', 0, 'price')`) |
+
+### 3-1. $col 파라미터 형식 ⭐ NEW
+
+**형식: `파트키/컬럼키/{배열이고 숫자키이면 n}/{배열키}`**
+
+숫자 인덱스 배열은 모두 `n`으로 표시됩니다.
+
+**예시:**
+
+| $col 값 | 설명 | 실제 데이터 위치 |
+|---------|------|------------------|
+| `store/name` | 일반 파트의 단일 컬럼 | `$data['store']['name']` |
+| `store/image/n` | image 배열의 각 항목 | `$data['store']['image'][0]`, `[1]`... |
+| `store/image/n/path` | image 배열 내부의 path | `$data['store']['image'][0]['path']` |
+| `menu/n` | 목록 파트의 각 행 | `$data['menu'][0]`, `[1]`... |
+| `menu/n/price` | 목록 파트 행의 price | `$data['menu'][0]['price']` |
+| `contract/memo/n` | memo 배열 필드 항목 | `$data['contract'][0]['memo'][0]` |
+
+**실제 사용 예시:**
+
+```php
+// plugins/store_manager/parts/Contract.php
+public function is_new($col, &$curr, $prev, &$data, $node) {
+    // 목록 파트의 memo 배열 항목
+    if ($col == 'contract/memo/n') {
+        $curr['date'] = date('Y-m-d h:i:s');
+    }
+    
+    // 목록 파트의 각 행
+    if ($col == 'contract/n') {
+        $curr['start'] = date('Y-m-d h:i:s');
+    }
+}
+
+// plugins/store_manager/parts/Store.php
+public function is_change($col, &$curr, $prev, &$data, $node) {
+    // 일반 파트의 단일 컬럼
+    if ($col == 'store/name') {
+        // 매장명 변경 시 처리
+    }
+    
+    // image 배열 필드
+    if ($col == 'store/image/n') {
+        // 각 이미지 항목 변경 시 처리
+    }
+}
+```
+
+**장점:**
+
+1. ✅ **명확한 경로**: 어느 파트의 어느 필드인지 즉시 파악
+2. ✅ **중복 방지**: 여러 파트에 같은 컬럼명이 있어도 구분 가능
+3. ✅ **패턴 매칭**: 특정 깊이의 데이터만 처리 가능
+4. ✅ **배열 구분**: `n`으로 배열 인덱스를 명확히 표시
+
+### 4. Schema 클래스에 훅 구현
+
+**기본 구조:**
+
+```php
+// plugins/store_manager/parts/Store.php
+class Store extends StoreSchemaBase {
+    protected $list_part = false;
+    
+    public function get_columns($bo_table = '') {
+        return array(
+            'name' => 'VARCHAR(255) NOT NULL',
+            'avg_price' => 'INT DEFAULT 0'
+        );
+    }
+    
+    public function get_allowed_columns() {
+        return array('name', 'avg_price');
+    }
+    
+    // 훅 메서드 구현
+    public function is_new($col, &$current_value, $prev_value, &$all_data) {
+        if ($col === 'name') {
+            // 새 매장 등록 시 처리
+        }
+    }
+    
+    public function is_change($col, &$current_value, $prev_value, &$all_data) {
+        // 모든 변경에 반응
+    }
+}
+```
+
+### 5. 훅 실행 흐름
+
+#### set() 메서드 실행 순서
+
+StoreManager의 `set()` 메서드는 다음 순서로 실행됩니다:
+
+```php
+public function set($data = array()) {
+    // 1. 트랜잭션 시작
+    wv_execute_query_safe("START TRANSACTION", "transaction_start");
+    
+    // 2. before_set 훅 실행
+    $this->execute_hook('before_set', $data);
+    
+    // 3. ✅ 파일 업로드 미리 병합
+    $this->merge_file_uploads_to_data($data);
+    
+    // 4. wr_id 생성/업데이트
+    $wr_id = $this->create_post_stub_and_get_wr_id($data);
+    
+    // 5. 각 파트 처리
+    foreach ($data as $pkey => $part_data) {
+        if ($is_list_part) {
+            $this->process_list_part($pkey, $part_data, $schema, $wr_id, $data);
+        } else {
+            $this->process_normal_part($pkey, $part_data, $allowed, $prev_ext_row, $data);
+        }
+    }
+    
+    // 6. DB 저장
+    // 7. after_set 훅 실행
+    // 8. 커밋
+}
+```
+
+#### 훅 실행 메커니즘
+
+**핵심: `get_walk_function()` 메서드**
+
+StoreManager는 `get_walk_function()`에서 반환하는 **`$walk_function` 클로저**를 통해 모든 훅을 처리합니다.
+
+```php
+// StoreManager.php
+protected function get_walk_function($pkey, $is_list_part, &$current_data, &$all_data) {
+    $walk_function = function (&$arr, $arr2, $node) use (...) {
+        
+        // === 1. 단일 값 처리 ===
+        if (!is_array($arr)) {
+            // change_pass_keys 체크 (ord, delete 등은 변경 감지 안 함)
+            if (!in_array($parent_key, $this->change_pass_keys) 
+                and $arr != $arr2 
+                and !is_null($arr2)) {
+                
+                // ✅ 날짜 비교: 앞 10자리만 비교
+                if (strlen($arr) == 10 
+                    and strtotime($arr2) !== false 
+                    and substr($arr, 0, 10) == substr($arr2, 0, 10)) {
+                    return false;  // 날짜 부분이 같으면 변경 안 된 것으로 처리
+                }
+                
+                $this->execute_hook('is_change', $all_data, $pkey, $curr_col, $arr, $arr2, $node);
+            }
+            return false;
+        }
+        
+        // === 2. 배열 내부 순회 (재귀) ===
+        $i = 0;
+        foreach ($arr as $k => &$v) {
+            // ✅ ord 자동 설정 (배열 요소가 2개 이상일 때만)
+            if (is_numeric($k) 
+                and !isset($v['delete']) 
+                and array_filter($v)) {
+                
+                if (count($arr) > 1) {  // ← 2개 이상일 때만!
+                    $v['ord'] = $i;
+                }
+                $i++;
+            }
+            
+            if (!$is_delete) {
+                wv_walk_by_ref_diff($v, $walk_function, isset($arr2[$k]) ? $arr2[$k] : null, array_merge($node, (array)$k));
+            }
+        }
+        
+        // === 3. 신규 생성 ===
+        if ($is_new) {
+            // 빈 배열 체크
+            if (wv_empty_except_keys($arr, array('ord'))) {
+                $combined = 'unset($current_data' . wv_array_to_text($node, "['", "']") . ');';
+                @eval("$combined;");
+                return false;
+            }
+            
+            // id 생성
+            if (($is_list_part and count($node) == 1) == false) {
+                $arr['id'] = uniqid() . $parent_key;
+            }
+            
+            $this->execute_hook('is_new', $all_data, $pkey, $curr_col, $arr, '', $node);
+        } 
+        // === 4. 삭제 ===
+        else if ($is_delete) {
+            $this->execute_hook('is_delete', $all_data, $pkey, $curr_col, $arr, '', $node);
+            
+            // 파일 삭제
+            wv_walk_by_ref_diff($arr, function (&$arr, $arr2, $node) {
+                if (wv_array_has_all_keys($this->file_meta_column, $arr2)) {
+                    $this->delete_physical_paths_safely(array($arr2['path']));
+                }
+            }, $arr2, array());
+            
+            // 데이터 제거
+            if (($is_list_part and count($node) == 1) == false) {
+                $combined = 'unset($current_data' . wv_array_to_text($node, "['", "']") . ');';
+                @eval("$combined;");
+            }
+            
+            return false;
+        } 
+        // === 5. 수정 ===
+        else {
+            // 기존 데이터와 병합
+            if (($int_key and is_array($arr2)) or $is_old_file) {
+                $arr = array_merge($arr2, $arr);
+            }
+            
+            // 변경 감지 (ord, id, delete 제외)
+            $diff = wv_array_recursive_diff($arr, wv_shuffle_assoc($arr2), '', '', array('ord','id','delete'));
+            
+            if (count($diff)) {
+                $this->execute_hook('is_change', $all_data, $pkey, $curr_col, $arr, $arr2, $node);
+            }
+        }
+        
+        return false;
+    };
+    
+    return $walk_function;
+}
+```
+
+**wv_walk_by_ref_diff()로 재귀 순회:**
+
+```php
+// process_list_part() 또는 process_normal_part()에서 호출
+$walk_function = $this->get_walk_function($pkey, $is_list_part, $current_data, $all_data);
+wv_walk_by_ref_diff($current_data, $walk_function, $prev_data, array());
+```
+
+**⚠️ 현재 디버깅 모드**
+
+StoreManager.php의 훅 실행 코드는 현재 주석 처리되어 있고, 대신 디버그 출력만 합니다:
+
+```php
+// execute_hook() 메서드 내부
+try {
+    // ✅ 디버깅 출력
+    echo "{$hook_name} : {$col} --- ".implode('/',$node)."<br>";
+    
+    // ❌ 실제 훅 실행은 주석 처리됨
+    // $schema->{$hook_name}($col, $current_value, $prev_value, $all_data, $node);
+}
+```
+
+**출력 예시:**
+```
+is_new : favorite/n --- favorite/n
+is_change : store/name --- store/name
+is_change : menu/n/price --- menu/n/price
+```
+
+**실제 사용 시:**
+- 주석을 제거하고 `$schema->{$hook_name}(...)` 라인을 활성화
+- `echo` 라인은 제거 또는 주석 처리
+
+#### 훅 실행 시나리오
+
+**시나리오 1: 일반 파트 단일 컬럼 변경**
+
+```php
+// POST 데이터
+$_POST = array(
+    'wr_id' => 123,
+    'store' => array(
+        'name' => '새 매장명'  // 기존: '우리매장'
+    )
+);
+
+↓ StoreManager->set() 호출
+↓ process_normal_part() 실행
+↓ get_walk_function() 호출하여 $walk_function 생성
+↓ wv_walk_by_ref_diff() 실행
+
+// 훅 실행:
+// $node = array('store', 'name')
+// $curr_col = 'store/name'
+is_change('store/name', '새 매장명', '우리매장', $all_data)
+```
+
+**시나리오 2: 배열 필드 (image 등)**
+
+```php
+// POST 데이터
+$_POST = array(
+    'wr_id' => 123,
+    'store' => array(
+        'image' => array(
+            array('id' => 'abc123', 'name' => '이미지1.jpg'),  // 신규
+            array('id' => 'def456', 'name' => '이미지2.jpg')   // 신규
+        )
+    )
+);
+
+↓ wv_walk_by_ref_diff() 재귀 순회
+
+// 1단계: image 배열 전체에 대해
+// $node = array('store', 'image')
+// $curr_col = 'store/image'
+is_new('store/image', [...전체 배열...], '', $all_data)
+
+// 2단계: 각 이미지 항목에 대해 (재귀)
+// $node = array('store', 'image', 0)
+// $curr_col = 'store/image'
+is_new('store/image', {0번 이미지}, '', $all_data)
+
+// $node = array('store', 'image', 1)
+is_new('store/image', {1번 이미지}, '', $all_data)
+```
+
+**시나리오 3: 목록 파트**
+
+```php
+// POST 데이터
+$_POST = array(
+    'wr_id' => 123,
+    'menu' => array(
+        array('id' => 1, 'price' => 9000),  // 수정 (기존: 8000)
+        array('name' => '새메뉴', 'price' => 7000)  // 신규
+    )
+);
+
+↓ process_list_part() 실행
+↓ wv_walk_by_ref_diff() 재귀 순회
+
+// 1번 행 (수정)
+// $node = array('menu', 0)
+// $curr_col = 'menu'
+$diff = array('price' => 9000);  // ord, id, delete 제외
+is_change('menu', {1번 행 전체}, {기존 1번 행}, $all_data)
+
+// price 컬럼 (재귀)
+// $node = array('menu', 0, 'price')
+// $curr_col = 'menu/price'
+is_change('menu/price', 9000, 8000, $all_data)
+
+// 새 행 (신규)
+// $node = array('menu', 1)
+// $curr_col = 'menu'
+is_new('menu', {새 행 전체}, '', $all_data)
+
+// name 컬럼 (재귀)
+// $node = array('menu', 1, 'name')
+// $curr_col = 'menu/name'
+is_new('menu/name', '새메뉴', '', $all_data)
+```
+
+**시나리오 4: 행 삭제**
+
+```php
+// POST 데이터
+$_POST = array(
+    'wr_id' => 123,
+    'menu' => array(
+        array('id' => 2, 'delete' => 1)  // 삭제
+    )
+);
+
+↓ wv_walk_by_ref_diff() 실행
+
+// $node = array('menu', 0)
+// $curr_col = 'menu'
+is_delete('menu', {2번 행 데이터}, '', $all_data)
+
+// 파일이 있으면 자동 삭제 처리
+// 데이터에서 제거: unset($current_data['menu'][0])
+```
+
+#### $node 파라미터
+
+**$node는 현재 데이터의 경로를 나타내는 배열입니다:**
+
+```php
+// 예시 1: 일반 파트
+$node = array('store', 'name')
+// → $data['store']['name']
+
+// 예시 2: 배열 필드
+$node = array('store', 'image', 0, 'name')
+// → $data['store']['image'][0]['name']
+
+// 예시 3: 목록 파트
+$node = array('menu', 1, 'price')
+// → $data['menu'][1]['price']
+```
+
+**훅 메서드에서 $node 활용:**
+
+```php
+public function is_change($col, &$current_value, $prev_value, &$all_data, $node) {
+    // $node를 통해 정확한 위치 파악 가능
+    if ($node === array('menu', 'price')) {
+        // 특정 위치의 price만 처리
+    }
+    
+    // 또는 경로 문자열로 변환
+    $path = implode('/', $node);  // 'menu/price'
+    
+    // 깊이 체크
+    $depth = count($node);
+    if ($depth === 2) {
+        // 목록 파트의 최상위 레벨
+    }
+}
+```
+
+### 6. 크로스 파트 업데이트
+
+**예시: 메뉴 가격 변경 시 매장의 평균가 자동 계산**
+
+```php
+// plugins/store_manager/parts/Menu.php
+class Menu extends StoreSchemaBase {
+    protected $list_part = true;
+    
+    public function is_change($col, &$current_value, $prev_value, &$all_data, $node) {
+        // 목록 파트의 price 컬럼 변경 시
+        if ($col === 'menu/n/price') {
+            // 가격이 변경되면 평균가 재계산
+            $this->recalculate_store_avg_price($all_data);
+        }
+    }
+    
+    public function list_row_delete($col, &$current_value, $prev_value, &$all_data) {
+        // 메뉴 항목 삭제 시도 평균가 재계산
+        $this->recalculate_store_avg_price($all_data);
+    }
+    
+    private function recalculate_store_avg_price(&$all_data) {
+        $total = 0;
+        $count = 0;
+        
+        if (isset($all_data['menu']) && is_array($all_data['menu'])) {
+            foreach ($all_data['menu'] as $menu_item) {
+                if (isset($menu_item['price'])) {
+                    $total += intval($menu_item['price']);
+                    $count++;
+                }
+            }
+        }
+        
+        if ($count > 0) {
+            // 크로스 파트 업데이트!
+            $all_data['store']['avg_price'] = intval($total / $count);
+        }
+    }
+}
+```
+
+### 7. 훅 사용 예시
+
+**예시 1: 생성일시 자동 기록**
+
+```php
+class Favorite extends StoreSchemaBase {
+    public function is_new($col, &$current_value, $prev_value, &$all_data, $node) {
+        // 목록 파트의 각 행 생성 시
+        if ($col === 'favorite/n') {
+            $current_value['created_at'] = G5_TIME_YMDHIS;
+        }
+    }
+}
+```
+
+**예시 2: 파일 삭제**
+
+```php
+class Store extends StoreSchemaBase {
+    public function is_delete($col, &$current_value, $prev_value, &$all_data, $node) {
+        // image 배열의 각 항목 삭제 시
+        if ($col === 'store/image/n') {
+            if (isset($prev_value['path']) && file_exists($prev_value['path'])) {
+                @unlink($prev_value['path']);
+            }
+        }
+    }
+}
+```
+
+**예시 3: 값 검증**
+
+```php
+class Store extends StoreSchemaBase {
+    public function is_change($col, &$current_value, $prev_value, &$all_data, $node) {
+        // 전화번호 컬럼 변경 시
+        if ($col === 'store/tel') {
+            // 전화번호 포맷 자동 변환
+            $current_value = preg_replace('/[^0-9]/', '', $current_value);
+        }
+    }
+}
+```
+
+### 8. 훅 주의사항
+
+1. **참조 전달**: `&$current_value`, `&$all_data`는 참조이므로 직접 수정 가능
+2. **목록 파트 삭제**: 반드시 `list_row_delete` 사용 (`is_delete` 아님!)
+3. **컬럼 구분**: `$col` 파라미터로 어떤 컬럼인지 판별
+4. **배열 필드**: 전체 배열 + 각 요소 모두 훅 실행됨
+5. **성능**: 필요한 컬럼에만 조건문 사용 (if ($col === 'xxx'))
+
+---
+
 ## 파트 스킨 렌더링
 
 ### 1. 기본 렌더링
@@ -520,6 +1082,290 @@ $.ajax({
         data-wv-ajax-option='replace_with:#favorite-btn-<?php echo $row["wr_id"]; ?>'>
     찜하기
 </button>
+```
+
+---
+
+## 체크박스 처리
+
+### 1. 문제점
+
+HTML 폼에서 **체크박스는 OFF 상태일 때 데이터를 전송하지 않습니다.**
+
+```html
+<!-- 체크 ON → POST에 포함됨 -->
+<input type="checkbox" name="store[is_open]" value="1" checked>
+
+<!-- 체크 OFF → POST에 포함 안됨! ❌ -->
+<input type="checkbox" name="store[is_open]" value="1">
+```
+
+**문제:**
+- OFF 상태는 서버로 전송되지 않음
+- 데이터베이스에 기존 값이 그대로 유지됨
+- 사용자는 체크를 해제했지만 실제로는 변경 안 됨
+
+### 2. 해결책: `$.fn.loaded()` 사용
+
+Weaver는 페이지 로드 시 **모든 체크박스의 상태를 자동으로 hidden 필드로 추가**하는 기능을 제공합니다.
+
+**자동 처리 메커니즘:**
+
+```javascript
+// Weaver 코어에 내장된 기능
+$(function() {
+    // data-wv-checkbox-group이 있는 요소 찾기
+    $('[data-wv-checkbox-group]').each(function() {
+        var $container = $(this);
+        var groupName = $container.data('wv-checkbox-group');
+        
+        // 그룹 내 모든 체크박스 찾기
+        $container.find('input[type="checkbox"]').each(function() {
+            var $checkbox = $(this);
+            var name = $checkbox.attr('name');
+            
+            // hidden 필드 추가 (OFF 상태 전송용)
+            if (!$checkbox.is(':checked')) {
+                $('<input type="hidden">')
+                    .attr('name', name)
+                    .val('0')
+                    .insertBefore($checkbox);
+            }
+        });
+    });
+});
+```
+
+### 3. 사용 방법
+
+**Step 1: 체크박스 그룹에 data 속성 추가**
+
+```php
+<!-- 체크박스들을 감싸는 컨테이너에 data-wv-checkbox-group 추가 -->
+<div data-wv-checkbox-group="store">
+    <label>
+        <input type="checkbox" name="store[is_open]" value="1" 
+               <?php echo $store->store->is_open ? 'checked' : ''; ?>>
+        영업중
+    </label>
+    
+    <label>
+        <input type="checkbox" name="store[is_delivery]" value="1"
+               <?php echo $store->store->is_delivery ? 'checked' : ''; ?>>
+        배달가능
+    </label>
+    
+    <label>
+        <input type="checkbox" name="store[is_parking]" value="1"
+               <?php echo $store->store->is_parking ? 'checked' : ''; ?>>
+        주차가능
+    </label>
+</div>
+```
+
+**Step 2: $.fn.loaded() 호출**
+
+```javascript
+$(function() {
+    // 페이지 로드 완료 후 체크박스 처리
+    $(document).loaded();
+});
+```
+
+### 4. 동작 원리
+
+**페이지 로드 시:**
+
+```html
+<!-- 원본 HTML -->
+<div data-wv-checkbox-group="store">
+    <input type="checkbox" name="store[is_open]" value="1" checked>
+    <input type="checkbox" name="store[is_delivery]" value="1">
+    <input type="checkbox" name="store[is_parking]" value="1">
+</div>
+
+↓ $.fn.loaded() 실행 ↓
+
+<!-- 처리 후 HTML -->
+<div data-wv-checkbox-group="store">
+    <!-- is_open: 체크됨 → hidden 추가 안 함 -->
+    <input type="checkbox" name="store[is_open]" value="1" checked>
+    
+    <!-- is_delivery: 체크 안 됨 → hidden 추가 -->
+    <input type="hidden" name="store[is_delivery]" value="0">
+    <input type="checkbox" name="store[is_delivery]" value="1">
+    
+    <!-- is_parking: 체크 안 됨 → hidden 추가 -->
+    <input type="hidden" name="store[is_parking]" value="0">
+    <input type="checkbox" name="store[is_parking]" value="1">
+</div>
+```
+
+**폼 전송 시:**
+
+```php
+// POST 데이터
+$_POST = array(
+    'store' => array(
+        'is_open' => '1',      // 체크됨
+        'is_delivery' => '0',  // hidden 필드로 전송
+        'is_parking' => '0'    // hidden 필드로 전송
+    )
+);
+```
+
+### 5. 스킨에서 사용 예시
+
+**Form 스킨 (plugins/store_manager/theme/basic/pc/store/form/options.php):**
+
+```php
+<?php
+if (!defined('_GNUBOARD_')) exit;
+
+$is_open = isset($row['store']['is_open']) ? $row['store']['is_open'] : 0;
+$is_delivery = isset($row['store']['is_delivery']) ? $row['store']['is_delivery'] : 0;
+$is_parking = isset($row['store']['is_parking']) ? $row['store']['is_parking'] : 0;
+?>
+
+<div id="<?php echo $skin_id; ?>" class="<?php echo $skin_class; ?>">
+    <h4>매장 옵션</h4>
+    
+    <!-- 체크박스 그룹 -->
+    <div data-wv-checkbox-group="store">
+        <label class="option-item">
+            <input type="checkbox" 
+                   name="store[is_open]" 
+                   value="1" 
+                   <?php echo $is_open ? 'checked' : ''; ?>>
+            영업중
+        </label>
+        
+        <label class="option-item">
+            <input type="checkbox" 
+                   name="store[is_delivery]" 
+                   value="1" 
+                   <?php echo $is_delivery ? 'checked' : ''; ?>>
+            배달 가능
+        </label>
+        
+        <label class="option-item">
+            <input type="checkbox" 
+                   name="store[is_parking]" 
+                   value="1" 
+                   <?php echo $is_parking ? 'checked' : ''; ?>>
+            주차 가능
+        </label>
+    </div>
+</div>
+
+<script>
+$(function() {
+    // 페이지 로드 완료 후 체크박스 처리
+    $(document).loaded();
+});
+</script>
+```
+
+### 6. 목록 파트에서 사용
+
+목록 파트(menu, contract 등)의 각 항목에도 동일하게 적용 가능합니다.
+
+```php
+<!-- 메뉴 목록 폼 -->
+<div id="menu-list">
+    <?php foreach($store->menu->list as $idx => $menu) { ?>
+    <div class="menu-item" data-wv-checkbox-group="menu-<?php echo $idx; ?>">
+        <input type="hidden" name="menu[<?php echo $idx; ?>][id]" 
+               value="<?php echo $menu['id']; ?>">
+        
+        <input type="text" name="menu[<?php echo $idx; ?>][name]" 
+               value="<?php echo $menu['name']; ?>">
+        
+        <label>
+            <input type="checkbox" 
+                   name="menu[<?php echo $idx; ?>][is_soldout]" 
+                   value="1" 
+                   <?php echo $menu['is_soldout'] ? 'checked' : ''; ?>>
+            품절
+        </label>
+        
+        <label>
+            <input type="checkbox" 
+                   name="menu[<?php echo $idx; ?>][is_popular]" 
+                   value="1" 
+                   <?php echo $menu['is_popular'] ? 'checked' : ''; ?>>
+            인기메뉴
+        </label>
+    </div>
+    <?php } ?>
+</div>
+
+<script>
+$(function() {
+    $(document).loaded();
+});
+</script>
+```
+
+### 7. AJAX 폼에서 사용
+
+AJAX로 데이터를 전송할 때도 동일하게 작동합니다.
+
+```javascript
+$('#save-btn').on('click', function() {
+    // 체크박스 상태 확인 (hidden 필드가 자동 추가되어 있음)
+    var formData = $('#store-form').serializeObject();
+    
+    $.ajax({
+        url: '<?php echo wv()->store_manager->plugin_url; ?>/ajax.php',
+        method: 'POST',
+        data: {
+            action: 'update',
+            made: 'sub01_01',
+            ...formData
+        },
+        success: function(response) {
+            alert('저장되었습니다.');
+        }
+    });
+});
+```
+
+### 8. 주의사항
+
+1. **data-wv-checkbox-group 필수**: 이 속성이 없으면 자동 처리 안 됨
+2. **$.fn.loaded() 호출 필수**: 페이지 로드 후 반드시 호출해야 함
+3. **동적 폼**: AJAX로 폼을 추가한 경우, 추가 후 다시 `$(document).loaded()` 호출
+4. **value 속성**: 체크박스는 항상 `value="1"` 사용 권장
+5. **이름 규칙**: name 속성은 파트 구조와 일치해야 함 (`part[column]` 형식)
+
+### 9. 디버깅
+
+**체크박스가 제대로 전송되는지 확인:**
+
+```javascript
+// 폼 전송 전 확인
+$('#store-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    var formData = $(this).serializeArray();
+    console.log('전송될 데이터:', formData);
+    
+    // 체크박스 필드 확인
+    formData.forEach(function(item) {
+        if (item.name.indexOf('is_') > -1) {
+            console.log(item.name + ' = ' + item.value);
+        }
+    });
+});
+```
+
+**예상 출력:**
+```
+전송될 데이터: [...]
+store[is_open] = 1
+store[is_delivery] = 0
+store[is_parking] = 0
 ```
 
 ---

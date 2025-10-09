@@ -31,7 +31,7 @@ $wv_main_menu_array = array(
 );
 
 
-wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs','contract','timesearch'))->prune_columns();
+wv()->store_manager->make('sub01_01','sub01_01',array('menu','biz','store','location','dayoffs','tempdayoffs','contract','timesearch','point'))->prune_columns();
 wv()->store_manager->make('member','member',array('member'))->prune_columns();
 wv()->store_manager->make('invite','invite',array('invite'))->prune_columns();
 wv()->store_manager->make('visit_cert','visit_cert',array('visitcert'))->prune_columns();

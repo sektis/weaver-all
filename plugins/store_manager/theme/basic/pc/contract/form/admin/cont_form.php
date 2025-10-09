@@ -20,9 +20,8 @@ global $g5;
             <form name="fpartsupdate" action='<?php echo wv()->store_manager->made()->plugin_url ?>/ajax.php' method="post" class="h-100 wv-form-check" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="made" value="<?php echo $made; ?>">
-                <?php if ($is_list_item_mode) { ?>
-                    <input type="hidden" name="<?php echo str_replace("[{$column}]", '', $field_name); ?>[id]" value="<?php echo $row['id']; ?>">
-                <?php } ?>
+                <input type="hidden" name="<?php echo $field_name; ?>[id]" value="<?php echo $row['id']; ?>">
+
                 <?php echo $this->store->basic->render_part('wr_id', 'form');; ?>
                 <div class="vstack h-100 pt-[10px]" style="">
                     <div class="wv-offcanvas-header col-auto">
@@ -61,7 +60,7 @@ global $g5;
                                 <div class="hstack align-items-start" >
                                     <p class="text1 w-[75px] " style="line-height: var(--wv-31)">계약 상태</p>
                                     <div class="col">
-                                        <?php echo $this->store->contract->render_part('status','form',$vars); ?>
+                                        <?php echo $this->store->contract->render_part('status','form',array('contract_id'=>$contract_id)); ?>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -69,21 +68,21 @@ global $g5;
                             <div class="hstack">
                                 <p class="text1 w-[75px]" style="line-height: var(--wv-31)">계약상품</p>
                                 <div class="col">
-                                    <?php echo $this->store->contract->render_part('contractitem_wr_id','form',$vars); ?>
+                                    <?php echo $this->store->contract->render_part('contractitem_wr_id','form',array('contract_id'=>$contract_id)); ?>
                                 </div>
                             </div>
 
                             <div class="hstack">
                                 <p class="text1 w-[75px]" style="line-height: var(--wv-31)">계약기간</p>
                                 <div class="col">
-                                    <?php echo $this->store->contract->render_part('start_end','form',$vars); ?>
+                                    <?php echo $this->store->contract->render_part('start_end','form',array('contract_id'=>$contract_id)); ?>
                                 </div>
                             </div>
 
                             <div class="hstack">
                                 <p class="text1 w-[75px]" style="line-height: var(--wv-31)">계약 담당자</p>
                                 <div class="col">
-                                    <?php echo $this->store->contract->render_part('contractmanager_wr_id','form',$vars); ?>
+                                    <?php echo $this->store->contract->render_part('contractmanager_wr_id','form',array('contract_id'=>$contract_id)); ?>
                                 </div>
                             </div>
 
@@ -98,7 +97,7 @@ global $g5;
                             <div class="wv-mx-fit" style="height: 2px;background-color: #efefef"></div>
                             <div class="vstack" style="row-gap:var(--wv-10)">
                                 <p class="text1">메모</p>
-                                <?php echo $this->store->contract->render_part('memo','form',$vars); ?>
+                                <?php echo $this->store->contract->render_part('memo','form',array('contract_id'=>$contract_id)); ?>
                             </div>
                         </div>
                     </div>
@@ -128,12 +127,12 @@ global $g5;
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
-                // reload: false,
+                reload: false,
                 // reload_ajax:true,
-                // success: function () {
-                //     var $offcanvas = $skin.closest('.wv-offcanvas');
-                //     $offcanvas.offcanvas('hide');
-                // }
+                success: function () {
+                    var $offcanvas = $skin.closest('.wv-offcanvas');
+                    $offcanvas.offcanvas('hide');
+                }
             })
         })
     </script>

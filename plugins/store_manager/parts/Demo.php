@@ -14,7 +14,7 @@ class Demo extends StoreSchemaBase implements StoreSchemaInterface{
     );
 
 
-    protected $image_max_count=8;
+
 
     public function get_indexes(){
         return array(
@@ -43,7 +43,13 @@ class Demo extends StoreSchemaBase implements StoreSchemaInterface{
         return $arr;
     }
 
-    public function before_set(&$data) {
+    public function is_new($col,&$curr,$prev,&$data,$node){}
+    public function is_delete($col,&$curr,$prev,&$data,$node){}
+    public function is_change($col,&$curr,$prev,&$data,$node){}
+    public function on_save($col,&$curr,$prev,&$data,$node){}
 
-    }
+    public function before_set(&$data) {}
+    public function after_set(&$data) {}
+    public function before_delete(&$data) {}
+    public function after_delete(&$data) {}
 }

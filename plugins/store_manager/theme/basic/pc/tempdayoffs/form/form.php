@@ -113,7 +113,7 @@ $tempdayoffs_list = $row['tempdayoffs'];
                         }
                     }
                     ?>
-                    <div class="wv-ps-each <?php echo $demo_class; ?>" data-index="<?php echo $k; ?>">
+                    <div class="wv-ps-each" data-index="<?php echo $k; ?>">
                         <div class="tempdayoff-item">
                             <!-- 필수 hidden 필드들 -->
                             <input type="hidden" name="tempdayoffs[<?php echo $k; ?>][id]" value="<?php echo htmlspecialchars($id); ?>">

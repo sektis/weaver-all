@@ -136,16 +136,16 @@ global $g5;
 
                                 <div class="mt-[20px]" >
                                     <div class="row" style="--bs-gutter-x: var(--wv-10);--bs-gutter-y: var(--wv-10)">
-                                        <?php foreach ($row['images'] as $img){ ?>
+                                        <?php $i=1; foreach ($row['images'] as $img){ ?>
                                             <div class="col-4">
                                                 <div class=" ratio-1x1 ratio">
                                                     <div class=" ">
-                                                        <span class="wv-ps-num">1</span>
+                                                        <span class="wv-ps-num"><?php echo $i; ?></span>
                                                         <img src="<?php echo $img['path']; ?>" class="wh-100 object-fit-cover " style="border-radius: var(--wv-4);overflow: hidden" alt="">
                                                     </div>
                                                 </div>
                                             </div>
-                                        <?php } ?>
+                                        <?php $i++;} ?>
                                     </div>
                                 </div>
 

@@ -136,7 +136,7 @@ if(!function_exists('dd')){
     }
 }
 if(!function_exists('wv_array_recursive_diff')){
-    function wv_array_recursive_diff($array1, $array2,$ignore_text=array(),$array1_value_empty=false) {
+    function wv_array_recursive_diff($array1, $array2,$ignore_text=array(),$array1_value_empty=false,$ignore_key=array()) {
         $difference=array();
         $ignore_text = (array) $ignore_text;
 
@@ -178,6 +178,9 @@ if(!function_exists('wv_array_recursive_diff')){
                 }
 
                 if(in_array(trim($array2[$key]),$ignore_text)){
+                    continue;
+                }
+                if(in_array($key,$ignore_key)){
                     continue;
                 }
                 $difference[$key] = $value;
@@ -1821,6 +1824,19 @@ if(!function_exists('wv_execute_query_safe')){
         }
 
         return $result;
+    }
+}
+if(!function_exists('wv_shuffle_assoc')){
+    function wv_shuffle_assoc($array) {
+        $keys = array_keys($array);
+        shuffle($keys);
+
+        $shuffled = array();
+        foreach ($keys as $key) {
+            $shuffled[$key] = $array[$key];
+        }
+
+        return $shuffled;
     }
 }
 

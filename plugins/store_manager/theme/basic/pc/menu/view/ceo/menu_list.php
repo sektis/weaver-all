@@ -2,6 +2,10 @@
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 global $current_store_wr_id;
 
+uasort($row['menu'], function($a, $b) {
+    return  $b['is_main'] -$a['is_main'];
+});
+ 
 ?>
 <div id="<?php echo $skin_id?>" class="<?php echo $skin_class; ?> position-relative d-flex-center flex-nowrap" style="ba">
     <style>
@@ -24,7 +28,7 @@ global $current_store_wr_id;
                     if(!$menu)continue;?>
                     <div  class="menu-each">
                         <div class="hstack fs-[14/20/-0.56/600/#0D171B] justify-content-between" style="padding: var(--wv-16) 0">
-                            <p><?php echo $menu['name']; ?></p>
+                            <p><?php echo $menu['name']; ?><?php if($menu['is_main']){ ?> <span class="fs-07em">(대표메뉴)</span><?php } ?></p>
                             <a href="#" data-wv-ajax-url='<?php echo wv()->store_manager->plugin_url ?>/ajax.php'
                                data-wv-ajax-data='{ "action":"form","made":"sub01_01","part":"menu","field":"ceo/edit","wr_id":"<?php echo $current_store_wr_id; ?>","menu_id":"<?php echo $menu['id']?>"}'
                                data-wv-ajax-option="offcanvas,end,backdrop,class: w-[360px],reload_ajax:true"  class="fs-[14/100%/-0.56/600/#97989C]"> <img src="<?php echo $this->manager->plugin_url; ?>/img/vec2.png" class="w-[14px]" alt=""> <span>변경</span></a>

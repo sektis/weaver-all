@@ -18,11 +18,6 @@ class Point extends StoreSchemaBase implements StoreSchemaInterface {
     public function get_indexes() {
         return array(
             array(
-                'name' => 'idx_mb_id',
-                'type' => 'INDEX',
-                'cols' => array('mb_id')
-            ),
-            array(
                 'name' => 'idx_point_date',
                 'type' => 'INDEX',
                 'cols' => array('point_date')
@@ -70,99 +65,13 @@ class Point extends StoreSchemaBase implements StoreSchemaInterface {
         return $arr;
     }
 
-    // 포인트 적립
-    public function add_point($mb_id, $amount, $ref_manager, $memo = '', $ref_id = 0) {
-        $data = array(
-            'mb_id' => $mb_id,
-            'point' => array(
-                'point_amount' => abs($amount),
-                'point_type' => 'earn',
-                'point_status' => 'completed',
-                'ref_manager' => $ref_manager,
-                'ref_id' => $ref_id,
-                'point_memo' => $memo,
-                'point_date' => date('Y-m-d H:i:s')
-            )
-        );
-
-        return $this->store_manager->set($data);
-    }
-
-    // 출금 신청
-    public function request_withdraw($mb_id, $amount, $memo = '', $bank_info = array()) {
-        $balance = $this->get_balance($mb_id);
-
-        if ($balance < $amount) {
-            return array('error' => '잔액이 부족합니다.');
-        }
-
-        $full_memo = $memo;
-        if (is_array($bank_info) && count($bank_info)) {
-            $full_memo .= "\n은행: " . ($bank_info['bank'] ?? '');
-            $full_memo .= "\n계좌번호: " . ($bank_info['account'] ?? '');
-            $full_memo .= "\n예금주: " . ($bank_info['holder'] ?? '');
-        }
-
-        $data = array(
-            'mb_id' => $mb_id,
-            'point' => array(
-                'point_amount' => abs($amount),
-                'point_type' => 'withdraw',
-                'point_status' => 'pending',
-                'ref_manager' => 'withdraw',
-                'ref_id' => 0,
-                'point_memo' => $full_memo,
-                'point_date' => date('Y-m-d H:i:s')
-            )
-        );
-
-        return $this->store_manager->set($data);
-    }
-
-    // 출금 승인
-    public function approve_withdraw($wr_id) {
-        $row = $this->store_manager->get($wr_id);
-
-        if ($row->point->point_status !== 'pending') {
-            return array('error' => '처리할 수 없는 상태입니다.');
-        }
-
-        $data = array(
-            'wr_id' => $wr_id,
-            'point' => array(
-                'point_status' => 'completed'
-            )
-        );
-
-        return $this->store_manager->set($data);
-    }
-
-    // 출금 취소
-    public function cancel_withdraw($wr_id, $reason = '') {
-        $row = $this->store_manager->get($wr_id);
-
-        if ($row->point->point_status !== 'pending') {
-            return array('error' => '처리할 수 없는 상태입니다.');
-        }
-
-        $data = array(
-            'wr_id' => $wr_id,
-            'point' => array(
-                'point_status' => 'cancelled',
-                'point_memo' => $row->point->point_memo . "\n취소사유: " . $reason
-            )
-        );
-
-        return $this->store_manager->set($data);
-    }
-
     // 잔액 조회
     public function get_balance($mb_id) {
         $sql = "
             SELECT 
                 SUM(CASE WHEN point_type = 'earn' AND point_status = 'completed' THEN point_amount ELSE 0 END) as earn_sum,
                 SUM(CASE WHEN point_type = 'withdraw' AND point_status = 'completed' THEN point_amount ELSE 0 END) as withdraw_sum
-            FROM {$this->store_manager->get_ext_table_name()}
+            FROM {$this->manager->get_ext_table_name()}
             WHERE mb_id = '" . sql_escape_string($mb_id) . "'
         ";
 

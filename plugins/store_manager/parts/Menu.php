@@ -17,8 +17,6 @@ class Menu extends StoreSchemaBase implements StoreSchemaInterface{
         'inline_form'=>'',
     );
 
-    protected $checkbox_fields = array('is_main','use_eum');
-
     protected $image_max_count=8;
 
     public function get_indexes(){

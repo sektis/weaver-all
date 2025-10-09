@@ -73,6 +73,7 @@ global $g5;
             var $skin = $("<?php echo $skin_selector?>");
 
             $("form", $skin).ajaxForm({
+
             })
         })
     </script>

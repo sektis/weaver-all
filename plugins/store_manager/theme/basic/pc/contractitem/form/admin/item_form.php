@@ -55,7 +55,7 @@ global $g5;
         $(document).ready(function () {
             var $skin = $("<?php echo $skin_selector?>");
             $("form", $skin).ajaxForm({
-                // reload: false,
+                reload: false,
                 // reload_ajax:true,
                 // success: function () {
                 //     var $offcanvas = $skin.closest('.wv-offcanvas');

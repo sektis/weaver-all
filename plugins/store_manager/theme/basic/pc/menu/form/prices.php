@@ -11,10 +11,9 @@ $this->make_array($row['prices']);
         <div class="wv-ps-list  vstack" style="row-gap: var(--wv-20)">
             <?php foreach ($row['prices'] as $k => $v) {
 
-                $demo_class = !$v ? 'wv-ps-demo' : '';
 
                 ?>
-                <div class="wv-ps-each w-full <?php echo $demo_class; ?>">
+                <div class="wv-ps-each w-full  ">
                     <!-- 필수 hidden -->
                     <input type="hidden" name="<?php echo $field_name; ?>[<?php echo $k; ?>][id]"  value="<?php echo $v['id']; ?>">
                     <div class="hstack justify-content-between" style="gap:var(--wv-8)">

@@ -12,6 +12,23 @@ $(document).on('click','.wv-data-list-delete-btn',function (e) {
 })
 $(document).ready(function () {
 
+    $(document).loaded('.switch [type=checkbox], [role="switch"]', function(i, e) {
+        var $switch = $(e);
+        var name = $switch.attr('name');
+
+        // hidden input 추가
+        var $hidden = $('<input>', {
+            type: 'hidden',
+            name: name,
+            value: $switch.is(':checked') ? '1' : '0'
+        }).insertBefore($switch);
+
+        // 상태 변경 시 업데이트
+        $switch.on('change', function() {
+            $hidden.val(this.checked ? '1' : '0');
+        });
+    });
+
     $("body").loaded('.wv-ps-file', function (i, e) {
         var $ps_file = $(e);
 
@@ -484,6 +501,13 @@ function findMaxRowIndexAndPos($ps_list){
 function resetControl($el){
     var tag = ($el.prop('tagName') || '').toLowerCase();
     var type = ($el.attr('type') || '').toLowerCase();
+    var name = $el.attr('name') || '';
+
+    // ✅ [id]로 끝나는 필드는 건너뛰기 (이미 처리됨)
+    if (/\[id\]$/.test(name)) {
+        return;
+    }
+
     if (tag === 'select'){
         $el.prop('selectedIndex', 0);
     } else if (type === 'checkbox' || type === 'radio'){
@@ -501,6 +525,8 @@ function resetControl($el){
 // 새 행에 인덱스를 부여하고 값 초기화
 // 새 행에 인덱스를 부여하고 값 초기화
 function reindexRow($row, pos, nextIndex){
+
+    $row.find(':input[name$="\\[id\\]"]').not($row.find('.wv-ps-list :input')).first().val('');
     // 1) name 속성 처리
     $row.find(':input[name]').each(function(){
         var $f = $(this);
@@ -513,7 +539,6 @@ function reindexRow($row, pos, nextIndex){
         resetControl($f);
 
         // 보조 필드 규칙
-        if (/\[id\]$/.test(newName))     $f.val('');             // 신규 id 비움
         if (/\[delete\]$/.test(newName)) $f.prop('checked', false).val('');
     });
 
@@ -535,6 +560,7 @@ function reindexRow($row, pos, nextIndex){
         if (newFor !== oldFor) $label.attr('for', newFor);
     });
 }
+
 function renumberPsList($ps_list){
     var n = 1;
 

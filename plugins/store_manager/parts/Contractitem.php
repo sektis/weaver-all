@@ -23,8 +23,6 @@ class Contractitem extends StoreSchemaBase{
 
     );
 
-    protected $checkbox_fields = array('is_free','use_schedule','use_intro');
-
     public function get_indexes(){
         return array(
             array()
@@ -38,9 +36,7 @@ class Contractitem extends StoreSchemaBase{
         $arr['color_type_text'] =  "color:{$row['color_type']['text']};";
         return $arr;
     }
-    public function before_set(&$data) {
-//        dd($data);
-    }
+
 
     public function montserrat_change($text){
         $text = str_replace('DUM','<span class="ff-montserrat fw-700">DUM</span>',$text);

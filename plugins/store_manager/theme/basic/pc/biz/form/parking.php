@@ -23,7 +23,6 @@ $is_holiday_off = isset($row['is_holiday_off']) ? (int)$row['is_holiday_off'] : 
             <p class="text-end fs-[11///600/#97989c]">
                 <span class="char-counter" style="color:#0d171b" data-current="0">0</span> / <span class="char-limit"><?php echo $this->parking_max_char; ?></span>자
             </p>
-
         </div>
     </div>
 

@@ -60,15 +60,14 @@ $dayoffs_list = $row['dayoffs'];
             <div class="wv-ps-list wv-vstack mt-[20px]" style="row-gap:var(--wv-20)">
                 <?php
                 foreach($dayoffs_list as $k => $dayoff) {
-                    $id = isset($dayoff['id']) ? $dayoff['id'] : '';
                     $cycle = isset($dayoff['cycle']) ? $dayoff['cycle'] : '';
                     $target = isset($dayoff['target']) ? $dayoff['target'] : '';
-                    $demo_class = ($id === '') ? 'wv-ps-demo' : '';
+
                     ?>
-                    <div class="wv-ps-each <?php echo $demo_class; ?>" data-index="<?php echo $k; ?>">
+                    <div class="wv-ps-each  " data-index="<?php echo $k; ?>">
                         <div class="dayoff-item">
                             <!-- 필수 hidden 필드들 -->
-                            <input type="hidden" name="dayoffs[<?php echo $k; ?>][id]" value="<?php echo htmlspecialchars($id); ?>">
+                            <input type="hidden" name="dayoffs[<?php echo $k; ?>][id]" value="<?php echo $dayoff['id']; ?>">
 
                             <div class="dayoff-select cycle-select <?php echo $cycle === '' ? 'empty' : ''; ?>" data-type="cycle">
                                 <span><?php echo $cycle === '' ? '주기' : htmlspecialchars($cycle); ?></span>

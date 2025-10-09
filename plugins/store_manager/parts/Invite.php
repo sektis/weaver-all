@@ -11,8 +11,6 @@ class Invite extends StoreSchemaBase implements StoreSchemaInterface{
         'invite_date' => "DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP",
     );
 
-    protected $checkbox_fields = array('reward_given');
-
     public function get_indexes(){
         return array(
             array(

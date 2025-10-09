@@ -100,11 +100,14 @@ class Member extends StoreSchemaBase{
     }
 
 
-    public function is_new_or_update(&$data,$col,&$p_data){
+    public function on_save($col,&$curr,$prev,&$all_data,$node){
 
-        if($col=='bank_number' or $col=='bank_account_number'){
+        if($col=='member/bank_number' or $col=='member/bank_account_number'){
 
-            $p_data['bank_datetime']=G5_TIME_YMDHIS;
+            if($all_data['member']['bank_datetime']!=G5_TIME_YMDHIS){
+                $all_data['member']['bank_datetime'] = G5_TIME_YMDHIS;
+            }
+
 
         }
     }
@@ -116,7 +119,7 @@ class Member extends StoreSchemaBase{
             $data=array(
                 'wr_id'=>'',
                 'wr_content'=>'/',
-                'mb_id'=>$row['mb_id'],
+                'mb_id'=>$data['mb_id'],
                 'invite'=>array(
                         'invite_cote'=>$data['invite_code'],
                         'invite_member_wr_id'=>$check['wr_id']
@@ -130,10 +133,9 @@ class Member extends StoreSchemaBase{
 
 
     public function before_set(&$data) {
-        // 좌표 유효성 검사
         global $config,$is_admin,$member;
 
-        if(!data['wr_id']){
+        if(!$data['wr_id']){
             $invite_code = $this->generate_unique_invite_code();
             if($invite_code){
                 $data['invite_code'] = $invite_code;
@@ -183,7 +185,7 @@ class Member extends StoreSchemaBase{
        }
 
         $mb= get_member($data['mb_id']);
-
+        $pkey=$this->part_key;
         if($mb['mb_id']){
             if(!$wr_id){
 
@@ -224,13 +226,9 @@ class Member extends StoreSchemaBase{
         }
 
 
-
-
-
-
     }
 
-    public function before_delete(&$data) {
+    public function after_delete(&$data) {
         member_delete($data['mb_id']);
     }
 

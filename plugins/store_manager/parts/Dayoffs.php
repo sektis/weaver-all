@@ -32,14 +32,13 @@ class Dayoffs extends StoreSchemaBase implements StoreSchemaInterface{
         return $arr;
     }
 
-    public function is_new(&$data) {
-        $this->calculate_and_set_filter_fields($data);
+    public function on_save($col,&$curr,$prev,&$all_data,$node) {
+        if($col=='dayoffs/n'){
+            $this->calculate_and_set_filter_fields($curr);
+
+        }
     }
 
-// ✅ 기존 항목 수정시 필터 필드 재계산
-    public function is_update(&$data) {
-        $this->calculate_and_set_filter_fields($data);
-    }
 
     private function calculate_and_set_filter_fields(&$data) {
         // cycle, target 필드가 있을 때만 계산

@@ -12,7 +12,6 @@ class Biz extends StoreSchemaBase implements StoreSchemaInterface{
         'is_holiday_off' => "TINYINT(1)  DEFAULT 0",
         'parking'=>'varchar(255) not null'
     );
-    protected $checkbox_fields = array('is_holiday_off');
 
     protected $parking_max_char=20;
     private static $is_syncing = false;
@@ -25,6 +24,7 @@ class Biz extends StoreSchemaBase implements StoreSchemaInterface{
     public function column_extend($row,$all_row=array()){
         $arr = array();
         if(isset($row['open_time']) && !empty($row['open_time'])){
+
             $arr['open_time_list'] = generate_time_list($row['open_time'],1);
             $arr['open_time_group'] = generate_time_grouped($row['open_time'],1);
         } else {
@@ -43,101 +43,82 @@ class Biz extends StoreSchemaBase implements StoreSchemaInterface{
         return $arr;
     }
 
-    public function after_set(&$data) {
-        if (self::$is_syncing) return;
-        if (!isset($data['biz'])) return;
 
-        $has_open = isset($data['biz']['open_time']);
-        $has_break = isset($data['biz']['break_time']);
 
-        if (!$has_open && !$has_break) return;
+    public function after_set(&$all_data) {
+        // open_time 또는 break_time이 수정되었으면
+        if (isset($all_data['biz']['open_time']) || isset($all_data['biz']['break_time'])) {
 
-        self::$is_syncing = true;
+            $wr_id = $all_data['wr_id'];
 
-        try {
-            $wr_id = $data['wr_id'];
-            $manager = $this->get_manager();
+            // ✅ 1. DB에서 기존 timesearch 데이터 조회
+            $table = $this->manager->get_list_table_name('timesearch');
+            $result = sql_query("SELECT * FROM `{$table}` WHERE wr_id = '{$wr_id}' AND type IN ('open', 'break')");
 
-            $existing_list = $manager->get($wr_id)->timesearch->list;
+            $existing_by_id = array();
+            $existing_by_key = array();
+            while ($row = sql_fetch_array($result)) {
+                $id = $row['id'];
+                $key = $row['type'] . '_' . $row['day_of_week'];
 
-            $updated_list = array();
-
-            // 기존 데이터 중 유지할 것 (service 등)
-            foreach ($existing_list as $item) {
-                if ($item['type'] !== 'open' && $item['type'] !== 'break') {
-                    $updated_list[] = $item;
-                }
+                $existing_by_id[$id] = $row;
+                $existing_by_key[$key] = $id;
             }
 
-            // open 처리
-            if ($has_open) {
-                $open_data = $manager->timesearch->convert_time_array_to_data($data['biz']['open_time'], 'open',1);
+            // ✅ 2. 저장된 데이터를 다시 조회해서 확장 컬럼 가져오기
+            $store = $this->manager->get($wr_id);
 
-                foreach ($open_data as $new_item) {
-                    $matched = false;
+            $new_timesearch = array();
 
-                    // 기존 데이터에서 매칭되는 것 찾기
-                    foreach ($existing_list as $existing_item) {
-                        if ($existing_item['type'] === 'open' &&
-                            $existing_item['day_of_week'] === $new_item['day_of_week']) {
-                            // id 유지하면서 업데이트
-                            $updated_list[] = array_merge($existing_item, $new_item);
-                            $matched = true;
-                            break;
-                        }
-                    }
+            // open_time 처리
+            if (isset($all_data['biz']['open_time'])) {
+                $open_time_list = $store->biz->open_time_list;
 
-                    // 매칭 안 되면 신규 추가
-                    if (!$matched) {
-                        $updated_list[] = $new_item;
-                    }
-                }
-            } else {
-                // open_time 없으면 기존 open 유지
-                foreach ($existing_list as $item) {
-                    if ($item['type'] === 'open') {
-                        $updated_list[] = $item;
+                $open_data = wv_convert_time_list_to_timesearch($open_time_list, 'open');
+
+                foreach ($open_data as $item) {
+                    $key = 'open_' . $item['day_of_week'];
+
+                    // 기존 데이터 있으면 id 유지
+                    if (isset($existing_by_key[$key])) {
+                        $id = $existing_by_key[$key];
+                        $item['id'] = $id;
+                        $new_timesearch[$id] = $item;
+                    } else {
+                        // 신규 데이터
+                        $new_timesearch[] = $item;
                     }
                 }
+
             }
 
-            // break 처리 (동일 로직)
-            if ($has_break) {
-                $break_data = $manager->timesearch->convert_time_array_to_data($data['biz']['break_time'], 'break',1);
+            // break_time 처리
+            if (isset($all_data['biz']['break_time'])) {
+                $break_time_list = $store->biz->break_time_list;
+                $break_data = wv_convert_time_list_to_timesearch($break_time_list, 'break');
 
-                foreach ($break_data as $new_item) {
-                    $matched = false;
+                foreach ($break_data as $item) {
+                    $key = 'break_' . $item['day_of_week'];
 
-                    foreach ($existing_list as $existing_item) {
-                        if ($existing_item['type'] === 'break' &&
-                            $existing_item['day_of_week'] === $new_item['day_of_week']) {
-                            $updated_list[] = array_merge($existing_item, $new_item);
-                            $matched = true;
-                            break;
-                        }
-                    }
-
-                    if (!$matched) {
-                        $updated_list[] = $new_item;
-                    }
-                }
-            } else {
-                foreach ($existing_list as $item) {
-                    if ($item['type'] === 'break') {
-                        $updated_list[] = $item;
+                    // 기존 데이터 있으면 id 유지
+                    if (isset($existing_by_key[$key])) {
+                        $id = $existing_by_key[$key];
+                        $item['id'] = $id;
+                        $new_timesearch[$id] = $item;
+                    } else {
+                        // 신규 데이터
+                        $new_timesearch[] = $item;
                     }
                 }
             }
 
-            $post_data = array(
-                'wr_id' => $wr_id,
-                'timesearch' => $updated_list
-            );
-
-            $manager->set($post_data);
-
-        } finally {
-            self::$is_syncing = false;
+            // ✅ 3. timesearch 저장
+            if (count($new_timesearch)) {
+                $this->manager->set(array(
+                    'wr_id' => $wr_id,
+                    'timesearch' => $new_timesearch
+                ));
+            }
         }
     }
-}
+  }

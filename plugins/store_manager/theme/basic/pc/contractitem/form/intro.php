@@ -71,10 +71,9 @@
                 <?php
                 foreach ($row['intro']['point'] as $k => $v) {
 
-                    $demo_class = !$v ? 'wv-ps-demo' : '';
 
                     ?>
-                    <div class="wv-ps-each w-full <?php echo $demo_class; ?>">
+                    <div class="wv-ps-each w-full">
                         <!-- 필수 hidden -->
                         <input type="hidden" name="contractitem[intro][point][<?php echo $k; ?>][id]"  value="<?php echo $v['id']; ?>">
                         <div class="d-flex justify-content-between  ">

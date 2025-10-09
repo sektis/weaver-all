@@ -65,65 +65,6 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
         return $this->indexes;
     }
 
-    protected function get_auto_detected_checkbox_fields(){
-        $auto_fields = array();
-        $patterns = $this->get_checkbox_patterns(); // ['is_', 'use_']
-        $non_checkbox = $this->get_non_checkbox_pattern_fields();
-
-        foreach ($this->columns as $name => $ddl) {
-            // 패턴 중 하나라도 매치되고 제외 목록에 없으면 체크박스로 간주
-            $matches_pattern = false;
-            foreach ($patterns as $pattern) {
-                if (strpos($name, $pattern) === 0) {
-                    $matches_pattern = true;
-                    break;
-                }
-            }
-
-            if ($matches_pattern && !in_array($name, $non_checkbox, true)) {
-                $auto_fields[] = $name;
-            }
-        }
-
-        return $auto_fields;
-    }
-
-    /**
-     * 명시적 정의 + 자동 감지 결합한 체크박스 필드 목록 반환
-     */
-    public function get_checkbox_fields(){
-        $explicit = is_array($this->checkbox_fields) ? $this->checkbox_fields : array();
-        $auto = $this->get_auto_detected_checkbox_fields();
-
-        // 중복 제거하여 합침
-        return array_values(array_unique(array_merge($explicit, $auto)));
-    }
-
-    public function get_non_checkbox_is_fields(){
-        return is_array($this->non_checkbox_is_fields) ? $this->non_checkbox_is_fields : array();
-    }
-
-    /**
-     * 체크박스 감지 패턴 반환 (is_, use_ 등)
-     * @return array
-     */
-    public function get_checkbox_patterns(){
-        return is_array($this->checkbox_patterns) ? $this->checkbox_patterns : array('is_', 'use_');
-    }
-
-    /**
-     * 패턴 매치되지만 체크박스가 아닌 필드들 반환
-     * get_non_checkbox_is_fields()와 동일한 역할
-     * @return array
-     */
-    public function get_non_checkbox_pattern_fields(){
-        return $this->get_non_checkbox_is_fields();
-    }
-
-    public function is_checkbox_field($field_name){
-        return in_array($field_name, $this->get_checkbox_fields(), true);
-    }
-
 
 
     public function get_allowed_columns(){
@@ -252,13 +193,13 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
             // {part_key}_id 변수 체크 (예: menu_id, store_id)
             $id_key = $this->part_key . '_id';
 
+
             if (key_exists($id_key,$vars)){
                 $is_list_item_mode = true;
             }
             if (key_exists($id_key,$vars) && $vars[$id_key] !== '') {
 
                 $item_id = $vars[$id_key];
-
 
                 // 해당 아이템을 $row에 직접 설정 (일반 파트처럼 접근 가능)
                 if (isset($vars['list']) && is_array($vars['list']) && isset($vars['list'][$item_id])) {
@@ -267,7 +208,6 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
                     $list_item = $vars['list'][$item_id];
 
                     if (is_array($list_item)) {
-                        $wewe=1;
                         $row = array_merge($row, $list_item);
 
                     }
@@ -342,6 +282,10 @@ abstract class StoreSchemaBase implements  StoreSchemaInterface{
 //        }
 
 
+        if($this->is_list_part() and $type=='view'){
+            unset($row['list'][-1]);
+            unset($row[$part_key][-1]);
+        }
 
         $skin_id = wv_make_skin_id();
         $skin_selector = wv_make_skin_selector($skin_id);

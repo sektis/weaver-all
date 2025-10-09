@@ -1,5 +1,6 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
+
 ?>
 <div id="<?php echo $skin_id; ?>">
     <style>
@@ -19,12 +20,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
     <div class="hstack date-input-wrap">
         <div class="form-floating">
-            <input type="date"
-                   name="<?php echo str_replace('[start_end]', '[start]', $field_name); ?>"
-                   value="<?php echo $row['start'] ? date('Y-m-d', strtotime($row['start'])) : ''; ?>"
-                   id="<?php echo $part_key; ?>_start_<?php echo $skin_id; ?>"
-                   class="form-control required"
-                   required>
+            <input type="date" name="<?php echo $field_name; ?>[start]" value="<?php echo $row['start'] ? date('Y-m-d', strtotime($row['start'])) : ''; ?>" id="<?php echo $field_name; ?>[start]" class="form-control  " required >
             <label for="<?php echo $part_key; ?>_start_<?php echo $skin_id; ?>">시작일</label>
         </div>
 
@@ -32,11 +28,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
         <div class="form-floating">
             <input type="date"
-                   name="<?php echo str_replace('[start_end]', '[end]', $field_name); ?>"
-                   value="<?php echo $row['end'] ? date('Y-m-d', strtotime($row['end'])) : ''; ?>"
-                   id="<?php echo $part_key; ?>_end_<?php echo $skin_id; ?>"
-                   class="form-control required"
-                   required>
+                   name="<?php echo $field_name; ?>[end]" value="<?php echo $row['end'] ? date('Y-m-d', strtotime($row['end'])) : ''; ?>" id="<?php echo $field_name; ?>[end]"class="form-control  " required >
             <label for="<?php echo $part_key; ?>_end_<?php echo $skin_id; ?>">종료일</label>
         </div>
     </div>
